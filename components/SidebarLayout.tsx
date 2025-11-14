@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar.tsx';
 import Header from './Header.tsx';
 import { Course, User } from '@/types';
+import QuickExploreCard from './QuickExploreCard.tsx';
 
 export interface SidebarLayoutContext {
   user: User;
@@ -40,6 +41,30 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
   const animationFrameRef = useRef<number | null>(null);
   const [pointerPosition, setPointerPosition] = useState({ x: 50, y: 50 });
   const location = useLocation();
+  const navigate = useNavigate();
+  const [isQuickExploreOpen, setQuickExploreOpen] = useState(false);
+  const [highlightCourseId, setHighlightCourseId] = useState<string | null>(null);
+
+  const prioritizedCourses = useMemo(() => {
+    if (!courses || courses.length === 0) {
+      return [] as Course[];
+    }
+
+    const sorted = [...courses].sort((a, b) => {
+      const priorityA = a.featuredPriority ?? Number.POSITIVE_INFINITY;
+      const priorityB = b.featuredPriority ?? Number.POSITIVE_INFINITY;
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+
+      const ratingA = typeof a.rating === 'number' ? a.rating : 0;
+      const ratingB = typeof b.rating === 'number' ? b.rating : 0;
+      return ratingB - ratingA;
+    });
+
+    const featured = sorted.filter(course => course.isFeaturedOnHome);
+    return featured.length > 0 ? featured : sorted;
+  }, [courses]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
@@ -62,6 +87,18 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
       panel.scrollTo({ top: 0 });
     }
   }, [location.pathname]);
+
+  const openQuickExplore = useCallback(
+    (courseId?: string) => {
+      if (prioritizedCourses.length === 0) {
+        return;
+      }
+      setHighlightCourseId(courseId ?? prioritizedCourses[0]?.id ?? null);
+      setQuickExploreOpen(true);
+      void onRefreshCourses();
+    },
+    [onRefreshCourses, prioritizedCourses],
+  );
 
   const handlePanelPointerMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     const panel = mainPanelRef.current;
@@ -100,59 +137,91 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
     }
   }, []);
 
+  const handleQuickExploreClose = useCallback(() => {
+    setQuickExploreOpen(false);
+    setHighlightCourseId(null);
+  }, []);
+
+  const handleQuickExplorePrimary = useCallback(
+    (course: Course) => {
+      setQuickExploreOpen(false);
+      setHighlightCourseId(null);
+      navigate(`/courses/${course.id}`);
+    },
+    [navigate],
+  );
+
+  const handleQuickExploreSecondary = useCallback(() => {
+    setQuickExploreOpen(false);
+    setHighlightCourseId(null);
+    navigate('/explore');
+  }, [navigate]);
+
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-100 via-white to-slate-200 text-slate-800 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-gray-200">
-      <div className="pointer-events-none fixed -top-24 -left-24 h-72 w-72 rounded-full bg-brand-primary/40 blur-3xl opacity-70" style={{ animation: 'pulseGlow 14s ease-in-out infinite' }} />
-      <div className="pointer-events-none fixed bottom-[-6rem] left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-sky-400/25 blur-[120px] opacity-70" style={{ animation: 'pulseGlow 18s ease-in-out infinite reverse' }} />
-      <div className="pointer-events-none fixed top-1/3 right-[-8rem] h-96 w-96 rounded-full bg-purple-500/35 blur-[120px] opacity-60" style={{ animation: 'driftGlow 22s ease-in-out infinite' }} />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(43,131,198,0.12),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(43,131,198,0.22),_transparent_60%)]" />
-      <div className="relative z-10 flex min-h-screen">
-        <Sidebar
-          isSidebarOpen={isSidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-          isDarkMode={isDarkMode}
-          setDarkMode={onThemeToggle}
-          onExploreClick={onRefreshCourses}
-        />
-        <div
-          ref={mainPanelRef}
-          className="relative flex flex-1 flex-col overflow-y-auto"
-          onMouseMove={handlePanelPointerMove}
-          onMouseLeave={handlePanelPointerLeave}
-        >
-          <div
-            className="pointer-events-none absolute inset-0 opacity-90 transition-[background] duration-700 ease-out"
-            style={{
-              background: `radial-gradient(ellipse at ${pointerPosition.x}% ${pointerPosition.y}%, rgba(43,131,198,0.16), rgba(43,131,198,0) 55%)`,
-            }}
+    <>
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-100 via-white to-slate-200 text-slate-800 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-gray-200">
+        <div className="pointer-events-none fixed -top-24 -left-24 h-72 w-72 rounded-full bg-brand-primary/40 blur-3xl opacity-70" style={{ animation: 'pulseGlow 14s ease-in-out infinite' }} />
+        <div className="pointer-events-none fixed bottom-[-6rem] left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-sky-400/25 blur-[120px] opacity-70" style={{ animation: 'pulseGlow 18s ease-in-out infinite reverse' }} />
+        <div className="pointer-events-none fixed top-1/3 right-[-8rem] h-96 w-96 rounded-full bg-purple-500/35 blur-[120px] opacity-60" style={{ animation: 'driftGlow 22s ease-in-out infinite' }} />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(43,131,198,0.12),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(43,131,198,0.22),_transparent_60%)]" />
+        <div className="relative z-10 flex min-h-screen">
+          <Sidebar
+            isSidebarOpen={isSidebarOpen}
+            setSidebarOpen={setSidebarOpen}
+            isDarkMode={isDarkMode}
+            setDarkMode={onThemeToggle}
+            onExploreClick={() => openQuickExplore()}
           />
-          <Header user={user} onMenuClick={() => setSidebarOpen(true)} isScrolled={isScrolled} />
-          <main className="relative z-10 flex-1 px-4 pb-10 pt-6 sm:px-6 lg:px-10">
-            <div className="relative mx-auto max-w-6xl">
-              <div className="glass-panel relative overflow-hidden rounded-3xl border border-white/40 bg-white/60 shadow-[0_12px_60px_rgba(15,23,42,0.18)] backdrop-blur-2xl transition-colors duration-500 dark:border-white/10 dark:bg-slate-900/75 dark:shadow-[0_18px_70px_rgba(2,6,23,0.6)]">
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_65%)] dark:bg-[radial-gradient(circle_at_top,_rgba(148,163,184,0.2),_transparent_70%)]" />
-                <div className="pointer-events-none absolute -top-20 -left-10 h-40 w-40 rounded-full bg-brand-primary/30 blur-3xl opacity-70" style={{ animation: 'pulseGlow 16s ease-in-out infinite' }} />
-                <div className="pointer-events-none absolute bottom-[-3rem] right-[-2rem] h-48 w-48 rounded-full bg-sky-500/40 blur-3xl opacity-80" style={{ animation: 'pulseGlow 20s ease-in-out infinite alternate' }} />
-                <div className="relative z-10 p-4 sm:p-6 lg:p-10">
-                  <div className="animate-fade-in-up">
-                    <Outlet
-                      context={{
-                        user,
-                        courses,
-                        onProfileUpdate,
-                        coursesLoading,
-                        coursesError,
-                        refreshCourses: onRefreshCourses,
-                      }}
-                    />
+          <div
+            ref={mainPanelRef}
+            className="relative flex flex-1 flex-col overflow-y-auto"
+            onMouseMove={handlePanelPointerMove}
+            onMouseLeave={handlePanelPointerLeave}
+          >
+            <div
+              className="pointer-events-none absolute inset-0 opacity-90 transition-[background] duration-700 ease-out"
+              style={{
+                background: `radial-gradient(ellipse at ${pointerPosition.x}% ${pointerPosition.y}%, rgba(43,131,198,0.16), rgba(43,131,198,0) 55%)`,
+              }}
+            />
+            <Header user={user} onMenuClick={() => setSidebarOpen(true)} isScrolled={isScrolled} />
+            <main className="relative z-10 flex-1 px-4 pb-10 pt-6 sm:px-6 lg:px-10">
+              <div className="relative mx-auto max-w-6xl">
+                <div className="glass-panel relative overflow-hidden rounded-3xl border border-white/40 bg-white/60 shadow-[0_12px_60px_rgba(15,23,42,0.18)] backdrop-blur-2xl transition-colors duration-500 dark:border-white/10 dark:bg-slate-900/75 dark:shadow-[0_18px_70px_rgba(2,6,23,0.6)]">
+                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_65%)] dark:bg-[radial-gradient(circle_at_top,_rgba(148,163,184,0.2),_transparent_70%)]" />
+                  <div className="pointer-events-none absolute -top-20 -left-10 h-40 w-40 rounded-full bg-brand-primary/30 blur-3xl opacity-70" style={{ animation: 'pulseGlow 16s ease-in-out infinite' }} />
+                  <div className="pointer-events-none absolute bottom-[-3rem] right-[-2rem] h-48 w-48 rounded-full bg-sky-500/40 blur-3xl opacity-80" style={{ animation: 'pulseGlow 20s ease-in-out infinite alternate' }} />
+                  <div className="relative z-10 p-4 sm:p-6 lg:p-10">
+                    <div className="animate-fade-in-up">
+                      <Outlet
+                        context={{
+                          user,
+                          courses,
+                          onProfileUpdate,
+                          coursesLoading,
+                          coursesError,
+                          refreshCourses: onRefreshCourses,
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </main>
+            </main>
+          </div>
         </div>
       </div>
-    </div>
+      <QuickExploreCard
+        isOpen={isQuickExploreOpen && prioritizedCourses.length > 0}
+        courses={prioritizedCourses}
+        onClose={handleQuickExploreClose}
+        onExploreCourse={handleQuickExplorePrimary}
+        onSecondaryAction={handleQuickExploreSecondary}
+        secondaryLabel="View full catalog"
+        primaryLabel="Go to course"
+        highlightCourseId={highlightCourseId ?? undefined}
+      />
+    </>
   );
 };
 

@@ -10,20 +10,16 @@ interface LoginPageProps {
 
 type AuthTab = 'signin' | 'signup';
 
-const studyItems = [
-    { id: 1, content: 'alpha', className: 'top-[15%] left-[10%]', size: 'text-7xl', duration: '22s', delay: '0s', animation: 'animate-float-1' },
-    { id: 2, content: 'integral dx', className: 'top-[20%] right-[15%]', size: 'text-6xl', duration: '28s', delay: '-5s', animation: 'animate-float-2' },
-    { id: 3, content: 'pi', className: 'bottom-[15%] left-[20%]', size: 'text-6xl', duration: '25s', delay: '-2s', animation: 'animate-float-2' },
-    { id: 4, content: 'sin(theta)', className: 'bottom-[20%] right-[10%]', size: 'text-5xl', duration: '30s', delay: '-10s', animation: 'animate-float-1' },
-    { id: 5, content: <Icon name="cube" className="w-16 h-16" />, className: 'top-[50%] left-[50%]', size: '', duration: '18s', delay: '-8s', animation: 'animate-blob' },
-    { id: 6, content: <Icon name="iit" className="w-12 h-12" />, className: 'top-[65%] left-[15%]', size: '', duration: '32s', delay: '-3s', animation: 'animate-float-1' },
-    { id: 7, content: <Icon name="send" className="w-12 h-12 transform -rotate-45" />, className: 'bottom-[5%] left-[45%]', size: '', duration: '20s', delay: '-15s', animation: 'animate-float-2' },
-    { id: 8, content: 'E=mc^2', className: 'top-[70%] right-[25%]', size: 'text-4xl', duration: '26s', delay: '-7s', animation: 'animate-float-1' },
-    { id: 9, content: 'H2O', className: 'top-[10%] right-[40%]', size: 'text-5xl', duration: '23s', delay: '-12s', animation: 'animate-float-2' },
-    { id: 10, content: 'Sigma', className: 'top-[5%] left-[40%]', size: 'text-6xl', duration: '29s', delay: '-1s', animation: 'animate-float-1' },
-    { id: 11, content: <Icon name="neet" className="w-14 h-14" />, className: 'bottom-[10%] right-[40%]', size: '', duration: '24s', delay: '-6s', animation: 'animate-float-2' },
-    { id: 12, content: 'nabla^2', className: 'top-[40%] left-[5%]', size: 'text-5xl', duration: '31s', delay: '-9s', animation: 'animate-float-1' },
-    { id: 13, content: <Icon name="test" className="w-10 h-10" />, className: 'bottom-[45%] right-[5%]', size: '', duration: '27s', delay: '-4s', animation: 'animate-float-2' },
+const floatingOrbs = [
+    { id: 1, className: 'top-[12%] left-[10%]', size: 'w-32 h-32', gradient: 'from-cyan-400/40 via-blue-500/30 to-purple-500/30', animation: 'animate-float-1', delay: '0s' },
+    { id: 2, className: 'bottom-[18%] right-[12%]', size: 'w-40 h-40', gradient: 'from-indigo-400/40 via-purple-500/30 to-pink-500/30', animation: 'animate-float-2', delay: '-6s' },
+    { id: 3, className: 'top-[55%] right-[35%]', size: 'w-28 h-28', gradient: 'from-sky-400/40 via-cyan-400/30 to-emerald-400/30', animation: 'animate-blob', delay: '-3s' },
+];
+
+const highlightTiles = [
+    { id: 'mentors', icon: 'live', title: 'Live mentors', subtitle: 'Interactive sessions everyday' },
+    { id: 'immersive', icon: 'cube', title: 'Immersive labs', subtitle: 'Hands-on 3D practice sets' },
+    { id: 'support', icon: 'doubt', title: '24/7 support', subtitle: 'Instant doubt resolution' },
 ];
 
 const strengthConfig = {
@@ -164,24 +160,30 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigateHome }) => {
 
             <div className="w-full max-w-4xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-lg rounded-2xl shadow-2xl flex flex-col md:flex-row overflow-hidden border border-white/30 dark:border-slate-700/50 relative z-10">
                 {/* Left Panel - Welcome/Info */}
-                <div className="w-full md:w-1/2 p-8 md:p-12 bg-gradient-to-br from-purple-800 to-indigo-900 text-white flex flex-col justify-center items-center text-center relative overflow-hidden">
+                <div className="w-full md:w-1/2 p-8 md:p-12 text-white flex flex-col justify-center items-center text-center relative overflow-hidden">
                     <div className="absolute inset-0 z-0">
-                        {studyItems.map(item => (
-                            <div 
-                                key={item.id}
-                                className={`absolute text-white/20 font-mono will-change-transform ${item.className} ${item.size} ${item.animation}`}
+                        <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/90 via-purple-700/90 to-indigo-900/90" />
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_70%)]" />
+                        <div className="absolute inset-0 bg-white/10 mix-blend-screen" />
+                        {floatingOrbs.map(orb => (
+                            <div
+                                key={orb.id}
+                                className={`absolute ${orb.className} ${orb.animation}`}
                                 style={{
-                                    animationDuration: item.duration,
-                                    animationDelay: item.delay,
+                                    animationDuration: '26s',
+                                    animationDelay: orb.delay,
                                 }}
                             >
-                                {item.content}
+                                <div className={`relative ${orb.size}`}>
+                                    <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${orb.gradient} blur-[60px] opacity-80`} />
+                                    <div className="absolute inset-0 rounded-full border border-white/30" />
+                                </div>
                             </div>
                         ))}
                     </div>
 
                     {/* Content */}
-                    <div className="relative z-10">
+                    <div className="relative z-10 w-full space-y-8">
                         <div key={activeTab} className="animate-fade-in space-y-6">
                             <div className="flex items-center justify-center">
                                 <img src={LOGO_URL} alt="Edusimulate Logo" className="h-10 mr-3" />
@@ -189,6 +191,25 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigateHome }) => {
                             </div>
                             <h1 className="text-4xl font-extrabold text-shadow">{welcomeContent[activeTab].title}</h1>
                             <p className="text-lg opacity-90 max-w-sm mx-auto">{welcomeContent[activeTab].subtitle}</p>
+                        </div>
+
+                        <div className="mx-auto mt-8 grid w-full max-w-md grid-cols-1 gap-3 sm:max-w-none sm:grid-cols-3">
+                            {highlightTiles.map(tile => (
+                                <div
+                                    key={tile.id}
+                                    className="glass-reflection rounded-2xl border border-white/40 bg-white/15 p-4 text-left shadow-[0_22px_60px_rgba(15,23,42,0.3)] backdrop-blur-xl"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-white shadow-inner shadow-white/40">
+                                            <Icon name={tile.icon} className="h-6 w-6" />
+                                        </span>
+                                        <div>
+                                            <p className="font-semibold leading-tight">{tile.title}</p>
+                                            <p className="text-xs text-white/70">{tile.subtitle}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>

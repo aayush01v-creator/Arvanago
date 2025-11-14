@@ -299,6 +299,8 @@ const hydrateCourseFromDoc = async (
       : price != null
         ? 'USD'
         : undefined;
+  const isFeaturedOnHome = coerceBoolean(rawData.isFeaturedOnHome);
+  const featuredPriority = coerceNumber(rawData.featuredPriority);
 
   return {
     id: typeof rawData.id === 'string' ? rawData.id : courseDoc.id,
@@ -313,6 +315,8 @@ const hydrateCourseFromDoc = async (
     isFree,
     isPaid,
     isPublished,
+    isFeaturedOnHome,
+    featuredPriority,
     lectures,
     sections,
     progress: typeof rawData.progress === 'number' ? rawData.progress : progress,

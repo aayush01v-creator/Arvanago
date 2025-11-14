@@ -81,6 +81,34 @@ const icons: { [key: string]: React.ReactNode } = {
   circle: <circle cx="12" cy="12" r="10" />,
   'message-circle': <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />,
   users: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></>,
+  sparkle: (
+    <>
+      <path d="M12 3v4" />
+      <path d="M12 17v4" />
+      <path d="M3 12h4" />
+      <path d="M17 12h4" />
+      <path d="M5.6 5.6 8 8" />
+      <path d="M16 16l2.4 2.4" />
+      <path d="M5.6 18.4 8 16" />
+      <path d="M16 8l2.4-2.4" />
+    </>
+  ),
+  sparkles: (
+    <>
+      <path d="M12 2v3" />
+      <path d="M12 19v3" />
+      <path d="M2 12h3" />
+      <path d="M19 12h3" />
+      <path d="M5 5 7.5 7.5" />
+      <path d="M16.5 16.5 19 19" />
+      <path d="M5 19l2.5-2.5" />
+      <path d="M16.5 7.5 19 5" />
+      <path d="M21 4v2" />
+      <path d="M21 11v2" />
+      <path d="M17 8h2" />
+      <path d="M23 8h2" />
+    </>
+  ),
 };
 
 const Icon: React.FC<IconProps> = ({ name, className = "w-6 h-6", ...props }) => {

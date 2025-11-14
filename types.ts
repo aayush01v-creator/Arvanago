@@ -52,6 +52,8 @@ export interface Course {
   isFree: boolean;
   isPaid: boolean;
   isPublished: boolean;
+  isFeaturedOnHome?: boolean;
+  featuredPriority?: number;
   lectures: Lecture[];
   sections?: CourseSection[];
   progress: number;
