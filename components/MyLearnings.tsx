@@ -16,7 +16,7 @@ type Tab = 'courses' | 'wishlist' | 'tasks';
 const CourseCard: React.FC<{ course: Course; onClick: () => void }> = ({ course, onClick }) => (
     <div onClick={onClick} className="bg-white dark:bg-slate-800 rounded-lg shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden group transition-all duration-300 hover:shadow-lg dark:hover:shadow-dark-glow-hover hover:-translate-y-1 cursor-pointer flex flex-col">
         <div className="relative">
-            <img src={course.thumbnail} alt={course.title} className="w-full h-40 object-cover" />
+            <img src={course.thumbnailUrl ?? course.thumbnail} alt={course.title} className="w-full h-40 object-cover" />
              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-100 group-hover:opacity-100 transition-opacity"></div>
             <div className="absolute top-2 right-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform-gpu group-hover:scale-110">
                 <Icon name="play" className="w-5 h-5 text-slate-700 dark:text-slate-200" />
