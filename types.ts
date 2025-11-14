@@ -21,6 +21,7 @@ export interface User {
   bio?: string;
   coursesAuthored?: number;
   lastLogin?: Timestamp | null;
+  themePreference?: 'light' | 'dark';
 }
 
 export interface Comment {

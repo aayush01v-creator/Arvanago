@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
@@ -9,7 +7,16 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
 const icons: { [key: string]: React.ReactNode } = {
   dashboard: <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />,
   courses: <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />,
-  leaderboard: <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6v5zM6 9v12v-5zM6 9L12 3l3 3M12 3v5.394" />,
+  leaderboard: (
+    <>
+      <path d="M8 21h8" />
+      <path d="M12 17v4" />
+      <path d="M7 4h10a1 1 0 0 1 1 1v2a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5V5a1 1 0 0 1 1-1z" />
+      <path d="M7 9a4 4 0 0 1-4-4V4h4" />
+      <path d="M17 9a4 4 0 0 0 4-4V4h-4" />
+      <path d="m9.5 7 2.5 2 2.5-2" />
+    </>
+  ),
   profile: <><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></>,
   logout: <><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></>,
   chevronRight: <polyline points="9 18 15 12 9 6" />,
