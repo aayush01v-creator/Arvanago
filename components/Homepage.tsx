@@ -271,7 +271,7 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
                 
                 <div className="space-y-3 z-10">
                     <p className="font-semibold text-purple-800 dark:text-purple-200">NEW BATCHES STARTING SOON</p>
-                    <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white text-shadow">NEET 2025 Prep Course</h2>
+                    <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white text-shadow">C++ Basics</h2>
                     <button
                       onClick={() => handleOpenQuickExplore()}
                       className="glass-reflection bg-white/20 dark:bg-white/10 text-slate-900 dark:text-white font-bold py-2 px-5 rounded-full hover:bg-white/30 dark:hover:bg-white/20 transition-all transform hover:scale-105 active:scale-95 backdrop-blur-md border border-white/40 dark:border-white/20 shadow-md animate-glass-glow shadow-brand-primary/30 dark:shadow-brand-primary/20 duration-150 ease-in-out"
