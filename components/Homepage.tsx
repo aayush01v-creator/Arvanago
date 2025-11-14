@@ -1,5 +1,5 @@
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Icon from './common/Icon.tsx';
 import { useScrollAnimation } from '../hooks/useScrollAnimation.ts';
 import { Course } from '../types.ts';
@@ -224,7 +224,7 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
         primaryLabel="Explore this course"
         highlightCourseId={highlightCourseId ?? undefined}
       />
-      <div className="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-sans overflow-x-hidden relative">
+        <div className="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-sans overflow-x-hidden relative">
       {/* Decorative background blobs */}
       <div className="fixed top-0 -left-4 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob dark:opacity-30"></div>
       <div className="fixed top-0 -right-4 w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob dark:opacity-30" style={{animationDelay: '2s'}}></div>
@@ -388,16 +388,17 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
         </div>
       </footer>
 
-      <SearchResultsModal
-        isOpen={isSearchModalOpen}
-        onClose={() => setIsSearchModalOpen(false)}
-        isLoading={isSearching}
-        results={searchResults}
-        onCourseSelect={handleCourseSelection}
-        searchQuery={searchQuery}
-      />
-    </>
-  );
-};
+        <SearchResultsModal
+          isOpen={isSearchModalOpen}
+          onClose={() => setIsSearchModalOpen(false)}
+          isLoading={isSearching}
+          results={searchResults}
+          onCourseSelect={handleCourseSelection}
+          searchQuery={searchQuery}
+        />
+        </div>
+      </>
+    );
+  };
 
 export default Homepage;
