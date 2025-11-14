@@ -1,5 +1,11 @@
 {
   "name": "edusimulate-–-smart-learning-reimagined",
+  ...
+  "homepage": "https://aayush01v-creator.github.io/edusimulate-–-smart-learning-reimagined",
+  ...
+}
+{
+  "name": "edusimulate-–-smart-learning-reimagined",
   "private": true,
   "version": "0.0.0",
   "type": "module",
