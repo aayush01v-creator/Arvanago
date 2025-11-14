@@ -1,35 +1,37 @@
-
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Course, Lecture, AppView, PageView, User } from './types.ts';
-import Sidebar from './components/Sidebar.tsx';
-import Dashboard from './components/Dashboard.tsx';
-import CourseList from './components/CourseList.tsx';
-import CourseDetail from './components/CourseDetail.tsx';
-import CoursePreview from './components/CoursePreview.tsx';
-import LectureView from './components/LectureView.tsx';
-import Leaderboard from './components/Leaderboard.tsx';
-import Profile from './components/Profile.tsx';
-import Header from './components/Header.tsx';
-import Icon from './components/common/Icon.tsx';
-import Homepage from './components/Homepage.tsx';
-import LoginPage from './components/LoginPage.tsx';
-import MyLearnings from './components/MyLearnings.tsx';
-// FIX: Removed incorrect modular import for onAuthStateChanged. The compat version is called on the auth instance.
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { Course, User } from './types.ts';
 import { auth } from './services/firebase.ts';
-import { getOrCreateUser, getCourses } from './services/firestoreService.ts';
+import { getCourses, getOrCreateUser, updateUserThemePreference } from './services/firestoreService.ts';
+import SidebarLayout from './components/SidebarLayout.tsx';
+import ProtectedRoute from './components/ProtectedRoute.tsx';
+import DashboardPage from '@/pages/DashboardPage';
+import MyLearningsPage from '@/pages/MyLearningsPage';
+import ExploreCoursesPage from '@/pages/ExploreCoursesPage';
+import LeaderboardPage from '@/pages/LeaderboardPage';
+import ProfilePage from '@/pages/ProfilePage';
+import CourseDetailPage from '@/pages/CourseDetailPage';
+import CourseLecturePage from '@/pages/CourseLecturePage';
+import HomePage from '@/pages/HomePage';
+import LoginRoute from '@/pages/LoginRoute';
+import CoursePreviewPage from '@/pages/CoursePreviewPage';
+import { PENDING_COURSE_STORAGE_KEY } from './constants.ts';
+
+const GLOBAL_THEME_KEY = 'edusimulate:theme';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<PageView>('homepage');
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-  const [selectedLecture, setSelectedLecture] = useState<Lecture | null>(null);
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [categoryFilter, setCategoryFilter] = useState('All');
-  const [isDarkMode, setDarkMode] = useState(false); // Default to light mode
-  const [isScrolled, setIsScrolled] = useState(false);
-  const mainPanelRef = useRef<HTMLDivElement>(null);
+  const [coursesLoading, setCoursesLoading] = useState(true);
+  const [coursesError, setCoursesError] = useState<string | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    const stored = window.localStorage.getItem(GLOBAL_THEME_KEY);
+    return stored === 'dark';
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -40,174 +42,202 @@ const App: React.FC = () => {
     }
   }, [isDarkMode]);
 
-  useEffect(() => {
-    const fetchCourseData = async () => {
-        try {
-            const courseData = await getCourses();
-            setCourses(courseData);
-        } catch (error) {
-            console.error("Failed to fetch courses:", error);
-            // Handle error state if necessary
-        }
-    };
-    fetchCourseData();
+  const fetchSequenceRef = useRef(0);
+  const navigate = useNavigate();
+
+  const fetchCourseData = useCallback(async () => {
+    const requestId = ++fetchSequenceRef.current;
+    setCoursesLoading(true);
+    try {
+      const courseData = await getCourses();
+      if (fetchSequenceRef.current === requestId) {
+        setCourses(courseData);
+        setCoursesError(null);
+      }
+    } catch (error) {
+      console.error('Failed to fetch courses:', error);
+      if (fetchSequenceRef.current === requestId) {
+        setCoursesError("We couldn't load courses right now. Please try again later.");
+      }
+    } finally {
+      if (fetchSequenceRef.current === requestId) {
+        setCoursesLoading(false);
+      }
+    }
   }, []);
 
   useEffect(() => {
-    // Listen for authentication state changes using the modular onAuthStateChanged function.
-    // FIX: Use compat version of onAuthStateChanged.
+    void fetchCourseData();
+  }, [fetchCourseData]);
+
+  useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
       if (firebaseUser) {
-        setLoading(true);
         try {
-          const appUser = await getOrCreateUser(firebaseUser.uid, firebaseUser.displayName, firebaseUser.email, firebaseUser.photoURL);
+          const appUser = await getOrCreateUser(
+            firebaseUser.uid,
+            firebaseUser.displayName,
+            firebaseUser.email,
+            firebaseUser.photoURL,
+          );
           setUser(appUser);
-          setView('dashboard');
         } catch (error) {
-          console.error("Error getting user data:", error);
+          console.error('Error getting user data:', error);
           setUser(null);
-          setView('homepage');
         } finally {
-          setLoading(false);
+          setAuthReady(true);
         }
       } else {
         setUser(null);
-        setView('homepage');
-        setLoading(false);
+        setAuthReady(true);
       }
     });
+
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    const mainPanel = mainPanelRef.current;
-    if (!mainPanel || view === 'coursePreview') return;
-
-    const handleScroll = () => {
-        setIsScrolled(mainPanel.scrollTop > 10);
-    };
-
-    mainPanel.addEventListener('scroll', handleScroll, { passive: true });
-    return () => mainPanel.removeEventListener('scroll', handleScroll);
-  }, [user, view]); 
-
-  const navigateToLogin = () => setView('login');
-  const navigateToHomepage = () => {
-    setView('homepage');
-    setSelectedCourse(null);
-  };
-  const setAppView = (appView: AppView) => setView(appView);
-
-  const navigateToFilteredCourses = useCallback((category: string) => {
-    setCategoryFilter(category);
-    setView('courses');
-  }, []);
-  
-  const handleCourseSelect = useCallback((course: Course) => {
-    setSelectedCourse(course);
-    if (user) {
-      setView('courseDetail');
-    } else {
-      setView('coursePreview');
+  const persistThemePreference = useCallback((mode: boolean, currentUser: User | null) => {
+    if (typeof window === 'undefined') {
+      return;
     }
-  }, [user]);
-
-  const navigateToLecture = useCallback((course: Course, lecture: Lecture) => {
-    setSelectedCourse(course);
-    setSelectedLecture(lecture);
-    setView('lecture');
+    const theme = mode ? 'dark' : 'light';
+    if (currentUser) {
+      window.localStorage.setItem(`${GLOBAL_THEME_KEY}:${currentUser.uid}`, theme);
+    } else {
+      window.localStorage.setItem(GLOBAL_THEME_KEY, theme);
+    }
   }, []);
 
-  const navigateBackToCourse = useCallback(() => {
-    setView('courseDetail');
-    setSelectedLecture(null);
-  }, []);
-  
-  const navigateBackToDashboard = useCallback(() => {
-    setView('dashboard');
-    setSelectedCourse(null);
-    setSelectedLecture(null);
+  const handleThemeToggle = useCallback(
+    (mode: boolean) => {
+      setIsDarkMode(mode);
+      persistThemePreference(mode, user);
+      if (user) {
+        updateUserThemePreference(user.uid, mode ? 'dark' : 'light').catch((error) =>
+          console.error('Failed to update theme preference:', error),
+        );
+      }
+    },
+    [persistThemePreference, user],
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (user) {
+      const stored = window.localStorage.getItem(`${GLOBAL_THEME_KEY}:${user.uid}`);
+      const preference = stored ?? user.themePreference ?? 'light';
+      const dark = preference === 'dark';
+      setIsDarkMode(dark);
+      persistThemePreference(dark, user);
+    } else {
+      const stored = window.localStorage.getItem(GLOBAL_THEME_KEY);
+      setIsDarkMode(stored === 'dark');
+    }
+  }, [user, persistThemePreference]);
+
+  const handleProfileUpdate = useCallback((updates: Partial<User>) => {
+    setUser((previous) => (previous ? { ...previous, ...updates } : previous));
   }, []);
 
-  const handleProfileUpdate = (updatedUserData: Partial<User>) => {
-    setUser(prevUser => prevUser ? { ...prevUser, ...updatedUserData } : null);
-  };
+  useEffect(() => {
+    if (!authReady || !user || typeof window === 'undefined') {
+      return;
+    }
 
-  if (loading) {
+    const pendingCourseId = window.localStorage.getItem(PENDING_COURSE_STORAGE_KEY);
+    if (!pendingCourseId) {
+      return;
+    }
+
+    if (coursesLoading) {
+      return;
+    }
+
+    window.localStorage.removeItem(PENDING_COURSE_STORAGE_KEY);
+
+    const matchedCourse = courses.find(course => course.id === pendingCourseId);
+    if (matchedCourse) {
+      navigate(`/courses/${matchedCourse.id}`, { replace: true });
+    } else {
+      navigate('/explore', { replace: true });
+    }
+  }, [authReady, user, coursesLoading, courses, navigate]);
+
+  const handlePublicCourseSelect = useCallback(
+    (course: Course) => {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(PENDING_COURSE_STORAGE_KEY, course.id);
+      }
+      navigate('/login');
+    },
+    [navigate],
+  );
+
+  if (!authReady) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900">
-        <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-brand-primary"></div>
+        <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-brand-primary" />
       </div>
     );
   }
-  
-  // Standalone Views (No main layout)
-  if (!user) {
-    if (view === 'login') {
-      return <LoginPage onNavigateHome={navigateToHomepage} />;
-    }
-    if (view === 'coursePreview' && selectedCourse) {
-      return <CoursePreview course={selectedCourse} onLoginClick={navigateToLogin} onBack={navigateToHomepage} isDarkMode={isDarkMode} setDarkMode={setDarkMode}/>;
-    }
-    return <Homepage onNavigateToLogin={navigateToLogin} onCourseSelect={handleCourseSelect} courses={courses} />;
-  }
-  
-  if (view === 'coursePreview' && selectedCourse) {
-    return <CoursePreview course={selectedCourse} onLoginClick={navigateToLogin} onBack={() => setView('dashboard')} isDarkMode={isDarkMode} setDarkMode={setDarkMode} />;
-  }
 
-  if (view === 'lecture' && selectedCourse && selectedLecture) {
-    return <LectureView user={user} course={selectedCourse} lecture={selectedLecture} onBack={navigateBackToCourse} onExit={navigateBackToDashboard}/>
-  }
-
-  // Main App Layout (Sidebar + Header + Content)
-  const renderContent = (currentUser: User, currentView: AppView) => {
-    let content;
-    switch (currentView) {
-      case 'dashboard':
-        content = <Dashboard user={currentUser} courses={courses} navigateToFilteredCourses={navigateToFilteredCourses} navigateToCourse={handleCourseSelect} />;
-        break;
-      case 'myLearnings':
-        content = <MyLearnings user={currentUser} courses={courses} navigateToCourse={handleCourseSelect} />;
-        break;
-      case 'courses':
-        content = <CourseList courses={courses} navigateToCourse={handleCourseSelect} initialCategory={categoryFilter} />;
-        break;
-      case 'courseDetail':
-        content = selectedCourse ? <CourseDetail course={selectedCourse} navigateToLecture={navigateToLecture} /> : <Dashboard user={currentUser} courses={courses} navigateToFilteredCourses={navigateToFilteredCourses} navigateToCourse={handleCourseSelect} />;
-        break;
-      case 'leaderboard':
-        content = <Leaderboard />;
-        break;
-      case 'profile':
-        content = <Profile user={currentUser} onProfileUpdate={handleProfileUpdate} />;
-        break;
-      default:
-        content = <Dashboard user={currentUser} courses={courses} navigateToFilteredCourses={navigateToFilteredCourses} navigateToCourse={handleCourseSelect} />;
-    }
-    
-    return <div className="p-0 sm:p-0 lg:p-0">{content}</div>;
-  };
-  
   return (
-    <div className="min-h-screen text-slate-800 dark:text-gray-200 flex bg-slate-50 dark:bg-slate-900">
-      <Sidebar 
-        currentView={view as AppView} 
-        setView={setAppView} 
-        isSidebarOpen={isSidebarOpen} 
-        setSidebarOpen={setSidebarOpen}
-        isDarkMode={isDarkMode}
-        setDarkMode={setDarkMode}
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <HomePage
+            user={user}
+            courses={courses}
+            isLoading={coursesLoading}
+            error={coursesError}
+            onCourseSelect={handlePublicCourseSelect}
+          />
+        }
       />
-      <div ref={mainPanelRef} className="flex-1 flex flex-col h-screen relative overflow-y-auto">
-        <Header user={user} onMenuClick={() => setSidebarOpen(true)} isScrolled={isScrolled} />
-        <main className="flex-1">
-          <div key={view} className="animate-fade-in-up">
-            {renderContent(user, view as AppView)}
-          </div>
-        </main>
-      </div>
-    </div>
+      <Route path="/login" element={<LoginRoute user={user} />} />
+      <Route
+        path="/courses/:courseId/preview"
+        element={
+          <CoursePreviewPage
+            courses={courses}
+            isDarkMode={isDarkMode}
+            onToggleTheme={handleThemeToggle}
+            user={user}
+            isLoading={coursesLoading}
+          />
+        }
+      />
+      <Route element={<ProtectedRoute user={user} isReady={authReady} />}>
+        <Route
+          element={
+            <SidebarLayout
+              user={user!}
+              courses={courses}
+              isDarkMode={isDarkMode}
+              onThemeToggle={handleThemeToggle}
+              onProfileUpdate={handleProfileUpdate}
+              coursesLoading={coursesLoading}
+              coursesError={coursesError}
+              onRefreshCourses={fetchCourseData}
+            />
+          }
+        >
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/my-learnings" element={<MyLearningsPage />} />
+          <Route path="/explore" element={<ExploreCoursesPage />} />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/courses/:courseId" element={<CourseDetailPage />} />
+          <Route path="/courses/:courseId/lectures/:lectureId" element={<CourseLecturePage />} />
+        </Route>
+      </Route>
+      <Route path="*" element={<Navigate to={user ? '/dashboard' : '/'} replace />} />
+    </Routes>
   );
 };
 
