@@ -34,12 +34,14 @@ const CategoryCard: React.FC<{ category: { name: string; icon: string; tags: str
     );
 };
 
-const SearchResultCourseCard: React.FC<{ course: Course; onClick: () => void }> = ({ course, onClick }) => (
-  <div 
+const SearchResultCourseCard: React.FC<{ course: Course; onClick: () => void }> = ({ course, onClick }) => {
+  const previewImage = course.thumbnailUrl ?? course.thumbnail;
+  return (
+  <div
     onClick={onClick}
     className="flex items-center p-4 bg-white dark:bg-slate-700/50 rounded-lg cursor-pointer transition-all duration-300 hover:bg-brand-light dark:hover:bg-slate-700 hover:shadow-md transform hover:scale-[1.02]"
   >
-    <img src={course.thumbnail} alt={course.title} className="w-24 h-16 object-cover rounded-md mr-4 flex-shrink-0" />
+    <img src={previewImage} alt={course.title} className="w-24 h-16 object-cover rounded-md mr-4 flex-shrink-0" />
     <div className="flex-1 min-w-0">
       <span className="text-xs font-semibold text-brand-primary dark:text-purple-400 uppercase">{course.category}</span>
       <h4 className="font-bold text-slate-800 dark:text-white truncate">{course.title}</h4>
@@ -47,7 +49,8 @@ const SearchResultCourseCard: React.FC<{ course: Course; onClick: () => void }> 
     </div>
     <Icon name="chevronRight" className="w-5 h-5 text-slate-400 ml-2 flex-shrink-0" />
   </div>
-);
+  );
+};
 
 const SearchResultsModal: React.FC<{
   isOpen: boolean;
@@ -152,6 +155,11 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
     } finally {
       setIsSearching(false);
     }
+  };
+
+  const handleCourseSelection = (course: Course) => {
+    setIsSearchModalOpen(false);
+    onCourseSelect(course);
   };
 
   return (
@@ -316,12 +324,12 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
         </div>
       </footer>
 
-      <SearchResultsModal 
+      <SearchResultsModal
         isOpen={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}
         isLoading={isSearching}
         results={searchResults}
-        onCourseSelect={onCourseSelect}
+        onCourseSelect={handleCourseSelection}
         searchQuery={searchQuery}
       />
     </div>

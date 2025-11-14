@@ -8,9 +8,10 @@ interface HomePageProps {
   courses: Course[];
   isLoading: boolean;
   error: string | null;
+  onCourseSelect: (course: Course) => void;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ user, courses, isLoading, error }) => {
+const HomePage: React.FC<HomePageProps> = ({ user, courses, isLoading, error, onCourseSelect }) => {
   const navigate = useNavigate();
 
   if (user) {
@@ -37,7 +38,7 @@ const HomePage: React.FC<HomePageProps> = ({ user, courses, isLoading, error }) 
   return (
     <Homepage
       onNavigateToLogin={() => navigate('/login')}
-      onCourseSelect={(course) => navigate(`/courses/${course.id}/preview`)}
+      onCourseSelect={onCourseSelect}
       courses={courses}
     />
   );

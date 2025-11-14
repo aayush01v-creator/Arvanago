@@ -48,7 +48,9 @@ export interface Course {
   description: string;
   category: string;
   thumbnail: string;
+  thumbnailUrl?: string;
   isFree: boolean;
+  isPublished: boolean;
   lectures: Lecture[];
   sections?: CourseSection[];
   progress: number;
@@ -67,7 +69,7 @@ export interface Course {
   // New properties for detailed lecture view
   lectureType?: string;
   critiqueSession?: string;
-  tags?: string[];
+  tags: string[];
   comments?: Comment[];
   resources?: DownloadableResource[];
 }

@@ -75,10 +75,12 @@ const CourseCard: React.FC<{ course: Course; onCardClick: () => void; onUnlockCl
   course,
   onCardClick,
   onUnlockClick,
-}) => (
+}) => {
+  const coverImage = course.thumbnailUrl ?? course.thumbnail;
+  return (
   <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-slate-100 dark:border-slate-700 overflow-hidden flex flex-col group transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
     <div className="relative overflow-hidden">
-      <img src={course.thumbnail} alt={course.title} className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500" />
+      <img src={coverImage} alt={course.title} className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500" />
       <div className="absolute inset-0 bg-black/20"></div>
       <div className={`absolute top-3 right-3 px-3 py-1 text-sm font-semibold rounded-full text-white ${course.isFree ? 'bg-green-500' : 'bg-red-500'} shadow-md`}>
         {course.isFree ? 'Free' : 'Paid'}
@@ -88,6 +90,15 @@ const CourseCard: React.FC<{ course: Course; onCardClick: () => void; onUnlockCl
       <span className="text-xs font-semibold text-brand-primary dark:text-purple-400 uppercase">{course.category}</span>
       <h3 className="font-bold text-xl mt-1 text-gray-900 dark:text-white flex-grow">{course.title}</h3>
       <p className="text-gray-600 dark:text-gray-400 text-sm mt-2 mb-4">{course.description}</p>
+      {course.tags.length > 0 && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {course.tags.map(tag => (
+            <span key={tag} className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100/70 px-3 py-1 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-700/60 dark:text-slate-300">
+              #{tag}
+            </span>
+          ))}
+        </div>
+      )}
       {course.isFree ? (
         <button
           onClick={onCardClick}
@@ -106,7 +117,8 @@ const CourseCard: React.FC<{ course: Course; onCardClick: () => void; onUnlockCl
       )}
     </div>
   </div>
-);
+  );
+};
 
 const CourseList: React.FC<CourseListProps> = ({
   courses,
@@ -122,18 +134,20 @@ const CourseList: React.FC<CourseListProps> = ({
     setSelectedCategory(initialCategory);
   }, [initialCategory]);
 
+  const publishedCourses = useMemo(() => courses.filter(course => course.isPublished), [courses]);
+
   const categories = useMemo(() => {
-    const uniqueCategories = new Set(courses.map(course => course.category));
+    const uniqueCategories = new Set(publishedCourses.map(course => course.category));
     return ['All', ...Array.from(uniqueCategories)];
-  }, [courses]);
+  }, [publishedCourses]);
 
   const filteredCourses = useMemo(() => {
     if (selectedCategory === 'All') {
-      return courses;
+      return publishedCourses;
     }
 
-    return courses.filter(course => course.category === selectedCategory);
-  }, [selectedCategory, courses]);
+    return publishedCourses.filter(course => course.category === selectedCategory);
+  }, [selectedCategory, publishedCourses]);
 
   const handleUnlock = (course: Course) => {
     // In real app, you'd update the user's unlocked courses state

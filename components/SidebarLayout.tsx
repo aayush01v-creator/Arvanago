@@ -10,6 +10,7 @@ export interface SidebarLayoutContext {
   onProfileUpdate: (updates: Partial<User>) => void;
   coursesLoading: boolean;
   coursesError: string | null;
+  refreshCourses: () => Promise<void>;
 }
 
 interface SidebarLayoutProps {
@@ -20,6 +21,7 @@ interface SidebarLayoutProps {
   onProfileUpdate: (updates: Partial<User>) => void;
   coursesLoading: boolean;
   coursesError: string | null;
+  onRefreshCourses: () => Promise<void>;
 }
 
 const SidebarLayout: React.FC<SidebarLayoutProps> = ({
@@ -30,6 +32,7 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
   onProfileUpdate,
   coursesLoading,
   coursesError,
+  onRefreshCourses,
 }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -109,6 +112,7 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
           setSidebarOpen={setSidebarOpen}
           isDarkMode={isDarkMode}
           setDarkMode={onThemeToggle}
+          onExploreClick={onRefreshCourses}
         />
         <div
           ref={mainPanelRef}
@@ -132,7 +136,16 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                 <div className="pointer-events-none absolute bottom-[-3rem] right-[-2rem] h-48 w-48 rounded-full bg-sky-500/40 blur-3xl opacity-80" style={{ animation: 'pulseGlow 20s ease-in-out infinite alternate' }} />
                 <div className="relative z-10 p-4 sm:p-6 lg:p-10">
                   <div className="animate-fade-in-up">
-                    <Outlet context={{ user, courses, onProfileUpdate, coursesLoading, coursesError }} />
+                    <Outlet
+                      context={{
+                        user,
+                        courses,
+                        onProfileUpdate,
+                        coursesLoading,
+                        coursesError,
+                        refreshCourses: onRefreshCourses,
+                      }}
+                    />
                   </div>
                 </div>
               </div>

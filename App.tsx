@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { Course, User } from './types.ts';
 import { auth } from './services/firebase.ts';
 import { getCourses, getOrCreateUser, updateUserThemePreference } from './services/firestoreService.ts';
@@ -15,6 +15,7 @@ import CourseLecturePage from '@/pages/CourseLecturePage';
 import HomePage from '@/pages/HomePage';
 import LoginRoute from '@/pages/LoginRoute';
 import CoursePreviewPage from '@/pages/CoursePreviewPage';
+import { PENDING_COURSE_STORAGE_KEY } from './constants.ts';
 
 const GLOBAL_THEME_KEY = 'edusimulate:theme';
 
@@ -41,22 +42,33 @@ const App: React.FC = () => {
     }
   }, [isDarkMode]);
 
-  useEffect(() => {
-    const fetchCourseData = async () => {
-      try {
-        const courseData = await getCourses();
+  const fetchSequenceRef = useRef(0);
+  const navigate = useNavigate();
+
+  const fetchCourseData = useCallback(async () => {
+    const requestId = ++fetchSequenceRef.current;
+    setCoursesLoading(true);
+    try {
+      const courseData = await getCourses();
+      if (fetchSequenceRef.current === requestId) {
         setCourses(courseData);
         setCoursesError(null);
-      } catch (error) {
-        console.error('Failed to fetch courses:', error);
-        setCoursesError('We couldn\'t load courses right now. Please try again later.');
-      } finally {
+      }
+    } catch (error) {
+      console.error('Failed to fetch courses:', error);
+      if (fetchSequenceRef.current === requestId) {
+        setCoursesError("We couldn't load courses right now. Please try again later.");
+      }
+    } finally {
+      if (fetchSequenceRef.current === requestId) {
         setCoursesLoading(false);
       }
-    };
-
-    fetchCourseData();
+    }
   }, []);
+
+  useEffect(() => {
+    void fetchCourseData();
+  }, [fetchCourseData]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
@@ -130,6 +142,40 @@ const App: React.FC = () => {
     setUser((previous) => (previous ? { ...previous, ...updates } : previous));
   }, []);
 
+  useEffect(() => {
+    if (!authReady || !user || typeof window === 'undefined') {
+      return;
+    }
+
+    const pendingCourseId = window.localStorage.getItem(PENDING_COURSE_STORAGE_KEY);
+    if (!pendingCourseId) {
+      return;
+    }
+
+    if (coursesLoading) {
+      return;
+    }
+
+    window.localStorage.removeItem(PENDING_COURSE_STORAGE_KEY);
+
+    const matchedCourse = courses.find(course => course.id === pendingCourseId);
+    if (matchedCourse) {
+      navigate(`/courses/${matchedCourse.id}`, { replace: true });
+    } else {
+      navigate('/explore', { replace: true });
+    }
+  }, [authReady, user, coursesLoading, courses, navigate]);
+
+  const handlePublicCourseSelect = useCallback(
+    (course: Course) => {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(PENDING_COURSE_STORAGE_KEY, course.id);
+      }
+      navigate('/login');
+    },
+    [navigate],
+  );
+
   if (!authReady) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -140,7 +186,18 @@ const App: React.FC = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<HomePage user={user} courses={courses} isLoading={coursesLoading} error={coursesError} />} />
+      <Route
+        path="/"
+        element={
+          <HomePage
+            user={user}
+            courses={courses}
+            isLoading={coursesLoading}
+            error={coursesError}
+            onCourseSelect={handlePublicCourseSelect}
+          />
+        }
+      />
       <Route path="/login" element={<LoginRoute user={user} />} />
       <Route
         path="/courses/:courseId/preview"
@@ -165,6 +222,7 @@ const App: React.FC = () => {
               onProfileUpdate={handleProfileUpdate}
               coursesLoading={coursesLoading}
               coursesError={coursesError}
+              onRefreshCourses={fetchCourseData}
             />
           }
         >

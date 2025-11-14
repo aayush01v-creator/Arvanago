@@ -1,11 +1,11 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
 import CourseList from '@/components/CourseList.tsx';
 import { Course } from '@/types';
 import { SidebarLayoutContext } from '@/components/SidebarLayout.tsx';
 
 const ExploreCoursesPage: React.FC = () => {
-  const { courses, coursesLoading, coursesError } = useOutletContext<SidebarLayoutContext>();
+  const { courses, coursesLoading, coursesError, refreshCourses } = useOutletContext<SidebarLayoutContext>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -17,6 +17,10 @@ const ExploreCoursesPage: React.FC = () => {
     },
     [navigate],
   );
+
+  useEffect(() => {
+    void refreshCourses();
+  }, [refreshCourses]);
 
   return (
     <CourseList

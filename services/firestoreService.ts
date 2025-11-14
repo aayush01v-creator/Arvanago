@@ -261,6 +261,13 @@ const hydrateCourseFromDoc = async (
         ? rawData.level
         : undefined;
   const views = typeof rawData.views === 'number' ? rawData.views : undefined;
+  const thumbnailUrl =
+    typeof rawData.thumbnailUrl === 'string' && rawData.thumbnailUrl.trim().length > 0
+      ? rawData.thumbnailUrl
+      : typeof rawData.thumbnail === 'string'
+        ? rawData.thumbnail
+        : `https://picsum.photos/seed/${courseDoc.id}/640/360`;
+  const tags = sanitizeStringArray(rawData.tags) ?? [];
 
   return {
     id: typeof rawData.id === 'string' ? rawData.id : courseDoc.id,
@@ -270,11 +277,10 @@ const hydrateCourseFromDoc = async (
         ? rawData.description
         : 'Detailed course descriptions will appear once provided.',
     category: typeof rawData.category === 'string' ? rawData.category : 'General',
-    thumbnail:
-      typeof rawData.thumbnail === 'string'
-        ? rawData.thumbnail
-        : `https://picsum.photos/seed/${courseDoc.id}/640/360`,
+    thumbnail: thumbnailUrl,
+    thumbnailUrl,
     isFree: coerceBoolean(rawData.isFree, true),
+    isPublished,
     lectures,
     sections,
     progress: typeof rawData.progress === 'number' ? rawData.progress : progress,
@@ -292,7 +298,7 @@ const hydrateCourseFromDoc = async (
     suggestedCourses: sanitizeStringArray(rawData.suggestedCourses),
     lectureType: typeof rawData.lectureType === 'string' ? rawData.lectureType : undefined,
     critiqueSession: typeof rawData.critiqueSession === 'string' ? rawData.critiqueSession : undefined,
-    tags: sanitizeStringArray(rawData.tags),
+    tags,
     comments: sanitizeComments(rawData.comments),
     resources: sanitizeResources(rawData.resources),
   } satisfies Course;

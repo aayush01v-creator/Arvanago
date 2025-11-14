@@ -158,7 +158,7 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ course, onLoginClick, onB
                         <div className="lg:col-span-2 space-y-8">
                             <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
                                 <div className="aspect-w-16 aspect-h-9 relative group">
-                                    <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
+                                    <img src={course.thumbnailUrl ?? course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
                                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                                         <button onClick={onLoginClick} aria-label="Play course preview" className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white transform group-hover:scale-110 transition-transform duration-300">
                                             <Icon name="play" className="w-10 h-10 ml-1" />

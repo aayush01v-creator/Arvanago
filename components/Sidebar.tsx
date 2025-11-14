@@ -9,6 +9,7 @@ interface SidebarProps {
   setSidebarOpen: (isOpen: boolean) => void;
   isDarkMode: boolean;
   setDarkMode: (isDark: boolean) => void;
+  onExploreClick?: () => Promise<void> | void;
 }
 
 const navItems = [
@@ -19,7 +20,7 @@ const navItems = [
   { to: '/profile', icon: 'profile', label: 'Profile' },
 ];
 
-const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setSidebarOpen, isDarkMode, setDarkMode }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setSidebarOpen, isDarkMode, setDarkMode, onExploreClick }) => {
   const handleNavigate = () => {
     if (typeof window === 'undefined' || window.innerWidth < 768) {
       setSidebarOpen(false);
@@ -52,7 +53,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setSidebarOpen, isDark
               <li key={item.to}>
                 <NavLink
                   to={item.to}
-                  onClick={handleNavigate}
+                  onClick={async () => {
+                    if (item.to === '/explore' && onExploreClick) {
+                      try {
+                        await onExploreClick();
+                      } catch (error) {
+                        console.error('Failed to refresh courses before navigating to Explore.', error);
+                      }
+                    }
+                    handleNavigate();
+                  }}
                   className={({ isActive }) =>
                     `group relative flex items-center gap-4 rounded-2xl border border-transparent px-4 py-3 text-sm font-semibold tracking-wide transition-all duration-300 ease-out ${
                       isActive
