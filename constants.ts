@@ -1,6 +1,8 @@
 import { LeaderboardEntry, Task } from './types.ts';
 import logoUrl from '/newlogo.svg';
 
+export const PENDING_COURSE_STORAGE_KEY = 'edusimulate:pendingCourse';
+
 export const pendingTasks: Task[] = [
     { id: 'task-1', text: 'Complete quiz for "Limits and Continuity"', dueDate: '3 days left', courseId: 'iit-1', courseTitle: 'Advanced Calculus for JEE' },
     { id: 'task-2', text: 'Submit assignment for "Rotational Motion"', dueDate: '5 days left', courseId: 'iit-2', courseTitle: 'Mechanics Masterclass' },
