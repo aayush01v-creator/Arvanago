@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Course, Lecture, CourseSection } from '../types.ts';
 import Icon from './common/Icon.tsx';
 import { LOGO_URL } from '../constants.ts';
@@ -95,6 +95,76 @@ const StarRating: React.FC<{ rating: number }> = ({ rating }) => {
 const CoursePreview: React.FC<CoursePreviewProps> = ({ course, onLoginClick, onBack, isDarkMode, setDarkMode }) => {
     const [selectedLecture, setSelectedLecture] = useState<Lecture | null>(getInitialLecture(course));
     const [isWishlisted, setIsWishlisted] = useState(false);
+    const isPaid = course.isPaid ?? !course.isFree;
+
+    const formattedPrice = useMemo(() => {
+        if (!isPaid) {
+            return 'Included';
+        }
+
+        if (course.price == null) {
+            return 'Premium';
+        }
+
+        const currency = course.currency ?? 'USD';
+
+        try {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency,
+                currencyDisplay: 'symbol',
+                maximumFractionDigits: 2,
+            }).format(course.price);
+        } catch (error) {
+            console.warn('Unable to format course price', error);
+            return `${course.currency ?? '$'}${course.price}`;
+        }
+    }, [course.currency, course.price, isPaid]);
+
+    const formattedOriginalPrice = useMemo(() => {
+        if (!isPaid || course.originalPrice == null) {
+            return null;
+        }
+
+        const currency = course.currency ?? 'USD';
+
+        try {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency,
+                currencyDisplay: 'symbol',
+                maximumFractionDigits: 2,
+            }).format(course.originalPrice);
+        } catch (error) {
+            console.warn('Unable to format original course price', error);
+            return `${course.currency ?? '$'}${course.originalPrice}`;
+        }
+    }, [course.currency, course.originalPrice, isPaid]);
+
+    const discount = useMemo(() => {
+        if (!isPaid || course.price == null || course.originalPrice == null || course.originalPrice === 0) {
+            return null;
+        }
+
+        const computed = Math.round(100 - (course.price / course.originalPrice) * 100);
+        return Number.isFinite(computed) && computed > 0 ? computed : null;
+    }, [course.originalPrice, course.price, isPaid]);
+
+    const priceHelper = useMemo(() => {
+        if (!isPaid) {
+            return 'Access included with your membership.';
+        }
+
+        if (course.price == null) {
+            return 'Pricing will appear once instructors publish their rate.';
+        }
+
+        if (course.currency) {
+            return `Billed in ${course.currency.toUpperCase()} with secure checkout.`;
+        }
+
+        return 'Secure checkout with your saved payment method.';
+    }, [course.currency, course.price, isPaid]);
 
     useEffect(() => {
         const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
@@ -107,8 +177,6 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ course, onLoginClick, onB
         localStorage.setItem('wishlist', JSON.stringify(newWishlist));
         setIsWishlisted(!isWishlisted);
     };
-
-    const discount = Math.round(100 - (course.price! / course.originalPrice!) * 100);
 
     return (
         <div className="min-h-screen flex bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans">
@@ -240,11 +308,16 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ course, onLoginClick, onB
                         <div className="lg:col-span-1">
                             <div className="sticky top-8 space-y-6">
                                 <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 shadow-lg space-y-4">
-                                    <div className="flex items-baseline justify-between">
-                                        <span className="text-3xl font-bold text-slate-900 dark:text-white">${course.price}</span>
-                                        <span className="text-lg text-slate-400 line-through">${course.originalPrice}</span>
-                                        <span className="px-2 py-0.5 bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-300 text-xs font-semibold rounded-full">{discount}% OFF</span>
+                                    <div className="flex flex-wrap items-baseline justify-between gap-3">
+                                        <span className="text-3xl font-bold text-slate-900 dark:text-white">{formattedPrice}</span>
+                                        {formattedOriginalPrice && (
+                                            <span className="text-lg text-slate-400 line-through">{formattedOriginalPrice}</span>
+                                        )}
+                                        {discount && (
+                                            <span className="px-2 py-0.5 bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-300 text-xs font-semibold rounded-full">{discount}% OFF</span>
+                                        )}
                                     </div>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">{priceHelper}</p>
                                     {course.includes && (
                                        <div>
                                             <h3 className="text-md font-semibold mb-3 text-slate-800 dark:text-slate-200">Course includes:</h3>
@@ -259,8 +332,20 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ course, onLoginClick, onB
                                         </div>
                                     )}
                                     <div className="space-y-3 pt-2">
-                                        <button onClick={onLoginClick} className="w-full py-3 bg-brand-primary text-white font-bold rounded-lg hover:bg-violet-700 transition-all transform hover:scale-105 active:scale-95 shadow-md shadow-brand-primary/30">Add to cart</button>
-                                        <button onClick={onLoginClick} className="w-full py-3 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-all active:scale-95">Buy now</button>
+                                        <button
+                                            onClick={onLoginClick}
+                                            className="w-full py-3 bg-brand-primary text-white font-bold rounded-lg hover:bg-violet-700 transition-all transform hover:scale-105 active:scale-95 shadow-md shadow-brand-primary/30"
+                                        >
+                                            {isPaid ? 'Add to cart' : 'Start learning'}
+                                        </button>
+                                        {isPaid && (
+                                            <button
+                                                onClick={onLoginClick}
+                                                className="w-full py-3 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-all active:scale-95"
+                                            >
+                                                Buy now
+                                            </button>
+                                        )}
                                     </div>
                                     <p className="text-xs text-slate-500 text-center">30-Day Money-Back Guarantee</p>
                                 </div>

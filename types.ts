@@ -50,12 +50,14 @@ export interface Course {
   thumbnail: string;
   thumbnailUrl?: string;
   isFree: boolean;
+  isPaid: boolean;
   isPublished: boolean;
   lectures: Lecture[];
   sections?: CourseSection[];
   progress: number;
   author: User;
   price?: number;
+  currency?: string;
   originalPrice?: number;
   rating?: number;
   studentCount?: number;

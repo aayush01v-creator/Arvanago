@@ -42,6 +42,21 @@ const coerceBoolean = (value: unknown, fallback = false): boolean => {
   return fallback;
 };
 
+const coerceNumber = (value: unknown): number | undefined => {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  return undefined;
+};
+
 const buildAuthor = (data: unknown): User => {
   if (!data || typeof data !== 'object') {
     return defaultAuthor;
@@ -249,8 +264,8 @@ const hydrateCourseFromDoc = async (
   const lessonsCount = lectures.length;
   const progress = lessonsCount > 0 ? Math.round((completedLectures / lessonsCount) * 100) : 0;
 
-  const price = typeof rawData.price === 'number' ? rawData.price : undefined;
-  const originalPrice = typeof rawData.originalPrice === 'number' ? rawData.originalPrice : undefined;
+  const price = coerceNumber(rawData.price);
+  const originalPrice = coerceNumber(rawData.originalPrice);
   const rating = typeof rawData.rating === 'number' ? rawData.rating : undefined;
   const studentCount = typeof rawData.studentCount === 'number' ? rawData.studentCount : undefined;
   const totalDuration = typeof rawData.totalDuration === 'string' ? rawData.totalDuration : undefined;
@@ -269,6 +284,22 @@ const hydrateCourseFromDoc = async (
         : `https://picsum.photos/seed/${courseDoc.id}/640/360`;
   const tags = sanitizeStringArray(rawData.tags) ?? [];
 
+  const hasExplicitIsPaid = typeof rawData.isPaid === 'boolean';
+  const hasExplicitIsFree = typeof rawData.isFree === 'boolean';
+  const inferredIsPaid = hasExplicitIsPaid
+    ? (rawData.isPaid as boolean)
+    : hasExplicitIsFree
+      ? !(rawData.isFree as boolean)
+      : price != null;
+  const isPaid = coerceBoolean(inferredIsPaid, false);
+  const isFree = hasExplicitIsFree ? (rawData.isFree as boolean) : !isPaid;
+  const currency =
+    typeof rawData.currency === 'string' && rawData.currency.trim().length > 0
+      ? rawData.currency.trim().toUpperCase()
+      : price != null
+        ? 'USD'
+        : undefined;
+
   return {
     id: typeof rawData.id === 'string' ? rawData.id : courseDoc.id,
     title: typeof rawData.title === 'string' ? rawData.title : 'Untitled Course',
@@ -279,13 +310,15 @@ const hydrateCourseFromDoc = async (
     category: typeof rawData.category === 'string' ? rawData.category : 'General',
     thumbnail: thumbnailUrl,
     thumbnailUrl,
-    isFree: coerceBoolean(rawData.isFree, true),
+    isFree,
+    isPaid,
     isPublished,
     lectures,
     sections,
     progress: typeof rawData.progress === 'number' ? rawData.progress : progress,
     author: buildAuthor(rawData.author),
     price,
+    currency,
     originalPrice,
     rating,
     studentCount,
