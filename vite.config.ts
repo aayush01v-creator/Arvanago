@@ -17,6 +17,28 @@ export default defineConfig(({ mode }) => {
       alias: {
         "@": "/src"
       }
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes("node_modules")) {
+              return undefined;
+            }
+
+            if (id.includes("firebase")) {
+              return "firebase";
+            }
+
+            if (id.includes("react")) {
+              return "react-vendor";
+            }
+
+            return "vendor";
+          }
+        }
+      },
+      chunkSizeWarningLimit: 1500
     }
   };
 });
