@@ -1,5 +1,5 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://i.ibb.co/v6m3Cbwd/69175f0ee3411a78ac218877.jpg" />
+<img width="1024" height="2231" alt="GHBanner" src="https://i.ibb.co/v6m3Cbwd/69175f0ee3411a78ac218877.jpg" />
 </div>
 
 # My app is still on developin phase...
