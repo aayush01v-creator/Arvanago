@@ -1,23 +1,30 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { Course, User } from './types.ts';
 import { auth } from './services/firebase.ts';
-import { getCourses, getOrCreateUser, updateUserThemePreference } from './services/firestoreService.ts';
+import { clearCoursesCache, getCourses, getOrCreateUser, updateUserThemePreference } from './services/firestoreService.ts';
 import SidebarLayout from './components/SidebarLayout.tsx';
 import ProtectedRoute from './components/ProtectedRoute.tsx';
-import DashboardPage from '@/pages/DashboardPage';
-import MyLearningsPage from '@/pages/MyLearningsPage';
-import ExploreCoursesPage from '@/pages/ExploreCoursesPage';
-import LeaderboardPage from '@/pages/LeaderboardPage';
-import ProfilePage from '@/pages/ProfilePage';
-import CourseDetailPage from '@/pages/CourseDetailPage';
-import CourseLecturePage from '@/pages/CourseLecturePage';
-import HomePage from '@/pages/HomePage';
-import LoginRoute from '@/pages/LoginRoute';
-import CoursePreviewPage from '@/pages/CoursePreviewPage';
 import { PENDING_COURSE_STORAGE_KEY } from './constants.ts';
 
 const GLOBAL_THEME_KEY = 'edusimulate:theme';
+
+const DashboardPage = React.lazy(() => import('@/pages/DashboardPage'));
+const MyLearningsPage = React.lazy(() => import('@/pages/MyLearningsPage'));
+const ExploreCoursesPage = React.lazy(() => import('@/pages/ExploreCoursesPage'));
+const LeaderboardPage = React.lazy(() => import('@/pages/LeaderboardPage'));
+const ProfilePage = React.lazy(() => import('@/pages/ProfilePage'));
+const CourseDetailPage = React.lazy(() => import('@/pages/CourseDetailPage'));
+const CourseLecturePage = React.lazy(() => import('@/pages/CourseLecturePage'));
+const HomePage = React.lazy(() => import('@/pages/HomePage'));
+const LoginRoute = React.lazy(() => import('@/pages/LoginRoute'));
+const CoursePreviewPage = React.lazy(() => import('@/pages/CoursePreviewPage'));
+
+const SuspenseFallback: React.FC = () => (
+  <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-brand-primary" />
+  </div>
+);
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -45,26 +52,32 @@ const App: React.FC = () => {
   const fetchSequenceRef = useRef(0);
   const navigate = useNavigate();
 
-  const fetchCourseData = useCallback(async () => {
-    const requestId = ++fetchSequenceRef.current;
-    setCoursesLoading(true);
-    try {
-      const courseData = await getCourses();
-      if (fetchSequenceRef.current === requestId) {
-        setCourses(courseData);
-        setCoursesError(null);
+  const fetchCourseData = useCallback(
+    async (options?: { forceRefresh?: boolean }) => {
+      const requestId = ++fetchSequenceRef.current;
+      const shouldShowLoading = options?.forceRefresh || courses.length === 0;
+      if (shouldShowLoading) {
+        setCoursesLoading(true);
       }
-    } catch (error) {
-      console.error('Failed to fetch courses:', error);
-      if (fetchSequenceRef.current === requestId) {
-        setCoursesError("We couldn't load courses right now. Please try again later.");
+      try {
+        const courseData = await getCourses({ forceRefresh: options?.forceRefresh });
+        if (fetchSequenceRef.current === requestId) {
+          setCourses(courseData);
+          setCoursesError(null);
+        }
+      } catch (error) {
+        console.error('Failed to fetch courses:', error);
+        if (fetchSequenceRef.current === requestId) {
+          setCoursesError("We couldn't load courses right now. Please try again later.");
+        }
+      } finally {
+        if (shouldShowLoading && fetchSequenceRef.current === requestId) {
+          setCoursesLoading(false);
+        }
       }
-    } finally {
-      if (fetchSequenceRef.current === requestId) {
-        setCoursesLoading(false);
-      }
-    }
-  }, []);
+    },
+    [courses.length],
+  );
 
   useEffect(() => {
     void fetchCourseData();
@@ -89,6 +102,7 @@ const App: React.FC = () => {
         }
       } else {
         setUser(null);
+        clearCoursesCache();
         setAuthReady(true);
       }
     });
@@ -185,7 +199,8 @@ const App: React.FC = () => {
   }
 
   return (
-    <Routes>
+    <Suspense fallback={<SuspenseFallback />}>
+      <Routes>
       <Route
         path="/"
         element={
@@ -237,7 +252,8 @@ const App: React.FC = () => {
         </Route>
       </Route>
       <Route path="*" element={<Navigate to={user ? '/dashboard' : '/'} replace />} />
-    </Routes>
+      </Routes>
+    </Suspense>
   );
 };
 

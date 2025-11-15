@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { Course } from '../types.ts';
 import Icon from './common/Icon.tsx';
 import SkeletonCard from './common/SkeletonCard.tsx';
@@ -79,10 +79,16 @@ const UnlockModal: React.FC<UnlockModalProps> = ({ course, onClose, onUnlock }) 
   );
 };
 
-const CourseCard: React.FC<{ course: Course; onCardClick: () => void; onUnlockClick: () => void }> = ({
+interface CourseCardProps {
+  course: Course;
+  onOpenCourse: (course: Course) => void;
+  onUnlockCourse: (course: Course) => void;
+}
+
+const CourseCardComponent: React.FC<CourseCardProps> = ({
   course,
-  onCardClick,
-  onUnlockClick,
+  onOpenCourse,
+  onUnlockCourse,
 }) => {
   const coverImage = course.thumbnailUrl ?? course.thumbnail;
   const isPaid = course.isPaid ?? !course.isFree;
@@ -163,14 +169,14 @@ const CourseCard: React.FC<{ course: Course; onCardClick: () => void; onUnlockCl
           </div>
           {isPaid ? (
             <button
-              onClick={onUnlockClick}
+              onClick={() => onUnlockCourse(course)}
               className="inline-flex items-center justify-center gap-2 rounded-2xl border border-transparent bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-primary px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-primary/40 transition-all duration-500 hover:-translate-y-0.5 hover:shadow-brand-primary/60"
             >
               <Icon name="lock" className="h-4 w-4" /> Unlock course
             </button>
           ) : (
             <button
-              onClick={onCardClick}
+              onClick={() => onOpenCourse(course)}
               className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-500 hover:-translate-y-0.5 hover:border-brand-primary/40 hover:text-brand-primary dark:border-white/10 dark:bg-white/10 dark:text-slate-200"
             >
               <Icon name="play" className="h-4 w-4" /> Start learning
@@ -181,6 +187,8 @@ const CourseCard: React.FC<{ course: Course; onCardClick: () => void; onUnlockCl
     </div>
   );
 };
+
+const CourseCard = memo(CourseCardComponent);
 
 const CourseList: React.FC<CourseListProps> = ({
   courses,
@@ -198,24 +206,42 @@ const CourseList: React.FC<CourseListProps> = ({
 
   const publishedCourses = useMemo(() => courses.filter((course) => course.isPublished), [courses]);
 
+  const deferredCategory = useDeferredValue(selectedCategory);
+
   const categories = useMemo(() => {
     const uniqueCategories = new Set(publishedCourses.map((course) => course.category));
     return ['All', ...Array.from(uniqueCategories)];
   }, [publishedCourses]);
 
   const filteredCourses = useMemo(() => {
-    if (selectedCategory === 'All') {
+    if (deferredCategory === 'All') {
       return publishedCourses;
     }
 
-    return publishedCourses.filter((course) => course.category === selectedCategory);
-  }, [selectedCategory, publishedCourses]);
+    return publishedCourses.filter((course) => course.category === deferredCategory);
+  }, [deferredCategory, publishedCourses]);
 
-  const handleUnlock = (course: Course) => {
+  const handleSelectCategory = useCallback((category: string) => {
+    setSelectedCategory(category);
+  }, []);
+
+  const handleOpenCourse = useCallback((course: Course) => {
+    navigateToCourse(course);
+  }, [navigateToCourse]);
+
+  const handleUnlockRequest = useCallback((course: Course) => {
+    setUnlockingCourse(course);
+  }, []);
+
+  const handleUnlock = useCallback((course: Course) => {
     // In real app, you'd update the user's unlocked courses state
     console.log(`Unlocking ${course.title}`);
     navigateToCourse(course);
-  };
+  }, [navigateToCourse]);
+
+  const handleCloseUnlock = useCallback(() => {
+    setUnlockingCourse(null);
+  }, []);
 
   return (
     <div className="space-y-8 p-4 sm:p-6 lg:p-8">
@@ -231,7 +257,7 @@ const CourseList: React.FC<CourseListProps> = ({
             {categories.map((category) => (
               <button
                 key={category}
-                onClick={() => setSelectedCategory(category)}
+                onClick={() => handleSelectCategory(category)}
                 className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-300 ${
                   selectedCategory === category
                     ? 'border-transparent bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-lg shadow-brand-primary/40'
@@ -259,8 +285,8 @@ const CourseList: React.FC<CourseListProps> = ({
             <CourseCard
               key={course.id}
               course={course}
-              onCardClick={() => navigateToCourse(course)}
-              onUnlockClick={() => setUnlockingCourse(course)}
+              onOpenCourse={handleOpenCourse}
+              onUnlockCourse={handleUnlockRequest}
             />
           ))
         ) : (
@@ -275,7 +301,7 @@ const CourseList: React.FC<CourseListProps> = ({
       </div>
 
       {unlockingCourse && (
-        <UnlockModal course={unlockingCourse} onClose={() => setUnlockingCourse(null)} onUnlock={handleUnlock} />
+        <UnlockModal course={unlockingCourse} onClose={handleCloseUnlock} onUnlock={handleUnlock} />
       )}
     </div>
   );

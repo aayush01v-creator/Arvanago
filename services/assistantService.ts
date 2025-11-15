@@ -1,5 +1,3 @@
-
-
 export const askAI = async (lectureTitle: string, lectureSummary: string, question: string): Promise<string> => {
   const trimmedQuestion = question.trim();
 
