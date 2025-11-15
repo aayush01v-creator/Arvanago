@@ -21,6 +21,7 @@ export interface User {
   bio?: string;
   coursesAuthored?: number;
   lastLogin?: Timestamp | null;
+  themePreference?: 'light' | 'dark';
 }
 
 export interface Comment {
@@ -41,18 +42,35 @@ export interface DownloadableResource {
     size: string;
 }
 
+export interface SuggestedCourseSummary {
+  id: string;
+  title: string;
+  category: string;
+  thumbnailUrl?: string;
+  price?: number;
+  currency?: string;
+  isPaid?: boolean;
+  tags?: string[];
+}
+
 export interface Course {
   id: string;
   title: string;
   description: string;
   category: string;
   thumbnail: string;
+  thumbnailUrl?: string;
   isFree: boolean;
+  isPaid: boolean;
+  isPublished: boolean;
+  isFeaturedOnHome?: boolean;
+  featuredPriority?: number;
   lectures: Lecture[];
   sections?: CourseSection[];
   progress: number;
   author: User;
   price?: number;
+  currency?: string;
   originalPrice?: number;
   rating?: number;
   studentCount?: number;
@@ -63,10 +81,11 @@ export interface Course {
   includes?: string[];
   faqs?: { question: string; answer: string }[];
   suggestedCourses?: string[];
+  suggestedCourseDetails?: SuggestedCourseSummary[];
   // New properties for detailed lecture view
   lectureType?: string;
   critiqueSession?: string;
-  tags?: string[];
+  tags: string[];
   comments?: Comment[];
   resources?: DownloadableResource[];
 }

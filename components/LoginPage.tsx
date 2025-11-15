@@ -10,20 +10,22 @@ interface LoginPageProps {
 
 type AuthTab = 'signin' | 'signup';
 
-const studyItems = [
-    { id: 1, content: 'alpha', className: 'top-[15%] left-[10%]', size: 'text-7xl', duration: '22s', delay: '0s', animation: 'animate-float-1' },
-    { id: 2, content: 'integral dx', className: 'top-[20%] right-[15%]', size: 'text-6xl', duration: '28s', delay: '-5s', animation: 'animate-float-2' },
-    { id: 3, content: 'pi', className: 'bottom-[15%] left-[20%]', size: 'text-6xl', duration: '25s', delay: '-2s', animation: 'animate-float-2' },
-    { id: 4, content: 'sin(theta)', className: 'bottom-[20%] right-[10%]', size: 'text-5xl', duration: '30s', delay: '-10s', animation: 'animate-float-1' },
-    { id: 5, content: <Icon name="cube" className="w-16 h-16" />, className: 'top-[50%] left-[50%]', size: '', duration: '18s', delay: '-8s', animation: 'animate-blob' },
-    { id: 6, content: <Icon name="iit" className="w-12 h-12" />, className: 'top-[65%] left-[15%]', size: '', duration: '32s', delay: '-3s', animation: 'animate-float-1' },
-    { id: 7, content: <Icon name="send" className="w-12 h-12 transform -rotate-45" />, className: 'bottom-[5%] left-[45%]', size: '', duration: '20s', delay: '-15s', animation: 'animate-float-2' },
-    { id: 8, content: 'E=mc^2', className: 'top-[70%] right-[25%]', size: 'text-4xl', duration: '26s', delay: '-7s', animation: 'animate-float-1' },
-    { id: 9, content: 'H2O', className: 'top-[10%] right-[40%]', size: 'text-5xl', duration: '23s', delay: '-12s', animation: 'animate-float-2' },
-    { id: 10, content: 'Sigma', className: 'top-[5%] left-[40%]', size: 'text-6xl', duration: '29s', delay: '-1s', animation: 'animate-float-1' },
-    { id: 11, content: <Icon name="neet" className="w-14 h-14" />, className: 'bottom-[10%] right-[40%]', size: '', duration: '24s', delay: '-6s', animation: 'animate-float-2' },
-    { id: 12, content: 'nabla^2', className: 'top-[40%] left-[5%]', size: 'text-5xl', duration: '31s', delay: '-9s', animation: 'animate-float-1' },
-    { id: 13, content: <Icon name="test" className="w-10 h-10" />, className: 'bottom-[45%] right-[5%]', size: '', duration: '27s', delay: '-4s', animation: 'animate-float-2' },
+const floatingOrbs = [
+    { id: 1, className: 'top-[12%] left-[12%]', size: 'w-28 h-28', gradient: 'from-cyan-400/50 via-blue-500/35 to-purple-500/30', animation: 'animate-float-1', delay: '0s' },
+    { id: 2, className: 'bottom-[18%] right-[14%]', size: 'w-36 h-36', gradient: 'from-indigo-400/45 via-purple-500/35 to-pink-500/30', animation: 'animate-float-2', delay: '-6s' },
+    { id: 3, className: 'top-[55%] right-[32%]', size: 'w-24 h-24', gradient: 'from-sky-400/45 via-cyan-400/35 to-emerald-400/25', animation: 'animate-blob', delay: '-3s' },
+];
+
+const floatingGlyphs = [
+    { id: 'spark', icon: 'sparkles', className: 'top-10 right-10 text-white/30', duration: '26s' },
+    { id: 'atom', icon: 'atom', className: 'bottom-12 left-10 text-white/25', duration: '32s' },
+    { id: 'orb', icon: 'brain-circuit', className: 'top-1/2 left-1/3 text-white/20', duration: '30s' },
+];
+
+const highlightTiles = [
+    { id: 'mentors', icon: 'live', title: 'Live mentors', subtitle: 'Interactive sessions everyday' },
+    { id: 'immersive', icon: 'cube', title: 'Immersive labs', subtitle: 'Hands-on 3D practice sets' },
+    { id: 'support', icon: 'doubt', title: '24/7 support', subtitle: 'Instant doubt resolution' },
 ];
 
 const strengthConfig = {
@@ -157,38 +159,71 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigateHome }) => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-4 font-sans text-slate-800 dark:text-white relative overflow-hidden">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-4 md:p-8 font-sans text-slate-800 dark:text-white relative overflow-hidden">
             {/* Background Blobs */}
             <div className="absolute -top-1/4 -left-1/4 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-blob dark:opacity-20"></div>
             <div className="absolute -bottom-1/4 -right-1/4 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-blob dark:opacity-20" style={{animationDelay: '2s'}}></div>
 
-            <div className="w-full max-w-4xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-lg rounded-2xl shadow-2xl flex flex-col md:flex-row overflow-hidden border border-white/30 dark:border-slate-700/50 relative z-10">
+            <div className="w-full max-w-5xl bg-white/55 dark:bg-slate-800/60 backdrop-blur-2xl rounded-[2rem] shadow-2xl flex flex-col md:flex-row overflow-hidden border border-white/40 dark:border-slate-700/50 relative z-10">
                 {/* Left Panel - Welcome/Info */}
-                <div className="w-full md:w-1/2 p-8 md:p-12 bg-gradient-to-br from-purple-800 to-indigo-900 text-white flex flex-col justify-center items-center text-center relative overflow-hidden">
+                <div className="w-full md:w-1/2 p-8 md:p-12 text-white flex flex-col justify-center items-center md:items-start text-center md:text-left relative overflow-hidden">
                     <div className="absolute inset-0 z-0">
-                        {studyItems.map(item => (
-                            <div 
-                                key={item.id}
-                                className={`absolute text-white/20 font-mono will-change-transform ${item.className} ${item.size} ${item.animation}`}
+                        <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/75 via-indigo-700/70 to-purple-800/70" />
+                        <div className="absolute inset-0 bg-white/15 mix-blend-screen" />
+                        <div className="absolute inset-0 backdrop-blur-[6px]" />
+                        {floatingOrbs.map(orb => (
+                            <div
+                                key={orb.id}
+                                className={`absolute ${orb.className} ${orb.animation}`}
                                 style={{
-                                    animationDuration: item.duration,
-                                    animationDelay: item.delay,
+                                    animationDuration: '26s',
+                                    animationDelay: orb.delay,
                                 }}
                             >
-                                {item.content}
+                                <div className={`relative ${orb.size}`}>
+                                    <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${orb.gradient} blur-[60px] opacity-80`} />
+                                    <div className="absolute inset-0 rounded-full border border-white/30" />
+                                </div>
                             </div>
+                        ))}
+                        {floatingGlyphs.map((glyph) => (
+                            <Icon
+                                key={glyph.id}
+                                name={glyph.icon}
+                                className={`absolute ${glyph.className} w-12 h-12 opacity-70 animate-float-1`}
+                                style={{ animationDuration: glyph.duration }}
+                            />
                         ))}
                     </div>
 
                     {/* Content */}
-                    <div className="relative z-10">
-                        <div key={activeTab} className="animate-fade-in space-y-6">
+                    <div className="relative z-10 w-full space-y-8">
+                        <div key={activeTab} className="animate-fade-in space-y-5">
                             <div className="flex items-center justify-center">
                                 <img src={LOGO_URL} alt="Edusimulate Logo" className="h-10 mr-3" />
                                 <span className="text-3xl font-extrabold text-shadow text-white">Edusimulate</span>
                             </div>
-                            <h1 className="text-4xl font-extrabold text-shadow">{welcomeContent[activeTab].title}</h1>
-                            <p className="text-lg opacity-90 max-w-sm mx-auto">{welcomeContent[activeTab].subtitle}</p>
+                            <h1 className="text-3xl sm:text-4xl font-extrabold text-shadow md:tracking-tight">{welcomeContent[activeTab].title}</h1>
+                            <p className="text-base sm:text-lg opacity-90 max-w-sm mx-auto md:mx-0">{welcomeContent[activeTab].subtitle}</p>
+                        </div>
+
+                        <div className="mx-auto md:mx-0 mt-8 grid w-full max-w-md grid-cols-1 gap-3 sm:max-w-none sm:grid-cols-3">
+                            {highlightTiles.map(tile => (
+                                <div
+                                    key={tile.id}
+                                    className="glass-reflection rounded-2xl border border-white/40 bg-white/20 p-4 text-left shadow-[0_18px_48px_rgba(15,23,42,0.28)] backdrop-blur-xl"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-white shadow-inner shadow-white/40">
+                                            <Icon name={tile.icon} className="h-6 w-6" />
+                                        </span>
+                                        <div>
+                                            <p className="font-semibold leading-tight">{tile.title}</p>
+                                            <p className="text-xs text-white/70">{tile.subtitle}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -214,14 +249,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigateHome }) => {
                         <form onSubmit={handleFormSubmit} noValidate>
                             <div className={`transition-all duration-500 ease-in-out overflow-hidden transform ${activeTab === 'signup' ? 'max-h-20 opacity-100 translate-y-0' : 'max-h-0 opacity-0 -translate-y-4 pointer-events-none'}`}>
                                 <div className="mb-4">
-                                    <input type="text" placeholder="Full Name" aria-label="Full Name" value={name} onChange={handleNameChange} required={activeTab === 'signup'} tabIndex={activeTab === 'signup' ? 0 : -1} className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-transparent focus:border-brand-primary focus:ring-0 rounded-lg outline-none transition" />
+                                    <input type="text" placeholder="Full Name" aria-label="Full Name" value={name} onChange={handleNameChange} required={activeTab === 'signup'} tabIndex={activeTab === 'signup' ? 0 : -1} className="w-full px-4 py-3 bg-white/70 dark:bg-slate-800/70 border border-slate-200/70 dark:border-slate-700 rounded-lg focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/30 outline-none transition" />
                                 </div>
                             </div>
                             <div className="mb-4">
-                                <input type="email" placeholder="Email Address" aria-label="Email Address" value={email} onChange={e => setEmail(e.target.value)} required className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-transparent focus:border-brand-primary focus:ring-0 rounded-lg outline-none transition" />
+                                <input type="email" placeholder="Email Address" aria-label="Email Address" value={email} onChange={e => setEmail(e.target.value)} required className="w-full px-4 py-3 bg-white/70 dark:bg-slate-800/70 border border-slate-200/70 dark:border-slate-700 rounded-lg focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/30 outline-none transition" />
                             </div>
                             <div className="mb-4">
-                                <input type="password" placeholder="Password" aria-label="Password" value={password} onChange={handlePasswordChange} required className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-transparent focus:border-brand-primary focus:ring-0 rounded-lg outline-none transition" />
+                                <input type="password" placeholder="Password" aria-label="Password" value={password} onChange={handlePasswordChange} required className="w-full px-4 py-3 bg-white/70 dark:bg-slate-800/70 border border-slate-200/70 dark:border-slate-700 rounded-lg focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/30 outline-none transition" />
                             </div>
                             
                             <div className={`transition-all duration-500 ease-in-out overflow-hidden transform ${activeTab === 'signup' ? 'max-h-24 opacity-100 translate-y-0' : 'max-h-0 opacity-0 -translate-y-4 pointer-events-none'}`}>

@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
@@ -9,7 +7,16 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
 const icons: { [key: string]: React.ReactNode } = {
   dashboard: <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />,
   courses: <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />,
-  leaderboard: <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6v5zM6 9v12v-5zM6 9L12 3l3 3M12 3v5.394" />,
+  leaderboard: (
+    <>
+      <path d="M8 21h8" />
+      <path d="M12 17v4" />
+      <path d="M7 4h10a1 1 0 0 1 1 1v2a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5V5a1 1 0 0 1 1-1z" />
+      <path d="M7 9a4 4 0 0 1-4-4V4h4" />
+      <path d="M17 9a4 4 0 0 0 4-4V4h-4" />
+      <path d="m9.5 7 2.5 2 2.5-2" />
+    </>
+  ),
   profile: <><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></>,
   logout: <><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></>,
   chevronRight: <polyline points="9 18 15 12 9 6" />,
@@ -31,6 +38,13 @@ const icons: { [key: string]: React.ReactNode } = {
   check: <polyline points="20 6 9 17 4 12" />,
   play: <polygon points="5 3 19 12 5 21 5 3" />,
   lock: <><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></>,
+  unlock: (
+    <>
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V9a5 5 0 0 1 9.17-3" />
+      <line x1="12" y1="15" x2="12" y2="19" />
+    </>
+  ),
   arrowLeft: <><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></>,
   arrowRight: <><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></>,
   phone: <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />,
@@ -62,10 +76,39 @@ const icons: { [key: string]: React.ReactNode } = {
   download: <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></>,
   smartphone: <><rect x="5" y="2" width="14" height="20" rx="2" ry="2" /><line x1="12" y1="18" x2="12.01" y2="18" /></>,
   'bar-chart': <><line x1="12" y1="20" x2="12" y2="10" /><line x1="18" y1="20" x2="18" y2="4" /><line x1="6" y1="20" x2="6" y2="16" /></>,
+  clock: <><circle cx="12" cy="12" r="9" /><polyline points="12 7 12 12 16 14" /></>,
   'check-circle': <><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></>,
   circle: <circle cx="12" cy="12" r="10" />,
   'message-circle': <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />,
   users: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></>,
+  sparkle: (
+    <>
+      <path d="M12 3v4" />
+      <path d="M12 17v4" />
+      <path d="M3 12h4" />
+      <path d="M17 12h4" />
+      <path d="M5.6 5.6 8 8" />
+      <path d="M16 16l2.4 2.4" />
+      <path d="M5.6 18.4 8 16" />
+      <path d="M16 8l2.4-2.4" />
+    </>
+  ),
+  sparkles: (
+    <>
+      <path d="M12 2v3" />
+      <path d="M12 19v3" />
+      <path d="M2 12h3" />
+      <path d="M19 12h3" />
+      <path d="M5 5 7.5 7.5" />
+      <path d="M16.5 16.5 19 19" />
+      <path d="M5 19l2.5-2.5" />
+      <path d="M16.5 7.5 19 5" />
+      <path d="M21 4v2" />
+      <path d="M21 11v2" />
+      <path d="M17 8h2" />
+      <path d="M23 8h2" />
+    </>
+  ),
 };
 
 const Icon: React.FC<IconProps> = ({ name, className = "w-6 h-6", ...props }) => {

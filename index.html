@@ -162,6 +162,59 @@
         opacity: 0.7;
         pointer-events: none;
       }
+      .glass-panel {
+        position: relative;
+        overflow: hidden;
+      }
+      .glass-panel::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        mix-blend-mode: soft-light;
+        opacity: 0.5;
+        pointer-events: none;
+      }
+      .glass-panel::after {
+        content: '';
+        position: absolute;
+        inset: -50%;
+        border-radius: 50%;
+        background: conic-gradient(from 0deg, rgba(43, 131, 198, 0.2), rgba(74, 222, 128, 0.1), rgba(43, 131, 198, 0.15), rgba(43, 131, 198, 0));
+        filter: blur(80px);
+        opacity: 0.35;
+        animation: rotateGlow 24s linear infinite;
+        pointer-events: none;
+      }
+      @keyframes pulseGlow {
+        0%, 100% {
+          transform: scale(0.92);
+          opacity: 0.55;
+        }
+        50% {
+          transform: scale(1.08);
+          opacity: 0.9;
+        }
+      }
+      @keyframes driftGlow {
+        0%, 100% {
+          transform: translateY(0) scale(1);
+          opacity: 0.55;
+        }
+        50% {
+          transform: translateY(-6%) scale(1.08);
+          opacity: 0.85;
+        }
+      }
+      @keyframes rotateGlow {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
     </style>
   <script type="importmap">
 {
@@ -169,7 +222,6 @@
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
     "react": "https://aistudiocdn.com/react@^19.2.0",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.0",
     "firebase/": "https://aistudiocdn.com/firebase@^12.5.0/",
     "path": "https://aistudiocdn.com/path@^0.12.7",
     "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
