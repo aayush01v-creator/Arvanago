@@ -277,6 +277,26 @@ const sanitizeResources = (value: unknown): Course['resources'] => {
   return resources.length > 0 ? resources : undefined;
 };
 
+const allowedSkillLevels = ['Beginner', 'Intermediate', 'Advanced'] as const;
+type AllowedSkillLevel = (typeof allowedSkillLevels)[number];
+
+const normalizeSkillLevel = (value: unknown): AllowedSkillLevel | undefined => {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const normalized = value.trim();
+  if (normalized.length === 0) {
+    return undefined;
+  }
+
+  const match = allowedSkillLevels.find(
+    level => level.toLowerCase() === normalized.toLowerCase(),
+  );
+
+  return match;
+};
+
 const hydrateCourseFromDoc = async (
   courseDoc: firebase.firestore.QueryDocumentSnapshot<firebase.firestore.DocumentData>,
 ): Promise<Course | null> => {
@@ -302,12 +322,7 @@ const hydrateCourseFromDoc = async (
   const rating = typeof rawData.rating === 'number' ? rawData.rating : undefined;
   const studentCount = typeof rawData.studentCount === 'number' ? rawData.studentCount : undefined;
   const totalDuration = typeof rawData.totalDuration === 'string' ? rawData.totalDuration : undefined;
-  const skillLevel =
-    typeof rawData.skillLevel === 'string'
-      ? rawData.skillLevel
-      : typeof rawData.level === 'string'
-        ? rawData.level
-        : undefined;
+  const skillLevel = normalizeSkillLevel(rawData.skillLevel) ?? normalizeSkillLevel(rawData.level);
   const views = typeof rawData.views === 'number' ? rawData.views : undefined;
   const thumbnailUrl =
     typeof rawData.thumbnailUrl === 'string' && rawData.thumbnailUrl.trim().length > 0
@@ -379,22 +394,34 @@ const hydrateCourseFromDoc = async (
 const collectCourseDocuments = async (): Promise<
   firebase.firestore.QueryDocumentSnapshot<firebase.firestore.DocumentData>[]
 > => {
-  const snapshot = await db.collection('courses').get();
-  const documents: firebase.firestore.QueryDocumentSnapshot<firebase.firestore.DocumentData>[] = [...snapshot.docs];
+  const lecturesSnapshot = await db.collection('lectures').get();
+  const documents: firebase.firestore.QueryDocumentSnapshot<firebase.firestore.DocumentData>[] = [...lecturesSnapshot.docs];
 
-  // Some datasets store course information inside a nested "courses" sub-collection.
-  await Promise.all(
-    snapshot.docs.map(async (courseDoc) => {
-      try {
-        const nestedSnapshot = await courseDoc.ref.collection('courses').get();
-        if (!nestedSnapshot.empty) {
-          documents.push(...nestedSnapshot.docs);
+  const appendNestedCourses = async (
+    parentDocs: firebase.firestore.QueryDocumentSnapshot<firebase.firestore.DocumentData>[],
+  ) => {
+    await Promise.all(
+      parentDocs.map(async (courseDoc) => {
+        try {
+          const nestedSnapshot = await courseDoc.ref.collection('courses').get();
+          if (!nestedSnapshot.empty) {
+            documents.push(...nestedSnapshot.docs);
+          }
+        } catch (error) {
+          console.warn(`Failed to load nested courses for document "${courseDoc.id}":`, error);
         }
-      } catch (error) {
-        console.warn(`Failed to load nested courses for document "${courseDoc.id}":`, error);
-      }
-    }),
-  );
+      }),
+    );
+  };
+
+  if (documents.length === 0) {
+    const fallbackSnapshot = await db.collection('courses').get();
+    documents.push(...fallbackSnapshot.docs);
+    await appendNestedCourses(fallbackSnapshot.docs);
+    return documents;
+  }
+
+  await appendNestedCourses(lecturesSnapshot.docs);
 
   return documents;
 };
