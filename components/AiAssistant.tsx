@@ -1,6 +1,6 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import { askAI } from '../services/geminiService.ts';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { askAI } from '../services/assistantService.ts';
 import { ChatMessage } from '../types.ts';
 import Icon from './common/Icon.tsx';
 
@@ -11,27 +11,39 @@ interface AiAssistantProps {
 }
 
 const AiAssistant: React.FC<AiAssistantProps> = ({ lectureTitle, lectureSummary, onClose }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { sender: 'ai', text: `Hi! I'm Edusim, your AI study assistant. How can I help you with the "${lectureTitle}" lecture today?` }
-  ]);
+  const initialGreeting = useMemo<ChatMessage[]>(
+    () => [
+      {
+        sender: 'ai',
+        text: `Hi! I'm Edusim, your study companion. How can I help you with the "${lectureTitle}" lecture today?`,
+      },
+    ],
+    [lectureTitle],
+  );
+
+  const [messages, setMessages] = useState<ChatMessage[]>(() => initialGreeting);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const scrollToBottom = () => {
+  useEffect(() => {
+    setMessages(initialGreeting);
+  }, [initialGreeting]);
+
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   useEffect(scrollToBottom, [messages]);
-  
+
   useEffect(() => {
     setTimeout(() => {
         inputRef.current?.focus();
     }, 100);
   }, []);
 
-  const handleSend = async () => {
+  const handleSend = useCallback(async () => {
     if (input.trim() === '' || isLoading) return;
 
     const userMessage: ChatMessage = { sender: 'user', text: input };
@@ -49,11 +61,11 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ lectureTitle, lectureSummary,
     } finally {
       setIsLoading(false);
     }
-  };
-  
+  }, [input, isLoading, lectureSummary, lectureTitle]);
+
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      handleSend();
+      void handleSend();
     }
   };
 
@@ -110,7 +122,7 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ lectureTitle, lectureSummary,
                     className="w-full pl-4 pr-12 py-3 bg-gray-100 dark:bg-gray-700 border-2 border-transparent focus:border-brand-primary focus:ring-0 rounded-full outline-none transition"
                 />
                 <button
-                    onClick={handleSend}
+                    onClick={() => void handleSend()}
                     disabled={isLoading}
                     className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-brand-primary text-white rounded-full hover:bg-brand-secondary disabled:bg-gray-400 transition-colors"
                 >

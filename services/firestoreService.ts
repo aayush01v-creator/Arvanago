@@ -13,6 +13,11 @@ import type {
   User,
 } from '../types.ts';
 
+const COURSE_CACHE_TTL_MS = 1000 * 60 * 5;
+let cachedCourses: Course[] | null = null;
+let coursesCacheTimestamp = 0;
+let inflightCoursesPromise: Promise<Course[]> | null = null;
+
 const defaultAuthor: User = {
   uid: 'default-author',
   name: 'EduSimulate Instructor',
@@ -822,54 +827,91 @@ export const updateUserProfile = async (
   await userRef.update(updates);
 };
 
-export const getCourses = async (): Promise<Course[]> => {
-  try {
-    const documents = await collectCourseDocuments();
-    if (documents.length === 0) {
-      return [];
-    }
+export const getCourses = async ({ forceRefresh = false }: { forceRefresh?: boolean } = {}): Promise<Course[]> => {
+  const now = Date.now();
 
-    const hydratedCourses = await Promise.all(documents.map(doc => hydrateCourseFromDoc(doc)));
-    const courseMap = new Map<string, Course>();
-
-    hydratedCourses.forEach((course) => {
-      if (!course) {
-        return;
-      }
-
-      courseMap.set(course.id, course);
-    });
-
-    const coursesArray = Array.from(courseMap.values());
-
-    coursesArray.forEach((course) => {
-      if (!course.suggestedCourses?.length) {
-        return;
-      }
-
-      const details = course.suggestedCourses
-        .map((id) => courseMap.get(id))
-        .filter((suggested): suggested is Course => Boolean(suggested))
-        .map((suggested): SuggestedCourseSummary => ({
-          id: suggested.id,
-          title: suggested.title,
-          category: suggested.category,
-          thumbnailUrl: suggested.thumbnailUrl ?? suggested.thumbnail,
-          price: suggested.price,
-          currency: suggested.currency,
-          isPaid: suggested.isPaid,
-          tags: suggested.tags,
-        }));
-
-      if (details.length > 0) {
-        course.suggestedCourseDetails = details;
-      }
-    });
-
-    return coursesArray;
-  } catch (error) {
-    console.error('Failed to load courses from Firestore.', error);
-    throw error;
+  if (!forceRefresh && cachedCourses && now - coursesCacheTimestamp < COURSE_CACHE_TTL_MS) {
+    return cachedCourses;
   }
+
+  if (!forceRefresh && inflightCoursesPromise) {
+    return inflightCoursesPromise;
+  }
+
+  if (forceRefresh) {
+    cachedCourses = null;
+    coursesCacheTimestamp = 0;
+  }
+
+  const loadCourses = async (): Promise<Course[]> => {
+    try {
+      const documents = await collectCourseDocuments();
+      if (documents.length === 0) {
+        cachedCourses = [];
+        coursesCacheTimestamp = Date.now();
+        return [];
+      }
+
+      const hydratedCourses = await Promise.all(documents.map(doc => hydrateCourseFromDoc(doc)));
+      const courseMap = new Map<string, Course>();
+
+      hydratedCourses.forEach((course) => {
+        if (!course) {
+          return;
+        }
+
+        courseMap.set(course.id, course);
+      });
+
+      const coursesArray = Array.from(courseMap.values());
+
+      coursesArray.forEach((course) => {
+        if (!course.suggestedCourses?.length) {
+          return;
+        }
+
+        const details = course.suggestedCourses
+          .map((id) => courseMap.get(id))
+          .filter((suggested): suggested is Course => Boolean(suggested))
+          .map((suggested): SuggestedCourseSummary => ({
+            id: suggested.id,
+            title: suggested.title,
+            category: suggested.category,
+            thumbnailUrl: suggested.thumbnailUrl ?? suggested.thumbnail,
+            price: suggested.price,
+            currency: suggested.currency,
+            isPaid: suggested.isPaid,
+            tags: suggested.tags,
+          }));
+
+        if (details.length > 0) {
+          course.suggestedCourseDetails = details;
+        }
+      });
+
+      cachedCourses = coursesArray;
+      coursesCacheTimestamp = Date.now();
+      return coursesArray;
+    } catch (error) {
+      console.error('Failed to load courses from Firestore.', error);
+      throw error;
+    }
+  };
+
+  const requestPromise = loadCourses().finally(() => {
+    inflightCoursesPromise = null;
+  });
+
+  if (!forceRefresh) {
+    inflightCoursesPromise = requestPromise;
+  }
+
+  return requestPromise;
+};
+
+export const clearCoursesCache = (): void => {
+  cachedCourses = null;
+  coursesCacheTimestamp = 0;
+  inflightCoursesPromise = null;
 };
 

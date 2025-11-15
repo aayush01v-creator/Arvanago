@@ -11,7 +11,7 @@ export interface SidebarLayoutContext {
   onProfileUpdate: (updates: Partial<User>) => void;
   coursesLoading: boolean;
   coursesError: string | null;
-  refreshCourses: () => Promise<void>;
+  refreshCourses: (options?: { forceRefresh?: boolean }) => Promise<void>;
 }
 
 interface SidebarLayoutProps {
@@ -22,7 +22,7 @@ interface SidebarLayoutProps {
   onProfileUpdate: (updates: Partial<User>) => void;
   coursesLoading: boolean;
   coursesError: string | null;
-  onRefreshCourses: () => Promise<void>;
+  onRefreshCourses: (options?: { forceRefresh?: boolean }) => Promise<void>;
 }
 
 const SidebarLayout: React.FC<SidebarLayoutProps> = ({
@@ -95,7 +95,7 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
       }
       setHighlightCourseId(courseId ?? prioritizedCourses[0]?.id ?? null);
       setQuickExploreOpen(true);
-      void onRefreshCourses();
+      void onRefreshCourses({ forceRefresh: true });
     },
     [onRefreshCourses, prioritizedCourses],
   );
