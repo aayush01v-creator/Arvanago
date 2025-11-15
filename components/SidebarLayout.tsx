@@ -232,13 +232,13 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
               pageTitle={currentPage.title}
               pageSubtitle={currentPage.subtitle}
             />
-            <main className="relative z-10 flex-1 px-4 pb-10 pt-6 sm:px-6 lg:px-10 xl:px-14">
-              <div className="relative mx-auto max-w-7xl 2xl:max-w-[1400px]">
+            <main className="relative z-10 flex-1 px-4 pb-10 pt-6 sm:px-6 lg:px-10">
+              <div className="relative mx-auto max-w-6xl">
                 <div className="glass-panel relative overflow-hidden rounded-3xl border border-white/40 bg-white/60 shadow-[0_12px_60px_rgba(15,23,42,0.18)] backdrop-blur-2xl transition-colors duration-500 dark:border-white/10 dark:bg-slate-900/75 dark:shadow-[0_18px_70px_rgba(2,6,23,0.6)]">
                   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_65%)] dark:bg-[radial-gradient(circle_at_top,_rgba(148,163,184,0.2),_transparent_70%)]" />
                   <div className="pointer-events-none absolute -top-20 -left-10 h-40 w-40 rounded-full bg-brand-primary/30 blur-3xl opacity-70" style={{ animation: 'pulseGlow 16s ease-in-out infinite' }} />
                   <div className="pointer-events-none absolute bottom-[-3rem] right-[-2rem] h-48 w-48 rounded-full bg-sky-500/40 blur-3xl opacity-80" style={{ animation: 'pulseGlow 20s ease-in-out infinite alternate' }} />
-                  <div className="relative z-10 p-4 sm:p-6 lg:p-10 xl:p-12">
+                  <div className="relative z-10 p-4 sm:p-6 lg:p-10">
                     <div className="animate-fade-in-up">
                       <Outlet
                         context={{
