@@ -47,20 +47,13 @@ const Header: React.FC<HeaderProps> = ({
             <span className="text-lg font-semibold text-slate-700 dark:text-slate-200">Edusimulate</span>
           </div>
         </div>
-        <div className="hidden flex-1 justify-center md:flex">
-          <div className="group relative inline-flex items-center gap-4 rounded-2xl border border-white/40 bg-white/70 px-6 py-2 text-center shadow-md shadow-white/40 backdrop-blur-xl transition-all duration-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:shadow-[0_18px_40px_rgba(15,23,42,0.55)]">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-primary/15 text-brand-primary shadow-[0_8px_20px_rgba(43,131,198,0.35)] dark:bg-brand-primary/25">
-              <Icon name="sparkle" className="h-4 w-4" />
-            </div>
-            <div className="flex min-w-[10rem] flex-col leading-tight">
-              <span className="text-xs font-semibold uppercase tracking-[0.45em] text-brand-primary/80 dark:text-brand-primary/60">
-                {pageSubtitle ?? 'Now viewing'}
-              </span>
-              <span className="text-lg font-semibold uppercase tracking-[0.35em] text-slate-700 dark:text-slate-100">
-                {pageTitle}
-              </span>
-            </div>
-          </div>
+        <div className="hidden flex-1 flex-col items-center justify-center text-center md:flex">
+          <span className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500 dark:text-slate-400">
+            {pageSubtitle ?? 'Now viewing'}
+          </span>
+          <span className="mt-1 text-lg font-semibold tracking-[0.2em] text-slate-700 dark:text-slate-100">
+            {pageTitle}
+          </span>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-4">
           <div className="hidden flex-col text-right sm:flex">
