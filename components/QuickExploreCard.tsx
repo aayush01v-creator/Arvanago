@@ -7,8 +7,6 @@ interface QuickExploreCardProps {
   courses: Course[];
   onClose: () => void;
   onExploreCourse: (course: Course) => void;
-  onSecondaryAction?: () => void;
-  secondaryLabel?: string;
   primaryLabel?: string;
   highlightCourseId?: string;
 }
@@ -45,8 +43,6 @@ const QuickExploreCard: React.FC<QuickExploreCardProps> = ({
   courses,
   onClose,
   onExploreCourse,
-  onSecondaryAction,
-  secondaryLabel = 'View full catalog',
   primaryLabel = 'Go to course',
   highlightCourseId,
 }) => {
@@ -182,16 +178,6 @@ const QuickExploreCard: React.FC<QuickExploreCardProps> = ({
                   <Icon name="arrowRight" className="h-5 w-5" />
                   {primaryLabel}
                 </button>
-                {onSecondaryAction && (
-                  <button
-                    type="button"
-                    onClick={onSecondaryAction}
-                    className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/60 bg-white/85 px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur transition-transform duration-300 hover:-translate-y-0.5 hover:border-brand-primary/40 hover:text-brand-primary dark:border-white/10 dark:bg-white/10 dark:text-slate-200"
-                  >
-                    <Icon name="courses" className="h-5 w-5" />
-                    {secondaryLabel}
-                  </button>
-                )}
               </div>
             </div>
           </div>

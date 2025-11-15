@@ -151,12 +151,6 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
     [navigate],
   );
 
-  const handleQuickExploreSecondary = useCallback(() => {
-    setQuickExploreOpen(false);
-    setHighlightCourseId(null);
-    navigate('/explore');
-  }, [navigate]);
-
   return (
     <>
       <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-100 via-white to-slate-200 text-slate-800 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-gray-200">
@@ -216,8 +210,6 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
         courses={prioritizedCourses}
         onClose={handleQuickExploreClose}
         onExploreCourse={handleQuickExplorePrimary}
-        onSecondaryAction={handleQuickExploreSecondary}
-        secondaryLabel="View full catalog"
         primaryLabel="Go to course"
         highlightCourseId={highlightCourseId ?? undefined}
       />

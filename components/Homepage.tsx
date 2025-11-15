@@ -206,12 +206,6 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
     onCourseSelect(course);
   };
 
-  const handleQuickExploreSecondary = () => {
-    setQuickExploreOpen(false);
-    setHighlightCourseId(null);
-    onNavigateToLogin();
-  };
-
   return (
     <>
       <QuickExploreCard
@@ -219,8 +213,6 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
         courses={prioritizedCourses}
         onClose={handleQuickExploreClose}
         onExploreCourse={handleQuickExplorePrimary}
-        onSecondaryAction={handleQuickExploreSecondary}
-        secondaryLabel="Login / Register"
         primaryLabel="Explore this course"
         highlightCourseId={highlightCourseId ?? undefined}
       />
