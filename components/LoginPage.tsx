@@ -164,9 +164,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigateHome }) => {
             <div className="absolute -top-1/4 -left-1/4 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-blob dark:opacity-20"></div>
             <div className="absolute -bottom-1/4 -right-1/4 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-blob dark:opacity-20" style={{animationDelay: '2s'}}></div>
 
-            <div className="w-full max-w-7xl 2xl:max-w-[1400px] bg-white/55 dark:bg-slate-800/60 backdrop-blur-2xl rounded-[2rem] shadow-2xl flex flex-col md:flex-row overflow-hidden border border-white/40 dark:border-slate-700/50 relative z-10">
+            <div className="w-full max-w-6xl bg-white/55 dark:bg-slate-800/60 backdrop-blur-2xl rounded-[2rem] shadow-2xl flex flex-col md:flex-row overflow-hidden border border-white/40 dark:border-slate-700/50 relative z-10">
                 {/* Left Panel - Welcome/Info */}
-                <div className="w-full md:w-1/2 p-8 md:p-12 xl:p-16 text-white flex flex-col justify-center items-center md:items-start text-center md:text-left relative overflow-hidden">
+                <div className="w-full md:w-1/2 p-8 md:p-12 text-white flex flex-col justify-center items-center md:items-start text-center md:text-left relative overflow-hidden">
                     <div className="absolute inset-0 z-0">
                         <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/75 via-indigo-700/70 to-purple-800/70" />
                         <div className="absolute inset-0 bg-white/15 mix-blend-screen" />
@@ -204,11 +204,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigateHome }) => {
                                 <span className="text-3xl font-extrabold text-shadow text-white">Edusimulate</span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-shadow md:tracking-tight">{welcomeContent[activeTab].title}</h1>
-                            <p className="text-sm sm:text-base md:text-lg opacity-90 max-w-sm md:max-w-md xl:max-w-lg mx-auto md:mx-0">{welcomeContent[activeTab].subtitle}</p>
+                            <p className="text-sm sm:text-base md:text-lg opacity-90 max-w-sm mx-auto md:mx-0">{welcomeContent[activeTab].subtitle}</p>
                         </div>
 
                         <div className="mx-auto md:mx-0 mt-6 sm:mt-8 w-full max-w-md sm:max-w-none">
-                            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible sm:pb-0 sm:snap-none lg:gap-4 xl:gap-5">
+                            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible sm:pb-0 sm:snap-none lg:gap-4">
                                 {highlightTiles.map(tile => (
                                     <div
                                         key={tile.id}
@@ -231,14 +231,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigateHome }) => {
                 </div>
 
                 {/* Right Panel - Auth Form */}
-                <div className="w-full md:w-1/2 p-8 md:p-12 xl:p-16 flex flex-col justify-center">
+                <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
                     <button
                         onClick={onNavigateHome}
                         className="absolute top-4 right-4 rounded-full bg-white/70 p-1.5 text-slate-600 shadow-sm transition hover:bg-white/80 hover:text-slate-800 dark:bg-slate-900/70 dark:text-slate-200 dark:shadow-[0_12px_24px_rgba(2,6,23,0.35)] dark:hover:bg-slate-800/70 dark:hover:text-white"
                     >
                         <Icon name="x" className="w-5 h-5"/>
                     </button>
-                    <div className="w-full max-w-md lg:max-w-lg mx-auto">
+                    <div className="w-full max-w-md mx-auto">
                         <div className="relative flex border-b border-slate-200 dark:border-slate-600 mb-6">
                             <button onClick={() => switchTab('signin')} className={`w-1/2 pb-3 font-semibold text-lg transition-colors duration-300 ${activeTab === 'signin' ? 'text-brand-primary' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>Sign In</button>
                             <button onClick={() => switchTab('signup')} className={`w-1/2 pb-3 font-semibold text-lg transition-colors duration-300 ${activeTab === 'signup' ? 'text-brand-primary' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>Sign Up</button>

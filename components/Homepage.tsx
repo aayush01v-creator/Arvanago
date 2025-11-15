@@ -231,7 +231,7 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
       <div className="fixed -bottom-8 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob dark:opacity-30" style={{animationDelay: '4s'}}></div>
 
       <header className="absolute top-0 left-0 right-0 z-30 bg-transparent">
-            <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4 xl:px-10 2xl:max-w-[1400px]">
+            <div className="container mx-auto px-6 py-4 flex justify-between items-center">
                 <div className="flex items-center">
                     <img src={LOGO_URL} alt="Edusimulate Logo" className="h-8 mr-2" />
                     <span className="text-xl font-bold text-slate-900 dark:text-white">Edusimulate</span>
@@ -258,8 +258,8 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
         </div>
 
          {/* Hero Banner */}
-        <section className="mx-auto mb-16 w-full max-w-7xl px-6 xl:px-10 2xl:max-w-[1400px]">
-            <div className="relative grid gap-8 rounded-2xl border border-white/50 bg-white/40 p-8 md:p-12 dark:border-slate-700/50 dark:bg-slate-800/30 lg:grid-cols-2 lg:items-center lg:gap-12 xl:p-16">
+        <section className="container mx-auto px-6 mb-16">
+            <div className="relative bg-white/40 dark:bg-slate-800/30 backdrop-blur-xl rounded-2xl p-8 md:p-12 flex items-center justify-between overflow-hidden shadow-2xl border border-white/50 dark:border-slate-700/50">
                 {/* Animated icons layer */}
                 <div className="absolute inset-0 z-0 opacity-50 dark:opacity-20">
                     <div className="absolute top-[10%] left-[5%] animate-float-1" style={{animationDuration: '20s'}}><Icon name="iit" className="w-16 h-16 text-purple-400/30 dark:text-purple-300/20" /></div>
@@ -269,7 +269,7 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
                     <div className="absolute bottom-[25%] left-[45%] animate-float-1" style={{animationDuration: '30s'}}><Icon name="neet" className="w-10 h-10 text-green-400/30 dark:text-green-300/20" /></div>
                 </div>
                 
-                <div className="z-10 space-y-3">
+                <div className="space-y-3 z-10">
                     <p className="font-semibold text-purple-800 dark:text-purple-200">NEW BATCHES STARTING SOON</p>
                     <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white text-shadow">C++ Basics Course</h2>
                     <button
@@ -279,7 +279,7 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
                         Tap to Explore
                     </button>
                 </div>
-                <div className="relative z-10 hidden h-48 w-48 items-center justify-center md:flex lg:h-64 lg:w-64 xl:h-72 xl:w-72">
+                <div className="hidden md:flex items-center justify-center relative w-48 h-48 lg:w-64 lg:h-64 z-10">
                     <Icon name="cube" className="w-full h-full text-white/50 animate-float-1 opacity-70" style={{animationDuration: '15s'}}/>
                     <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent rounded-full transform rotate-45"></div>
                 </div>
@@ -287,7 +287,7 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
         </section>
 
         {/* Intro Section */}
-        <section ref={introRef} className="mx-auto mb-20 w-full max-w-7xl px-6 text-center scroll-animate xl:px-10 2xl:max-w-[1400px]">
+        <section ref={introRef} className="container mx-auto px-6 mb-20 text-center scroll-animate">
             <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white leading-tight">
                 Edusimulate's Trusted & Affordable <br/>
                 <span className="text-brand-primary">Educational Platform</span>
@@ -325,8 +325,8 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
         </section>
 
         {/* Metrics Section */}
-        <section ref={metricsRef} className="mx-auto mb-20 w-full max-w-7xl px-6 scroll-animate xl:px-10 2xl:max-w-[1400px]">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 xl:gap-6">
+        <section ref={metricsRef} className="container mx-auto px-6 mb-20 scroll-animate">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {metrics.map((metric, index) => (
                     <div key={index} className="flex items-center p-4 bg-white dark:bg-slate-800/50 rounded-xl shadow-md border border-slate-100 dark:border-slate-700 transition-transform duration-300 hover:scale-105">
                         <div className="p-3 bg-brand-light dark:bg-slate-700 rounded-lg mr-4">
@@ -344,7 +344,7 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
         </section>
 
         {/* Course Categories Section */}
-        <section ref={categoriesRef} className="mx-auto mb-20 w-full max-w-7xl px-6 scroll-animate xl:px-10 2xl:max-w-[1400px]">
+        <section ref={categoriesRef} className="container mx-auto px-6 mb-20 scroll-animate">
             <div className="text-center mb-12">
                  <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white">
                     Explore Our Top Categories
@@ -353,7 +353,7 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
                     Find the perfect course to match your academic goals.
                  </p>
             </div>
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 xl:gap-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {categoryDetails.map(cat => (
                     <CategoryCard key={cat.name} category={cat} />
                 ))}
@@ -361,8 +361,8 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
         </section>
 
         {/* Final CTA */}
-        <section className="mx-auto mb-20 w-full max-w-7xl px-6 xl:px-10 2xl:max-w-[1400px]">
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-brand-primary to-purple-600 p-8 text-center text-white md:p-12 lg:p-16 xl:p-20">
+        <section className="container mx-auto px-6 mb-20">
+            <div className="relative bg-gradient-to-r from-brand-primary to-purple-600 rounded-2xl p-8 md:p-12 lg:p-16 text-center text-white overflow-hidden">
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
                 <h2 className="text-3xl md:text-4xl font-extrabold text-shadow">Ready to Start Learning?</h2>
                 <p className="mt-4 max-w-2xl mx-auto text-lg opacity-90">Join thousands of students who are already excelling with Edusimulate.</p>
@@ -377,8 +377,8 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
 
       </main>
 
-      <footer className="relative z-10 mt-10 border-t border-slate-200 bg-slate-100 dark:border-slate-700/50 dark:bg-slate-800/50">
-        <div className="mx-auto w-full max-w-7xl px-6 py-8 text-center text-slate-500 dark:text-slate-400 xl:px-10 2xl:max-w-[1400px]">
+      <footer className="relative z-10 bg-slate-100 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700/50 mt-10">
+        <div className="container mx-auto px-6 py-8 text-center text-slate-500 dark:text-slate-400">
              <div className="flex justify-center items-center mb-4 text-slate-700 dark:text-slate-200">
                  <img src={LOGO_URL} alt="Edusimulate Logo" className="h-8 mr-2" />
                  <span className="text-lg font-semibold">Edusimulate</span>

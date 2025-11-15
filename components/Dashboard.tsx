@@ -123,7 +123,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, courses, navigateToFiltered
   );
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 xl:p-10 animate-fade-in space-y-10">
+    <div className="p-4 sm:p-6 lg:p-8 animate-fade-in space-y-10">
       {/* Header */}
       <div ref={welcomeRef} className="scroll-animate">
         <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white">
@@ -133,7 +133,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, courses, navigateToFiltered
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard icon="star" value={user.points.toLocaleString()} label="Points Earned" color="bg-yellow-400" />
         <StatCard icon="flame" value={`${user.streak} Days`} label="Learning Streak" color="bg-red-500" delay={100}/>
         <StatCard icon="check" value="8" label="Courses Completed" color="bg-green-500" delay={200}/>
@@ -142,7 +142,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, courses, navigateToFiltered
       {/* Ongoing Courses */}
       <div ref={continueLearningRef} className="scroll-animate">
         <h2 className="text-2xl font-bold text-gray-900 dark:bg-gradient-to-r dark:from-slate-100 dark:to-slate-300 dark:bg-clip-text dark:text-transparent mb-5">Continue Learning</h2>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {ongoingCourses.length > 0 ? (
             ongoingCourses.map((course) => (
               <DashboardCourseCard key={course.id} course={course} navigateToCourse={navigateToCourse} />
