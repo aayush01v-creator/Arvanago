@@ -1,9 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar.tsx';
 import Header from './Header.tsx';
 import { Course, User } from '@/types';
-import QuickExploreCard from './QuickExploreCard.tsx';
 
 export interface SidebarLayoutContext {
   user: User;
@@ -41,31 +40,6 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
   const animationFrameRef = useRef<number | null>(null);
   const [pointerPosition, setPointerPosition] = useState({ x: 50, y: 50 });
   const location = useLocation();
-  const navigate = useNavigate();
-  const [isQuickExploreOpen, setQuickExploreOpen] = useState(false);
-  const [highlightCourseId, setHighlightCourseId] = useState<string | null>(null);
-
-  const prioritizedCourses = useMemo(() => {
-    if (!courses || courses.length === 0) {
-      return [] as Course[];
-    }
-
-    const sorted = [...courses].sort((a, b) => {
-      const priorityA = a.featuredPriority ?? Number.POSITIVE_INFINITY;
-      const priorityB = b.featuredPriority ?? Number.POSITIVE_INFINITY;
-      if (priorityA !== priorityB) {
-        return priorityA - priorityB;
-      }
-
-      const ratingA = typeof a.rating === 'number' ? a.rating : 0;
-      const ratingB = typeof b.rating === 'number' ? b.rating : 0;
-      return ratingB - ratingA;
-    });
-
-    const featured = sorted.filter(course => course.isFeaturedOnHome);
-    return featured.length > 0 ? featured : sorted;
-  }, [courses]);
-
   useEffect(() => {
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
       setSidebarOpen(false);
@@ -87,18 +61,6 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
       panel.scrollTo({ top: 0 });
     }
   }, [location.pathname]);
-
-  const openQuickExplore = useCallback(
-    (courseId?: string) => {
-      if (prioritizedCourses.length === 0) {
-        return;
-      }
-      setHighlightCourseId(courseId ?? prioritizedCourses[0]?.id ?? null);
-      setQuickExploreOpen(true);
-      void onRefreshCourses({ forceRefresh: true });
-    },
-    [onRefreshCourses, prioritizedCourses],
-  );
 
   const handlePanelPointerMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     const panel = mainPanelRef.current;
@@ -136,20 +98,6 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
       cancelAnimationFrame(animationFrameRef.current);
     }
   }, []);
-
-  const handleQuickExploreClose = useCallback(() => {
-    setQuickExploreOpen(false);
-    setHighlightCourseId(null);
-  }, []);
-
-  const handleQuickExplorePrimary = useCallback(
-    (course: Course) => {
-      setQuickExploreOpen(false);
-      setHighlightCourseId(null);
-      navigate(`/courses/${course.id}`);
-    },
-    [navigate],
-  );
 
   const currentPage = useMemo(() => {
     const segments = location.pathname.split('?')[0]?.split('/').filter(Boolean) ?? [];
@@ -211,7 +159,6 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
             setSidebarOpen={setSidebarOpen}
             isDarkMode={isDarkMode}
             setDarkMode={onThemeToggle}
-            onExploreClick={() => openQuickExplore()}
           />
           <div
             ref={mainPanelRef}
@@ -258,14 +205,6 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
           </div>
         </div>
       </div>
-      <QuickExploreCard
-        isOpen={isQuickExploreOpen && prioritizedCourses.length > 0}
-        courses={prioritizedCourses}
-        onClose={handleQuickExploreClose}
-        onExploreCourse={handleQuickExplorePrimary}
-        primaryLabel="Go to course"
-        highlightCourseId={highlightCourseId ?? undefined}
-      />
     </>
   );
 };
