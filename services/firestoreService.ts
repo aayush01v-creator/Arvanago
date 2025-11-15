@@ -154,6 +154,52 @@ const sanitizeStringArray = (value: unknown): string[] | undefined => {
   return cleaned.length > 0 ? cleaned : undefined;
 };
 
+const sanitizeDescription = (value: unknown): string | undefined => {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const normalized = value.replace(/\s+/g, ' ').trim();
+  return normalized.length > 0 ? normalized : undefined;
+};
+
+const resolveCourseDescription = (
+  courseId: string,
+  rawData: Record<string, unknown>,
+): string => {
+  const candidateDescriptions: unknown[] = [
+    rawData.description,
+    rawData.shortDescription,
+    rawData.summary,
+  ];
+
+  if (rawData.details && typeof rawData.details === 'object') {
+    const details = rawData.details as Record<string, unknown>;
+    candidateDescriptions.push(details.description, details.summary, details.overview);
+  }
+
+  if (rawData.meta && typeof rawData.meta === 'object') {
+    const meta = rawData.meta as Record<string, unknown>;
+    candidateDescriptions.push(meta.description);
+  }
+
+  for (const candidate of candidateDescriptions) {
+    const sanitized = sanitizeDescription(candidate);
+    if (sanitized) {
+      return sanitized;
+    }
+  }
+
+  console.warn(
+    `Course "${courseId}" is missing a usable description field. Falling back to placeholder.`,
+    {
+      availableKeys: Object.keys(rawData),
+    },
+  );
+
+  return 'Detailed course descriptions will appear once provided.';
+};
+
 const sanitizeSuggestedCourseIds = (value: unknown): string[] | undefined => {
   if (!Array.isArray(value)) {
     return undefined;
@@ -340,10 +386,7 @@ const hydrateCourseFromDoc = async (
   return {
     id: typeof rawData.id === 'string' ? rawData.id : courseDoc.id,
     title: typeof rawData.title === 'string' ? rawData.title : 'Untitled Course',
-    description:
-      typeof rawData.description === 'string'
-        ? rawData.description
-        : 'Detailed course descriptions will appear once provided.',
+    description: resolveCourseDescription(courseDoc.id, rawData as Record<string, unknown>),
     category: typeof rawData.category === 'string' ? rawData.category : 'General',
     thumbnail: thumbnailUrl,
     thumbnailUrl,
