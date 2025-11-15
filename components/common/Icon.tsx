@@ -74,6 +74,7 @@ const icons: { [key: string]: React.ReactNode } = {
   'more-horizontal': <><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></>,
   video: <><polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" /></>,
   download: <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></>,
+  infinity: <path d="M18.5 12c-1.74 0-3.41.81-5.5 3-2.09-2.19-3.76-3-5.5-3s-3.5 1.79-3.5 4 1.64 4 3.5 4c1.74 0 3.41-.81 5.5-3 2.09 2.19 3.76 3 5.5 3 1.86 0 3.5-1.79 3.5-4s-1.64-4-3.5-4Z" />,
   smartphone: <><rect x="5" y="2" width="14" height="20" rx="2" ry="2" /><line x1="12" y1="18" x2="12.01" y2="18" /></>,
   'bar-chart': <><line x1="12" y1="20" x2="12" y2="10" /><line x1="18" y1="20" x2="18" y2="4" /><line x1="6" y1="20" x2="6" y2="16" /></>,
   clock: <><circle cx="12" cy="12" r="9" /><polyline points="12 7 12 12 16 14" /></>,
