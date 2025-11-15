@@ -42,6 +42,25 @@ export interface DownloadableResource {
     size: string;
 }
 
+export interface CourseSocialLink {
+  label: string;
+  url: string;
+}
+
+export interface CourseInstructor {
+  id: string;
+  name: string;
+  title?: string;
+  headline?: string;
+  avatar?: string;
+  rating?: number;
+  totalStudents?: number;
+  totalReviews?: number;
+  bio?: string;
+  description?: string;
+  socialLinks?: CourseSocialLink[];
+}
+
 export interface SuggestedCourseSummary {
   id: string;
   title: string;
@@ -73,11 +92,25 @@ export interface Course {
   currency?: string;
   originalPrice?: number;
   rating?: number;
+  reviewCount?: number;
   studentCount?: number;
   lessonsCount?: number;
   totalDuration?: string;
   skillLevel?: 'Beginner' | 'Intermediate' | 'Advanced';
   views?: number;
+  subtitle?: string;
+  headline?: string;
+  lastUpdated?: string;
+  updatedAt?: string;
+  language?: string;
+  previewVideoUrl?: string;
+  previewImageUrl?: string;
+  learningOutcomes?: string[];
+  requirements?: string[];
+  longDescription?: string;
+  descriptionHtml?: string;
+  descriptionSections?: { title: string; content: string }[];
+  instructors?: CourseInstructor[];
   includes?: string[];
   faqs?: { question: string; answer: string }[];
   suggestedCourses?: string[];
