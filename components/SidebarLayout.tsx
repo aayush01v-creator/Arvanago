@@ -66,6 +66,66 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
     return featured.length > 0 ? featured : sorted;
   }, [courses]);
 
+  const currentPage = useMemo(() => {
+    const segments = location.pathname.split('?')[0]?.split('/').filter(Boolean) ?? [];
+    const [first, second, third, fourth] = segments;
+
+    const staticPages = new Map<string, { title: string; subtitle: string }>([
+      ['dashboard', { title: 'Dashboard', subtitle: 'Your learning HQ' }],
+      ['my-learnings', { title: 'My Learnings', subtitle: 'Progress tracker' }],
+      ['explore', { title: 'Explore Courses', subtitle: 'Discover new skills' }],
+      ['leaderboard', { title: 'Leaderboard', subtitle: 'Global rankings' }],
+      ['profile', { title: 'Profile', subtitle: 'Personal hub' }],
+    ]);
+
+    if (!first) {
+      return staticPages.get('dashboard')!;
+    }
+
+    const staticPage = staticPages.get(first);
+    if (staticPage) {
+      return staticPage;
+    }
+
+    if (first === 'courses' && second && !third) {
+      const matchedCourse = courses.find((course) => course.id === second);
+      if (matchedCourse) {
+        return { title: matchedCourse.title, subtitle: 'Course overview' };
+      }
+      return { title: 'Course overview', subtitle: 'Course details' };
+    }
+
+    if (first === 'courses' && second && third === 'lectures' && fourth) {
+      const matchedCourse = courses.find((course) => course.id === second);
+      const matchedLecture = matchedCourse?.lectures?.find((lecture) => lecture.id === fourth);
+
+      if (matchedCourse && matchedLecture) {
+        return { title: matchedLecture.title, subtitle: matchedCourse.title };
+      }
+
+      if (matchedCourse) {
+        return { title: 'Course lecture', subtitle: matchedCourse.title };
+      }
+
+      return { title: 'Course lecture', subtitle: 'Learning session' };
+    }
+
+    return staticPages.get('dashboard')!;
+  }, [courses, location.pathname]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    const previousTitle = document.title;
+    document.title = `${currentPage.title} • Edusimulate`;
+
+    return () => {
+      document.title = previousTitle;
+    };
+  }, [currentPage]);
+
   useEffect(() => {
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
       setSidebarOpen(false);
