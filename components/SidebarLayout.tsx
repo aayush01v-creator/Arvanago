@@ -5,6 +5,63 @@ import Header from './Header.tsx';
 import { Course, User } from '@/types';
 import QuickExploreCard from './QuickExploreCard.tsx';
 
+interface PageMetadata {
+  title: string;
+  subtitle: string;
+}
+
+const DEFAULT_PAGE_METADATA: PageMetadata = {
+  title: 'Dashboard',
+  subtitle: 'Your learning HQ',
+};
+
+const derivePageMetadata = (pathname: string, courses: Course[]): PageMetadata => {
+  const segments = pathname.split('?')[0]?.split('/').filter(Boolean) ?? [];
+  const [first, second, third, fourth] = segments;
+
+  const staticPages = new Map<string, PageMetadata>([
+    ['dashboard', DEFAULT_PAGE_METADATA],
+    ['my-learnings', { title: 'My Learnings', subtitle: 'Progress tracker' }],
+    ['explore', { title: 'Explore Courses', subtitle: 'Discover new skills' }],
+    ['leaderboard', { title: 'Leaderboard', subtitle: 'Global rankings' }],
+    ['profile', { title: 'Profile', subtitle: 'Personal hub' }],
+  ]);
+
+  if (!first) {
+    return DEFAULT_PAGE_METADATA;
+  }
+
+  const staticPage = staticPages.get(first);
+  if (staticPage) {
+    return staticPage;
+  }
+
+  if (first === 'courses' && second && !third) {
+    const matchedCourse = courses.find((course) => course.id === second);
+    if (matchedCourse) {
+      return { title: matchedCourse.title, subtitle: 'Course overview' };
+    }
+    return { title: 'Course overview', subtitle: 'Course details' };
+  }
+
+  if (first === 'courses' && second && third === 'lectures' && fourth) {
+    const matchedCourse = courses.find((course) => course.id === second);
+    const matchedLecture = matchedCourse?.lectures?.find((lecture) => lecture.id === fourth);
+
+    if (matchedCourse && matchedLecture) {
+      return { title: matchedLecture.title, subtitle: matchedCourse.title };
+    }
+
+    if (matchedCourse) {
+      return { title: 'Course lecture', subtitle: matchedCourse.title };
+    }
+
+    return { title: 'Course lecture', subtitle: 'Learning session' };
+  }
+
+  return DEFAULT_PAGE_METADATA;
+};
+
 export interface SidebarLayoutContext {
   user: User;
   courses: Course[];
@@ -66,52 +123,10 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
     return featured.length > 0 ? featured : sorted;
   }, [courses]);
 
-  const currentPage = useMemo(() => {
-    const segments = location.pathname.split('?')[0]?.split('/').filter(Boolean) ?? [];
-    const [first, second, third, fourth] = segments;
-
-    const staticPages = new Map<string, { title: string; subtitle: string }>([
-      ['dashboard', { title: 'Dashboard', subtitle: 'Your learning HQ' }],
-      ['my-learnings', { title: 'My Learnings', subtitle: 'Progress tracker' }],
-      ['explore', { title: 'Explore Courses', subtitle: 'Discover new skills' }],
-      ['leaderboard', { title: 'Leaderboard', subtitle: 'Global rankings' }],
-      ['profile', { title: 'Profile', subtitle: 'Personal hub' }],
-    ]);
-
-    if (!first) {
-      return staticPages.get('dashboard')!;
-    }
-
-    const staticPage = staticPages.get(first);
-    if (staticPage) {
-      return staticPage;
-    }
-
-    if (first === 'courses' && second && !third) {
-      const matchedCourse = courses.find((course) => course.id === second);
-      if (matchedCourse) {
-        return { title: matchedCourse.title, subtitle: 'Course overview' };
-      }
-      return { title: 'Course overview', subtitle: 'Course details' };
-    }
-
-    if (first === 'courses' && second && third === 'lectures' && fourth) {
-      const matchedCourse = courses.find((course) => course.id === second);
-      const matchedLecture = matchedCourse?.lectures?.find((lecture) => lecture.id === fourth);
-
-      if (matchedCourse && matchedLecture) {
-        return { title: matchedLecture.title, subtitle: matchedCourse.title };
-      }
-
-      if (matchedCourse) {
-        return { title: 'Course lecture', subtitle: matchedCourse.title };
-      }
-
-      return { title: 'Course lecture', subtitle: 'Learning session' };
-    }
-
-    return staticPages.get('dashboard')!;
-  }, [courses, location.pathname]);
+  const currentPage = useMemo(
+    () => derivePageMetadata(location.pathname, courses),
+    [courses, location.pathname],
+  );
 
   useEffect(() => {
     if (typeof document === 'undefined') {
