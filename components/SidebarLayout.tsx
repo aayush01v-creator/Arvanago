@@ -157,6 +157,53 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
     navigate('/explore');
   }, [navigate]);
 
+  const currentPage = useMemo(() => {
+    const segments = location.pathname.split('?')[0]?.split('/').filter(Boolean) ?? [];
+    const [first, second, third, fourth] = segments;
+
+    const staticPages = new Map<string, { title: string; subtitle: string }>([
+      ['dashboard', { title: 'Dashboard', subtitle: 'Your learning HQ' }],
+      ['my-learnings', { title: 'My Learnings', subtitle: 'Progress tracker' }],
+      ['explore', { title: 'Explore Courses', subtitle: 'Discover new skills' }],
+      ['leaderboard', { title: 'Leaderboard', subtitle: 'Global rankings' }],
+      ['profile', { title: 'Profile', subtitle: 'Personal hub' }],
+    ]);
+
+    if (!first) {
+      return staticPages.get('dashboard')!;
+    }
+
+    const staticPage = staticPages.get(first);
+    if (staticPage) {
+      return staticPage;
+    }
+
+    if (first === 'courses' && second && !third) {
+      const matchedCourse = courses.find((course) => course.id === second);
+      if (matchedCourse) {
+        return { title: matchedCourse.title, subtitle: 'Course overview' };
+      }
+      return { title: 'Course overview', subtitle: 'Course details' };
+    }
+
+    if (first === 'courses' && second && third === 'lectures' && fourth) {
+      const matchedCourse = courses.find((course) => course.id === second);
+      const matchedLecture = matchedCourse?.lectures.find((lecture) => lecture.id === fourth);
+
+      if (matchedCourse && matchedLecture) {
+        return { title: matchedLecture.title, subtitle: matchedCourse.title };
+      }
+
+      if (matchedCourse) {
+        return { title: 'Course lecture', subtitle: matchedCourse.title };
+      }
+
+      return { title: 'Course lecture', subtitle: 'Learning session' };
+    }
+
+    return staticPages.get('dashboard')!;
+  }, [courses, location.pathname]);
+
   return (
     <>
       <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-100 via-white to-slate-200 text-slate-800 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-gray-200">
@@ -184,7 +231,13 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
                 background: `radial-gradient(ellipse at ${pointerPosition.x}% ${pointerPosition.y}%, rgba(43,131,198,0.16), rgba(43,131,198,0) 55%)`,
               }}
             />
-            <Header user={user} onMenuClick={() => setSidebarOpen(true)} isScrolled={isScrolled} />
+            <Header
+              user={user}
+              onMenuClick={() => setSidebarOpen(true)}
+              isScrolled={isScrolled}
+              pageTitle={currentPage.title}
+              pageSubtitle={currentPage.subtitle}
+            />
             <main className="relative z-10 flex-1 px-4 pb-10 pt-6 sm:px-6 lg:px-10">
               <div className="relative mx-auto max-w-6xl">
                 <div className="glass-panel relative overflow-hidden rounded-3xl border border-white/40 bg-white/60 shadow-[0_12px_60px_rgba(15,23,42,0.18)] backdrop-blur-2xl transition-colors duration-500 dark:border-white/10 dark:bg-slate-900/75 dark:shadow-[0_18px_70px_rgba(2,6,23,0.6)]">
