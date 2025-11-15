@@ -97,9 +97,11 @@ const QuickExploreCard: React.FC<QuickExploreCardProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-slate-950/75 px-4 py-10 backdrop-blur-[22px]">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-transparent px-4 py-10 backdrop-blur-[26px]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.4),_transparent_65%)] dark:bg-[radial-gradient(circle_at_top,_rgba(15,23,42,0.45),_transparent_70%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/25 via-transparent to-slate-200/20 dark:from-slate-900/55 dark:via-slate-900/25 dark:to-slate-950/60" />
       <div className="absolute inset-0 animate-[driftGlow_30s_ease-in-out_infinite] bg-[radial-gradient(circle_at_center,_rgba(43,131,198,0.28),_transparent_62%)]" />
-      <div className="relative w-full max-w-4xl overflow-hidden rounded-[2.25rem] border border-white/40 bg-white/85 shadow-[0_35px_110px_rgba(15,23,42,0.4)] backdrop-blur-[32px] transition-colors duration-500 dark:border-white/10 dark:bg-slate-950/85 dark:shadow-[0_45px_130px_rgba(2,6,23,0.85)]">
+      <div className="relative w-full max-w-4xl overflow-hidden rounded-[2.25rem] border border-white/30 bg-white/65 shadow-[0_28px_120px_rgba(15,23,42,0.28)] backdrop-blur-[36px] transition-colors duration-500 dark:border-white/5 dark:bg-slate-900/55 dark:shadow-[0_38px_140px_rgba(2,6,23,0.65)]">
         <button
           type="button"
           onClick={onClose}
