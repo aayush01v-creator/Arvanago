@@ -27,7 +27,7 @@ const Header: React.FC<HeaderProps> = ({
           : 'border-white/10 bg-white/40 shadow-[0_8px_22px_rgba(15,23,42,0.15)] backdrop-blur-xl dark:border-white/5 dark:bg-slate-900/40 dark:shadow-[0_12px_32px_rgba(15,23,42,0.45)]'
       }`}
     >
-      <div className="relative mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+      <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 xl:px-12 2xl:max-w-[1400px]">
         <div className="flex h-16 items-center justify-between gap-3 md:h-20 md:grid md:grid-cols-[auto_1fr_auto] md:items-center md:gap-6">
           <div className="flex items-center gap-3">
             <button
