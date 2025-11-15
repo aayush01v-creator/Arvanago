@@ -232,8 +232,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigateHome }) => {
 
                 {/* Right Panel - Auth Form */}
                 <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-                    <button onClick={onNavigateHome} className="absolute top-4 right-4 text-slate-500 dark:text-slate-400 hover:text-brand-primary transition">
-                        <Icon name="x" className="w-6 h-6"/>
+                    <button
+                        onClick={onNavigateHome}
+                        className="absolute top-4 right-4 rounded-full bg-white/70 p-1.5 text-slate-600 shadow-sm transition hover:bg-white/80 hover:text-slate-800 dark:bg-slate-900/70 dark:text-slate-200 dark:shadow-[0_12px_24px_rgba(2,6,23,0.35)] dark:hover:bg-slate-800/70 dark:hover:text-white"
+                    >
+                        <Icon name="x" className="w-5 h-5"/>
                     </button>
                     <div>
                         <div className="relative flex border-b border-slate-200 dark:border-slate-600 mb-6">
