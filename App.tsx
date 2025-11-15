@@ -245,14 +245,14 @@ const App: React.FC = () => {
             />
           }
         >
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="my-learnings" element={<MyLearningsPage />} />
-          <Route path="explore" element={<ExploreCoursesPage />} />
-          <Route path="leaderboard" element={<LeaderboardPage />} />
-          <Route path="profile" element={<ProfilePage />} />
-          <Route path="courses/:courseId" element={<CourseDetailPage />} />
-          <Route path="courses/:courseId/lectures/:lectureId" element={<CourseLecturePage />} />
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/my-learnings" element={<MyLearningsPage />} />
+          <Route path="/explore" element={<ExploreCoursesPage />} />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/courses/:courseId" element={<CourseDetailPage />} />
+          <Route path="/courses/:courseId/lectures/:lectureId" element={<CourseLecturePage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to={user ? '/dashboard' : '/'} replace />} />
