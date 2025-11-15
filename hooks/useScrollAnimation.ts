@@ -5,28 +5,38 @@ export const useScrollAnimation = () => {
   const elementRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const element = elementRef.current;
+
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (!('IntersectionObserver' in window)) {
+      element?.classList.add('is-visible');
+      return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add('is-visible');
-            observer.unobserve(entry.target); // Optional: unobserve after animation
+            observer.unobserve(entry.target);
           }
         });
       },
       {
-        threshold: 0.1, // Trigger when 10% of the element is visible
-      }
+        threshold: 0.1,
+      },
     );
 
-    const currentElement = elementRef.current;
-    if (currentElement) {
-      observer.observe(currentElement);
+    if (element) {
+      observer.observe(element);
     }
 
     return () => {
-      if (currentElement) {
-        observer.unobserve(currentElement);
+      if (element) {
+        observer.unobserve(element);
       }
     };
   }, []);
