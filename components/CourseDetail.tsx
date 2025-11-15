@@ -365,10 +365,10 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course, navigateToLecture, 
     <div className="relative bg-slate-50 pb-16 dark:bg-slate-950">
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] bg-gradient-to-b from-brand-primary/15 via-white/70 to-transparent dark:via-slate-900/70" />
       <div className="mx-auto max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
-        <section className="relative overflow-hidden rounded-[2.5rem] border border-slate-200/10 bg-slate-950 text-white shadow-[0_35px_90px_rgba(15,23,42,0.35)]">
-          <div className="grid gap-10 px-8 py-10 lg:grid-cols-[minmax(0,7fr)_minmax(280px,4fr)] lg:px-12 lg:py-14">
+        <section className="relative overflow-hidden rounded-[1.75rem] border border-slate-200/10 bg-slate-950 text-white shadow-[0_35px_90px_rgba(15,23,42,0.35)] sm:rounded-[2.5rem]">
+          <div className="grid gap-8 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,7fr)_minmax(280px,4fr)] lg:items-start lg:gap-12 lg:px-12 lg:py-14">
             <div className="space-y-8">
-              <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                 <button
                   type="button"
                   onClick={() => {
@@ -401,7 +401,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course, navigateToLecture, 
                 <p className="max-w-3xl text-base leading-relaxed text-white/80">{course.description}</p>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 text-sm text-white/70">
+              <div className="flex flex-wrap items-center gap-2 text-sm text-white/70 sm:gap-3">
                 <span className="inline-flex items-center gap-1 font-semibold text-amber-300">
                   <Icon name="star" className="h-4 w-4" />
                   {(course.rating ?? 4.8).toFixed(1)} rating
@@ -423,7 +423,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course, navigateToLecture, 
                 )}
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.3em] text-white/60">
+              <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.3em] text-white/60 sm:gap-3">
                 {course.lastUpdated ?? course.updatedAt ? (
                   <CourseMetaItem icon="refreshCw" label={`Updated ${course.lastUpdated ?? course.updatedAt}`} />
                 ) : null}
@@ -458,7 +458,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course, navigateToLecture, 
               </div>
             </div>
 
-            <aside className="space-y-6">
+            <aside className="space-y-6 lg:sticky lg:top-24">
               <div className="relative overflow-hidden rounded-[1.8rem] border border-white/10 bg-black/40">
                 <img
                   src={course.previewImageUrl ?? course.thumbnailUrl ?? course.thumbnail}
@@ -525,7 +525,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course, navigateToLecture, 
           </div>
         </section>
 
-        <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(320px,4fr)]">
+        <div className="mt-12 grid gap-8 sm:gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(320px,4fr)] lg:gap-14">
           <div className="space-y-8">
             <InfoCard title="What you'll learn" eyebrow="Outcomes">
               <ul className="grid gap-3 md:grid-cols-2">
