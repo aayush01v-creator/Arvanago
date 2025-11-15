@@ -32,7 +32,11 @@ const DashboardCourseCard: React.FC<{ course: Course; navigateToCourse: (course:
     const ref = useScrollAnimation();
     return (
     <div ref={ref} className="bg-white dark:bg-slate-800 rounded-2xl shadow-md dark:shadow-dark-glow border border-slate-100 dark:border-slate-700 overflow-hidden group transition-all duration-300 hover:shadow-xl dark:hover:shadow-dark-glow-hover hover:-translate-y-1 scroll-animate flex flex-col">
-        <img src={course.thumbnail} alt={course.title} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" />
+        <img
+            src={course.thumbnailUrl ?? course.thumbnail}
+            alt={course.title}
+            className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500"
+        />
         <div className="p-5 flex flex-col flex-grow">
             <h3 className="font-bold text-lg text-gray-900 dark:text-white truncate flex-grow">{course.title}</h3>
             <div className="mt-4 mb-5">

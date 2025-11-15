@@ -33,7 +33,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course, navigateToLecture }
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden mb-8">
         <div className="md:flex">
           <div className="md:flex-shrink-0">
-            <img className="h-48 w-full object-cover md:w-64" src={course.thumbnail} alt={course.title} />
+            <img className="h-48 w-full object-cover md:w-64" src={course.thumbnailUrl ?? course.thumbnail} alt={course.title} />
           </div>
           <div className="p-8 flex-1">
             <div className="uppercase tracking-wide text-sm text-brand-primary font-semibold">{course.category}</div>
