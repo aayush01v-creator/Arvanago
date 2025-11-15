@@ -164,7 +164,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigateHome }) => {
             <div className="absolute -top-1/4 -left-1/4 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-blob dark:opacity-20"></div>
             <div className="absolute -bottom-1/4 -right-1/4 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-blob dark:opacity-20" style={{animationDelay: '2s'}}></div>
 
-            <div className="w-full max-w-5xl bg-white/55 dark:bg-slate-800/60 backdrop-blur-2xl rounded-[2rem] shadow-2xl flex flex-col md:flex-row overflow-hidden border border-white/40 dark:border-slate-700/50 relative z-10">
+            <div className="w-full max-w-6xl bg-white/55 dark:bg-slate-800/60 backdrop-blur-2xl rounded-[2rem] shadow-2xl flex flex-col md:flex-row overflow-hidden border border-white/40 dark:border-slate-700/50 relative z-10">
                 {/* Left Panel - Welcome/Info */}
                 <div className="w-full md:w-1/2 p-8 md:p-12 text-white flex flex-col justify-center items-center md:items-start text-center md:text-left relative overflow-hidden">
                     <div className="absolute inset-0 z-0">
@@ -208,7 +208,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigateHome }) => {
                         </div>
 
                         <div className="mx-auto md:mx-0 mt-6 sm:mt-8 w-full max-w-md sm:max-w-none">
-                            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible sm:pb-0 sm:snap-none">
+                            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible sm:pb-0 sm:snap-none lg:gap-4">
                                 {highlightTiles.map(tile => (
                                     <div
                                         key={tile.id}
@@ -238,7 +238,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigateHome }) => {
                     >
                         <Icon name="x" className="w-5 h-5"/>
                     </button>
-                    <div>
+                    <div className="w-full max-w-md mx-auto">
                         <div className="relative flex border-b border-slate-200 dark:border-slate-600 mb-6">
                             <button onClick={() => switchTab('signin')} className={`w-1/2 pb-3 font-semibold text-lg transition-colors duration-300 ${activeTab === 'signin' ? 'text-brand-primary' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>Sign In</button>
                             <button onClick={() => switchTab('signup')} className={`w-1/2 pb-3 font-semibold text-lg transition-colors duration-300 ${activeTab === 'signup' ? 'text-brand-primary' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>Sign Up</button>
