@@ -197,33 +197,35 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigateHome }) => {
                     </div>
 
                     {/* Content */}
-                    <div className="relative z-10 w-full space-y-8">
-                        <div key={activeTab} className="animate-fade-in space-y-5">
+                    <div className="relative z-10 w-full space-y-6 sm:space-y-8">
+                        <div key={activeTab} className="animate-fade-in space-y-4 sm:space-y-5">
                             <div className="flex items-center justify-center">
                                 <img src={LOGO_URL} alt="Edusimulate Logo" className="h-10 mr-3" />
                                 <span className="text-3xl font-extrabold text-shadow text-white">Edusimulate</span>
                             </div>
-                            <h1 className="text-3xl sm:text-4xl font-extrabold text-shadow md:tracking-tight">{welcomeContent[activeTab].title}</h1>
-                            <p className="text-base sm:text-lg opacity-90 max-w-sm mx-auto md:mx-0">{welcomeContent[activeTab].subtitle}</p>
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-shadow md:tracking-tight">{welcomeContent[activeTab].title}</h1>
+                            <p className="text-sm sm:text-base md:text-lg opacity-90 max-w-sm mx-auto md:mx-0">{welcomeContent[activeTab].subtitle}</p>
                         </div>
 
-                        <div className="mx-auto md:mx-0 mt-8 grid w-full max-w-md grid-cols-1 gap-3 sm:max-w-none sm:grid-cols-3">
-                            {highlightTiles.map(tile => (
-                                <div
-                                    key={tile.id}
-                                    className="glass-reflection rounded-2xl border border-white/40 bg-white/20 p-4 text-left shadow-[0_18px_48px_rgba(15,23,42,0.28)] backdrop-blur-xl"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-white shadow-inner shadow-white/40">
-                                            <Icon name={tile.icon} className="h-6 w-6" />
-                                        </span>
-                                        <div>
-                                            <p className="font-semibold leading-tight">{tile.title}</p>
-                                            <p className="text-xs text-white/70">{tile.subtitle}</p>
+                        <div className="mx-auto md:mx-0 mt-6 sm:mt-8 w-full max-w-md sm:max-w-none">
+                            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible sm:pb-0 sm:snap-none">
+                                {highlightTiles.map(tile => (
+                                    <div
+                                        key={tile.id}
+                                        className="glass-reflection rounded-2xl border border-white/40 bg-white/20 p-4 text-left shadow-[0_18px_48px_rgba(15,23,42,0.28)] backdrop-blur-xl flex-shrink-0 min-w-[11rem] sm:min-w-0"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-white shadow-inner shadow-white/40">
+                                                <Icon name={tile.icon} className="h-6 w-6" />
+                                            </span>
+                                            <div>
+                                                <p className="font-semibold leading-tight">{tile.title}</p>
+                                                <p className="text-xs text-white/70">{tile.subtitle}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
