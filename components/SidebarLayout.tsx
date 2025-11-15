@@ -151,12 +151,6 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
     [navigate],
   );
 
-  const handleQuickExploreSecondary = useCallback(() => {
-    setQuickExploreOpen(false);
-    setHighlightCourseId(null);
-    navigate('/explore');
-  }, [navigate]);
-
   const currentPage = useMemo(() => {
     const segments = location.pathname.split('?')[0]?.split('/').filter(Boolean) ?? [];
     const [first, second, third, fourth] = segments;
@@ -269,8 +263,6 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({
         courses={prioritizedCourses}
         onClose={handleQuickExploreClose}
         onExploreCourse={handleQuickExplorePrimary}
-        onSecondaryAction={handleQuickExploreSecondary}
-        secondaryLabel="View full catalog"
         primaryLabel="Go to course"
         highlightCourseId={highlightCourseId ?? undefined}
       />
