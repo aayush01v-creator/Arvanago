@@ -50,12 +50,17 @@ const App: React.FC = () => {
   }, [isDarkMode]);
 
   const fetchSequenceRef = useRef(0);
+  const coursesLengthRef = useRef(0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    coursesLengthRef.current = courses.length;
+  }, [courses.length]);
 
   const fetchCourseData = useCallback(
     async (options?: { forceRefresh?: boolean }) => {
       const requestId = ++fetchSequenceRef.current;
-      const shouldShowLoading = options?.forceRefresh || courses.length === 0;
+      const shouldShowLoading = options?.forceRefresh || coursesLengthRef.current === 0;
       if (shouldShowLoading) {
         setCoursesLoading(true);
       }
@@ -63,6 +68,7 @@ const App: React.FC = () => {
         const courseData = await getCourses({ forceRefresh: options?.forceRefresh });
         if (fetchSequenceRef.current === requestId) {
           setCourses(courseData);
+          coursesLengthRef.current = courseData.length;
           setCoursesError(null);
         }
       } catch (error) {
@@ -76,12 +82,8 @@ const App: React.FC = () => {
         }
       }
     },
-    [courses.length],
+    [],
   );
-
-  useEffect(() => {
-    void fetchCourseData();
-  }, [fetchCourseData]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
@@ -99,16 +101,18 @@ const App: React.FC = () => {
           setUser(null);
         } finally {
           setAuthReady(true);
+          void fetchCourseData({ forceRefresh: true });
         }
       } else {
         setUser(null);
         clearCoursesCache();
         setAuthReady(true);
+        void fetchCourseData({ forceRefresh: true });
       }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [fetchCourseData]);
 
   const persistThemePreference = useCallback((mode: boolean, currentUser: User | null) => {
     if (typeof window === 'undefined') {
