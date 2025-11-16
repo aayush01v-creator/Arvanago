@@ -18,15 +18,7 @@ const HomePage: React.FC<HomePageProps> = ({ user, courses, isLoading, error, on
     return <Navigate to="/dashboard" replace />;
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900">
-        <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-brand-primary" />
-      </div>
-    );
-  }
-
-  if (error) {
+  if (error && courses.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900 px-4 text-center space-y-4">
         <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">We couldn't load our courses right now.</h2>
@@ -36,11 +28,21 @@ const HomePage: React.FC<HomePageProps> = ({ user, courses, isLoading, error, on
   }
 
   return (
-    <Homepage
-      onNavigateToLogin={() => navigate('/login')}
-      onCourseSelect={onCourseSelect}
-      courses={courses}
-    />
+    <>
+      {error && (
+        <div className="bg-amber-50 text-amber-900 px-4 py-3 text-sm text-center">
+          <p>
+            {error} — showing the latest available preview instead.
+          </p>
+        </div>
+      )}
+      <Homepage
+        onNavigateToLogin={() => navigate('/login')}
+        onCourseSelect={onCourseSelect}
+        courses={courses}
+        isLoadingCourses={isLoading}
+      />
+    </>
   );
 };
 
