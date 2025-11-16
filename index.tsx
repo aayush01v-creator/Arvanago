@@ -3,6 +3,7 @@
 // before any other component tries to use them. This fixes the
 // "Component auth has not been registered yet" error.
 import './services/firebase.ts';
+import './index.css';
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
