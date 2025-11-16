@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Course, Lecture, CourseSection } from '../types.ts';
 import Icon from './common/Icon.tsx';
+import GlassPreviewPlayer from './media/GlassPreviewPlayer.tsx';
 import { LOGO_URL } from '../constants.ts';
 
 import { safeLocalStorage } from '@/utils/safeStorage';
@@ -113,6 +114,11 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ course, onLoginClick, onB
     const [selectedLecture, setSelectedLecture] = useState<Lecture | null>(getInitialLecture(course));
     const [isWishlisted, setIsWishlisted] = useState(false);
     const isPaid = course.isPaid ?? !course.isFree;
+
+    const previewVideoSource = course.previewVideoUrl || selectedLecture?.videoUrl;
+    const previewPoster = course.previewImageUrl ?? course.thumbnailUrl ?? course.thumbnail;
+    const previewTitle = selectedLecture?.title ?? course.title;
+    const previewCaption = selectedLecture?.duration ?? course.totalDuration ?? undefined;
 
     const formattedPrice = useMemo(() => {
         if (!isPaid) {
@@ -242,19 +248,12 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ course, onLoginClick, onB
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Center Column */}
                         <div className="lg:col-span-2 space-y-8">
-                            <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-                                <div className="aspect-w-16 aspect-h-9 relative group">
-                                    <img src={course.thumbnailUrl ?? course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
-                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                        <button onClick={onLoginClick} aria-label="Play course preview" className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white transform group-hover:scale-110 transition-transform duration-300">
-                                            <Icon name="play" className="w-10 h-10 ml-1" />
-                                        </button>
-                                    </div>
-                                    <div className="absolute bottom-0 left-0 p-4">
-                                        <p className="text-white font-semibold text-shadow">{selectedLecture?.title || 'Course Introduction'}</p>
-                                    </div>
-                                </div>
-                            </div>
+                            <GlassPreviewPlayer
+                                videoUrl={previewVideoSource}
+                                poster={previewPoster}
+                                title={previewTitle}
+                                caption={previewCaption}
+                            />
                              
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-3">

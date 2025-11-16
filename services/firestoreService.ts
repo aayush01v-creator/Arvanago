@@ -929,9 +929,11 @@ const hydrateCourseFromDoc = async (
       ? rawData.previewVideoUrl
       : typeof rawData.previewUrl === 'string'
         ? rawData.previewUrl
-        : typeof rawData.previewVideo === 'string'
-          ? rawData.previewVideo
-          : undefined;
+        : typeof rawData.previewURL === 'string'
+          ? rawData.previewURL
+          : typeof rawData.previewVideo === 'string'
+            ? rawData.previewVideo
+            : undefined;
 
   const previewImageUrl =
     typeof rawData.previewImageUrl === 'string'
