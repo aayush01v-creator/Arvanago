@@ -1,5 +1,5 @@
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Course, User } from './types.ts';
 import { auth } from './services/firebase.ts';
 import { clearCoursesCache, getCourses, getOrCreateUser, updateUserThemePreference } from './services/firestoreService.ts';
@@ -52,6 +52,7 @@ const App: React.FC = () => {
   const fetchSequenceRef = useRef(0);
   const coursesLengthRef = useRef(0);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     coursesLengthRef.current = courses.length;
@@ -84,6 +85,10 @@ const App: React.FC = () => {
     },
     [],
   );
+
+  useEffect(() => {
+    void fetchCourseData();
+  }, [fetchCourseData]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
@@ -194,7 +199,9 @@ const App: React.FC = () => {
     [navigate],
   );
 
-  if (!authReady) {
+  const isHomeRoute = location.pathname === '/';
+
+  if (!authReady && !isHomeRoute) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900">
         <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-brand-primary" />
