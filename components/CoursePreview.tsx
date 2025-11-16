@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Course, Lecture, CourseSection } from '../types.ts';
 import Icon from './common/Icon.tsx';
 import { LOGO_URL } from '../constants.ts';
+import { safeLocalStorage } from '@/utils/safeStorage';
 
 interface CoursePreviewProps {
   course: Course;
@@ -76,6 +77,21 @@ const FaqItem: React.FC<{ faq: { question: string; answer: string } }> = ({ faq 
             </div>
         </div>
     );
+};
+
+const readWishlistFromStorage = (): string[] => {
+    const storedWishlist = safeLocalStorage.getItem('wishlist');
+    if (!storedWishlist) {
+        return [];
+    }
+
+    try {
+        const parsed = JSON.parse(storedWishlist);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+        console.warn('Unable to parse wishlist from storage.', error);
+        return [];
+    }
 };
 
 const StarRating: React.FC<{ rating: number }> = ({ rating }) => {
@@ -167,14 +183,14 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ course, onLoginClick, onB
     }, [course.currency, course.price, isPaid]);
 
     useEffect(() => {
-        const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+        const wishlist = readWishlistFromStorage();
         setIsWishlisted(wishlist.includes(course.id));
     }, [course.id]);
 
     const toggleWishlist = () => {
-        const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+        const wishlist = readWishlistFromStorage();
         const newWishlist = isWishlisted ? wishlist.filter((id: string) => id !== course.id) : [...wishlist, course.id];
-        localStorage.setItem('wishlist', JSON.stringify(newWishlist));
+        safeLocalStorage.setItem('wishlist', JSON.stringify(newWishlist));
         setIsWishlisted(!isWishlisted);
     };
 
