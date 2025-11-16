@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Icon from '@/components/common/Icon.tsx';
 
 const playbackSpeeds = [0.75, 1, 1.25, 1.5, 1.75, 2];
@@ -225,6 +225,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
   const youtubePlayerRef = useRef<YouTubePlayer | null>(null);
   const progressIntervalRef = useRef<number | null>(null);
   const playerShellRef = useRef<HTMLDivElement | null>(null);
+  const hideControlsTimeoutRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
   const [playerReady, setPlayerReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -236,6 +237,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isPosterVisible, setIsPosterVisible] = useState(Boolean(poster && videoUrl));
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [areControlsVisible, setAreControlsVisible] = useState(true);
   const settingsPanelRef = useRef<HTMLDivElement | null>(null);
   const settingsButtonRef = useRef<HTMLButtonElement | null>(null);
   const tapTimestamps = useRef<{ back: number; forward: number }>({ back: 0, forward: 0 });
@@ -545,15 +547,70 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
   };
 
   const progressPercent = duration ? Math.min(100, (currentTime / duration) * 100) : 0;
+  const responsivePlayerStyle = useMemo<CSSProperties>(
+    () => ({
+      aspectRatio: '16 / 9',
+      width: '100%',
+      minHeight: '220px',
+      maxHeight: 'min(70vh, 640px)',
+    }),
+    [],
+  );
+
+  const clearHideControlsTimeout = useCallback(() => {
+    if (hideControlsTimeoutRef.current) {
+      window.clearTimeout(hideControlsTimeoutRef.current);
+      hideControlsTimeoutRef.current = null;
+    }
+  }, []);
+
+  const scheduleHideControls = useCallback(() => {
+    clearHideControlsTimeout();
+    if (!isPlaying) {
+      return;
+    }
+    hideControlsTimeoutRef.current = window.setTimeout(() => {
+      setAreControlsVisible(false);
+      hideControlsTimeoutRef.current = null;
+    }, 3000);
+  }, [clearHideControlsTimeout, isPlaying]);
+
+  const revealControlsTemporarily = useCallback(() => {
+    setAreControlsVisible(true);
+    scheduleHideControls();
+  }, [scheduleHideControls]);
+
+  useEffect(() => {
+    if (isPlaying) {
+      revealControlsTemporarily();
+    } else {
+      clearHideControlsTimeout();
+      setAreControlsVisible(true);
+    }
+  }, [clearHideControlsTimeout, isPlaying, revealControlsTemporarily]);
+
+  useEffect(() => () => clearHideControlsTimeout(), [clearHideControlsTimeout]);
+
+  useEffect(() => {
+    if (isSettingsOpen) {
+      clearHideControlsTimeout();
+      setAreControlsVisible(true);
+    } else if (isPlaying) {
+      scheduleHideControls();
+    }
+  }, [clearHideControlsTimeout, isPlaying, isSettingsOpen, scheduleHideControls]);
 
   return (
     <div className="relative">
       <div
         ref={playerShellRef}
         className="relative overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-white/30 via-white/5 to-white/10 dark:from-slate-900/60 dark:via-slate-900/40 dark:to-slate-900/30 backdrop-blur-2xl shadow-[0_45px_85px_rgba(15,23,42,0.55)]"
+        onPointerDown={revealControlsTemporarily}
+        onMouseMove={revealControlsTemporarily}
+        onTouchStart={revealControlsTemporarily}
       >
         <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black/60 via-black/30 to-transparent pointer-events-none" />
-        <div className="relative aspect-video w-full overflow-hidden">
+        <div className="relative w-full overflow-hidden" style={responsivePlayerStyle}>
           {videoUrl ? (
             isYouTube ? (
               <div className="relative h-full w-full">
@@ -637,7 +694,9 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
         </div>
 
         {/* Controls */}
-        <div className="relative z-10 flex flex-col gap-5 px-4 pb-5 pt-4 sm:px-6 sm:pb-6 sm:pt-5">
+        <div
+          className={`relative z-10 flex flex-col gap-5 px-4 pb-5 pt-4 transition-all duration-300 sm:px-6 sm:pb-6 sm:pt-5 ${areControlsVisible ? 'pointer-events-auto opacity-100 translate-y-0' : 'pointer-events-none opacity-0 translate-y-3'}`}
+        >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
             <button
               type="button"
