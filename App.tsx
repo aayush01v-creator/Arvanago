@@ -12,7 +12,7 @@ const GLOBAL_THEME_KEY = 'edusimulate:theme';
 
 const DashboardPage = React.lazy(() => import('@/pages/DashboardPage'));
 const MyLearningsPage = React.lazy(() => import('@/pages/MyLearningsPage'));
-const ExploreCoursesPage = React.lazy(() => import('@/pages/ExploreCoursesPage'));
+const PublicExplorePage = React.lazy(() => import('@/pages/PublicExplorePage'));
 const LeaderboardPage = React.lazy(() => import('@/pages/LeaderboardPage'));
 const ProfilePage = React.lazy(() => import('@/pages/ProfilePage'));
 const CourseDetailPage = React.lazy(() => import('@/pages/CourseDetailPage'));
@@ -187,35 +187,43 @@ const App: React.FC = () => {
 
   const handlePublicCourseSelect = useCallback(
     (course: Course) => {
-
       safeLocalStorage.setItem(PENDING_COURSE_STORAGE_KEY, course.id);
       navigate('/login');
     },
     [navigate],
   );
 
-  console.log('APP_RENDER', { authReady, user, path: location.pathname });
+  const handleExploreCourseNavigate = useCallback(
+    (course: Course) => {
+      if (user) {
+        navigate(`/courses/${course.id}`);
+        return;
+      }
 
-  if (!authReady) {
-    return <SuspenseFallback />;
-  }
+      handlePublicCourseSelect(course);
+    },
+    [handlePublicCourseSelect, navigate, user],
+  );
+
+  console.log('APP_RENDER', { authReady, user, path: location.pathname });
 
   return (
     <Suspense fallback={<SuspenseFallback />}>
       <Routes>
+        <Route path="/" element={<HomePage user={user} />} />
+        <Route path="/login" element={<LoginRoute user={user} />} />
         <Route
-          path="/"
+          path="/explore"
           element={
-            <HomePage
-              user={user}
+            <PublicExplorePage
               courses={courses}
               isLoading={coursesLoading}
               error={coursesError}
-              onCourseSelect={handlePublicCourseSelect}
+              onCourseSelect={handleExploreCourseNavigate}
+              onRefreshCourses={fetchCourseData}
             />
           }
         />
-        <Route path="/login" element={<LoginRoute user={user} />} />
         <Route
           path="/courses/:courseId/preview"
           element={
@@ -228,9 +236,9 @@ const App: React.FC = () => {
             />
           }
         />
-        <Route
-          element={
-            <ProtectedRoute user={user}>
+        <Route element={<ProtectedRoute user={user} authReady={authReady} />}>
+          <Route
+            element={
               <SidebarLayout
                 user={user!}
                 courses={courses}
@@ -241,17 +249,15 @@ const App: React.FC = () => {
                 coursesError={coursesError}
                 onRefreshCourses={fetchCourseData}
               />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/my-learnings" element={<MyLearningsPage />} />
-          <Route path="/explore" element={<ExploreCoursesPage />} />
-          <Route path="/leaderboard" element={<LeaderboardPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/courses/:courseId" element={<CourseDetailPage />} />
-          <Route path="/courses/:courseId/lectures/:lectureId" element={<CourseLecturePage />} />
+            }
+          >
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/my-learnings" element={<MyLearningsPage />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/courses/:courseId" element={<CourseDetailPage />} />
+            <Route path="/courses/:courseId/lectures/:lectureId" element={<CourseLecturePage />} />
+          </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
