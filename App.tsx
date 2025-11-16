@@ -12,7 +12,7 @@ const GLOBAL_THEME_KEY = 'edusimulate:theme';
 
 const DashboardPage = React.lazy(() => import('@/pages/DashboardPage'));
 const MyLearningsPage = React.lazy(() => import('@/pages/MyLearningsPage'));
-const ExploreCoursesPage = React.lazy(() => import('@/pages/ExploreCoursesPage'));
+const PublicExplorePage = React.lazy(() => import('@/pages/PublicExplorePage'));
 const LeaderboardPage = React.lazy(() => import('@/pages/LeaderboardPage'));
 const ProfilePage = React.lazy(() => import('@/pages/ProfilePage'));
 const CourseDetailPage = React.lazy(() => import('@/pages/CourseDetailPage'));
@@ -187,14 +187,18 @@ const App: React.FC = () => {
 
   const handlePublicCourseSelect = useCallback(
     (course: Course) => {
-
       safeLocalStorage.setItem(PENDING_COURSE_STORAGE_KEY, course.id);
       navigate('/login');
     },
     [navigate],
   );
 
-  console.log('APP_RENDER', { authReady, user, path: location.pathname });
+  const handleExploreCourseNavigate = useCallback(
+    (course: Course) => {
+      if (user) {
+        navigate(`/courses/${course.id}`);
+        return;
+      }
 
   return (
     <>
@@ -222,11 +226,11 @@ const App: React.FC = () => {
               courses={courses}
               isLoading={coursesLoading}
               error={coursesError}
-              onCourseSelect={handlePublicCourseSelect}
+              onCourseSelect={handleExploreCourseNavigate}
+              onRefreshCourses={fetchCourseData}
             />
           }
         />
-        <Route path="/login" element={<LoginRoute user={user} />} />
         <Route
           path="/courses/:courseId/preview"
             element={
