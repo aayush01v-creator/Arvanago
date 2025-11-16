@@ -196,10 +196,6 @@ const App: React.FC = () => {
 
   console.log('APP_RENDER', { authReady, user, path: location.pathname });
 
-  if (!authReady) {
-    return <SuspenseFallback />;
-  }
-
   return (
     <Suspense fallback={<SuspenseFallback />}>
       <Routes>
@@ -228,9 +224,9 @@ const App: React.FC = () => {
             />
           }
         />
-        <Route
-          element={
-            <ProtectedRoute user={user}>
+        <Route element={<ProtectedRoute user={user} authReady={authReady} />}>
+          <Route
+            element={
               <SidebarLayout
                 user={user!}
                 courses={courses}
@@ -241,17 +237,17 @@ const App: React.FC = () => {
                 coursesError={coursesError}
                 onRefreshCourses={fetchCourseData}
               />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/my-learnings" element={<MyLearningsPage />} />
-          <Route path="/explore" element={<ExploreCoursesPage />} />
-          <Route path="/leaderboard" element={<LeaderboardPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/courses/:courseId" element={<CourseDetailPage />} />
-          <Route path="/courses/:courseId/lectures/:lectureId" element={<CourseLecturePage />} />
+            }
+          >
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/my-learnings" element={<MyLearningsPage />} />
+            <Route path="/explore" element={<ExploreCoursesPage />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/courses/:courseId" element={<CourseDetailPage />} />
+            <Route path="/courses/:courseId/lectures/:lectureId" element={<CourseLecturePage />} />
+          </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
