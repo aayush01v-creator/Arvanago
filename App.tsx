@@ -6,6 +6,8 @@ import { clearCoursesCache, getCourses, getOrCreateUser, updateUserThemePreferen
 import SidebarLayout from './components/SidebarLayout.tsx';
 import ProtectedRoute from './components/ProtectedRoute.tsx';
 import { PENDING_COURSE_STORAGE_KEY } from './constants.ts';
+import HomePage from '@/pages/HomePage';
+import { safeLocalStorage } from './utils/safeLocalStorage.ts';
 
 const GLOBAL_THEME_KEY = 'edusimulate:theme';
 
@@ -16,7 +18,6 @@ const LeaderboardPage = React.lazy(() => import('@/pages/LeaderboardPage'));
 const ProfilePage = React.lazy(() => import('@/pages/ProfilePage'));
 const CourseDetailPage = React.lazy(() => import('@/pages/CourseDetailPage'));
 const CourseLecturePage = React.lazy(() => import('@/pages/CourseLecturePage'));
-const HomePage = React.lazy(() => import('@/pages/HomePage'));
 const LoginRoute = React.lazy(() => import('@/pages/LoginRoute'));
 const CoursePreviewPage = React.lazy(() => import('@/pages/CoursePreviewPage'));
 
@@ -33,10 +34,7 @@ const App: React.FC = () => {
   const [coursesError, setCoursesError] = useState<string | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    if (typeof window === 'undefined') {
-      return false;
-    }
-    const stored = window.localStorage.getItem(GLOBAL_THEME_KEY);
+    const stored = safeLocalStorage.get(GLOBAL_THEME_KEY);
     return stored === 'dark';
   });
 
@@ -120,14 +118,11 @@ const App: React.FC = () => {
   }, [fetchCourseData]);
 
   const persistThemePreference = useCallback((mode: boolean, currentUser: User | null) => {
-    if (typeof window === 'undefined') {
-      return;
-    }
     const theme = mode ? 'dark' : 'light';
     if (currentUser) {
-      window.localStorage.setItem(`${GLOBAL_THEME_KEY}:${currentUser.uid}`, theme);
+      safeLocalStorage.set(`${GLOBAL_THEME_KEY}:${currentUser.uid}`, theme);
     } else {
-      window.localStorage.setItem(GLOBAL_THEME_KEY, theme);
+      safeLocalStorage.set(GLOBAL_THEME_KEY, theme);
     }
   }, []);
 
@@ -150,13 +145,13 @@ const App: React.FC = () => {
     }
 
     if (user) {
-      const stored = window.localStorage.getItem(`${GLOBAL_THEME_KEY}:${user.uid}`);
+      const stored = safeLocalStorage.get(`${GLOBAL_THEME_KEY}:${user.uid}`);
       const preference = stored ?? user.themePreference ?? 'light';
       const dark = preference === 'dark';
       setIsDarkMode(dark);
       persistThemePreference(dark, user);
     } else {
-      const stored = window.localStorage.getItem(GLOBAL_THEME_KEY);
+      const stored = safeLocalStorage.get(GLOBAL_THEME_KEY);
       setIsDarkMode(stored === 'dark');
     }
   }, [user, persistThemePreference]);
@@ -166,11 +161,11 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!authReady || !user || typeof window === 'undefined') {
+    if (!authReady || !user) {
       return;
     }
 
-    const pendingCourseId = window.localStorage.getItem(PENDING_COURSE_STORAGE_KEY);
+    const pendingCourseId = safeLocalStorage.get(PENDING_COURSE_STORAGE_KEY);
     if (!pendingCourseId) {
       return;
     }
@@ -179,7 +174,7 @@ const App: React.FC = () => {
       return;
     }
 
-    window.localStorage.removeItem(PENDING_COURSE_STORAGE_KEY);
+    safeLocalStorage.remove(PENDING_COURSE_STORAGE_KEY);
 
     const matchedCourse = courses.find(course => course.id === pendingCourseId);
     if (matchedCourse) {
@@ -191,9 +186,7 @@ const App: React.FC = () => {
 
   const handlePublicCourseSelect = useCallback(
     (course: Course) => {
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(PENDING_COURSE_STORAGE_KEY, course.id);
-      }
+      safeLocalStorage.set(PENDING_COURSE_STORAGE_KEY, course.id);
       navigate('/login');
     },
     [navigate],
