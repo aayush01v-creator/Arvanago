@@ -1,11 +1,10 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import Icon from './common/Icon.tsx';
 import { useScrollAnimation } from '../hooks/useScrollAnimation.ts';
 import { Course } from '../types.ts';
 import { LOGO_URL } from '../constants.ts';
 import { useTypingEffect } from '../hooks/useTypingEffect.ts';
-import QuickExploreCard from './QuickExploreCard.tsx';
 
 interface HomepageProps {
   onNavigateToLogin: () => void;
@@ -110,29 +109,6 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<Course[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [isQuickExploreOpen, setQuickExploreOpen] = useState(false);
-  const [highlightCourseId, setHighlightCourseId] = useState<string | null>(null);
-
-  const prioritizedCourses = useMemo(() => {
-    if (!courses || courses.length === 0) {
-      return [] as Course[];
-    }
-
-    const sorted = [...courses].sort((a, b) => {
-      const priorityA = a.featuredPriority ?? Number.POSITIVE_INFINITY;
-      const priorityB = b.featuredPriority ?? Number.POSITIVE_INFINITY;
-      if (priorityA !== priorityB) {
-        return priorityA - priorityB;
-      }
-
-      const ratingA = typeof a.rating === 'number' ? a.rating : 0;
-      const ratingB = typeof b.rating === 'number' ? b.rating : 0;
-      return ratingB - ratingA;
-    });
-
-    const featured = sorted.filter(course => course.isFeaturedOnHome);
-    return featured.length > 0 ? featured : sorted;
-  }, [courses]);
 
   const subtitles = [
     "Unlock your potential with Edusimulate — where learning comes alive.",
@@ -181,49 +157,13 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
     }
   };
 
-  const handleOpenQuickExplore = (courseId?: string) => {
-    if (prioritizedCourses.length === 0) {
-      return;
-    }
-
-    setHighlightCourseId(courseId ?? prioritizedCourses[0]?.id ?? null);
-    setQuickExploreOpen(true);
-  };
-
   const handleCourseSelection = (course: Course) => {
     setIsSearchModalOpen(false);
-    handleOpenQuickExplore(course.id);
-  };
-
-  const handleQuickExploreClose = () => {
-    setQuickExploreOpen(false);
-    setHighlightCourseId(null);
-  };
-
-  const handleQuickExplorePrimary = (course: Course) => {
-    setQuickExploreOpen(false);
-    setHighlightCourseId(null);
     onCourseSelect(course);
-  };
-
-  const handleQuickExploreSecondary = () => {
-    setQuickExploreOpen(false);
-    setHighlightCourseId(null);
-    onNavigateToLogin();
   };
 
   return (
     <>
-      <QuickExploreCard
-        isOpen={isQuickExploreOpen}
-        courses={prioritizedCourses}
-        onClose={handleQuickExploreClose}
-        onExploreCourse={handleQuickExplorePrimary}
-        onSecondaryAction={handleQuickExploreSecondary}
-        secondaryLabel="Login / Register"
-        primaryLabel="Explore this course"
-        highlightCourseId={highlightCourseId ?? undefined}
-      />
         <div className="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-sans overflow-x-hidden relative">
       {/* Decorative background blobs */}
       <div className="fixed top-0 -left-4 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob dark:opacity-30"></div>
@@ -273,7 +213,7 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
                     <p className="font-semibold text-purple-800 dark:text-purple-200">NEW BATCHES STARTING SOON</p>
                     <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white text-shadow">C++ Basics Course</h2>
                     <button
-                      onClick={() => handleOpenQuickExplore()}
+                      onClick={onNavigateToLogin}
                       className="glass-reflection bg-white/20 dark:bg-white/10 text-slate-900 dark:text-white font-bold py-2 px-5 rounded-full hover:bg-white/30 dark:hover:bg-white/20 transition-all transform hover:scale-105 active:scale-95 backdrop-blur-md border border-white/40 dark:border-white/20 shadow-md animate-glass-glow shadow-brand-primary/30 dark:shadow-brand-primary/20 duration-150 ease-in-out"
                     >
                         Tap to Explore
