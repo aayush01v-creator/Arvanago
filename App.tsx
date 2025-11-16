@@ -7,8 +7,6 @@ import SidebarLayout from './components/SidebarLayout.tsx';
 import ProtectedRoute from './components/ProtectedRoute.tsx';
 import { PENDING_COURSE_STORAGE_KEY } from './constants.ts';
 import HomePage from '@/pages/HomePage';
-import { safeLocalStorage } from './utils/safeStorage.ts';
-
 const GLOBAL_THEME_KEY = 'edusimulate:theme';
 
 const DashboardPage = React.lazy(() => import('@/pages/DashboardPage'));
