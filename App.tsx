@@ -25,6 +25,7 @@ const CourseDetailPage = React.lazy(() => import('@/pages/CourseDetailPage'));
 const CourseLecturePage = React.lazy(() => import('@/pages/CourseLecturePage'));
 const LoginRoute = React.lazy(() => import('@/pages/LoginRoute'));
 const CoursePreviewPage = React.lazy(() => import('@/pages/CoursePreviewPage'));
+const ExploreCoursesPage = React.lazy(() => import('@/pages/ExploreCoursesPage'));
 
 const SuspenseFallback: React.FC = () => (
   <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -219,6 +220,19 @@ const App: React.FC = () => {
     <Suspense fallback={<SuspenseFallback />}>
       <Routes>
         {/* PUBLIC ROUTES */}
+        <Route
+          path="/"
+          element={
+            <HomePage
+              user={user}
+              courses={courses}
+              isLoading={coursesLoading}
+              error={coursesError}
+              onCourseSelect={handlePublicCourseSelect}
+              onRefreshCourses={() => fetchCourseData({ forceRefresh: true })}
+            />
+          }
+        />
         <Route
           path="/explore"
           element={
