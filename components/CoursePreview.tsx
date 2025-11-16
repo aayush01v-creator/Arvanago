@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Course, Lecture, CourseSection } from '../types.ts';
 import Icon from './common/Icon.tsx';
 import { LOGO_URL } from '../constants.ts';
-import { safeLocalStorage } from '@/utils/safeLocalStorage';
+
+import { safeLocalStorage } from '@/utils/safeStorage';
 
 interface CoursePreviewProps {
   course: Course;
@@ -80,7 +81,7 @@ const FaqItem: React.FC<{ faq: { question: string; answer: string } }> = ({ faq 
 };
 
 const readWishlistFromStorage = (): string[] => {
-    const storedWishlist = safeLocalStorage.get('wishlist');
+    const storedWishlist = safeLocalStorage.getItem('wishlist');
     if (!storedWishlist) {
         return [];
     }
@@ -190,7 +191,8 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ course, onLoginClick, onB
     const toggleWishlist = () => {
         const wishlist = readWishlistFromStorage();
         const newWishlist = isWishlisted ? wishlist.filter((id: string) => id !== course.id) : [...wishlist, course.id];
-        safeLocalStorage.set('wishlist', JSON.stringify(newWishlist));
+
+        safeLocalStorage.setItem('wishlist', JSON.stringify(newWishlist));
         setIsWishlisted(!isWishlisted);
     };
 
