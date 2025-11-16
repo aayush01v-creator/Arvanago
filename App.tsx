@@ -2,17 +2,23 @@ import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Course, User } from './types.ts';
 import { auth } from './services/firebase.ts';
-import { clearCoursesCache, getCourses, getOrCreateUser, updateUserThemePreference } from './services/firestoreService.ts';
+import {
+  clearCoursesCache,
+  getCourses,
+  getOrCreateUser,
+  updateUserThemePreference,
+} from './services/firestoreService.ts';
 import SidebarLayout from './components/SidebarLayout.tsx';
 import ProtectedRoute from './components/ProtectedRoute.tsx';
 import { PENDING_COURSE_STORAGE_KEY } from './constants.ts';
 import HomePage from '@/pages/HomePage';
 import { safeLocalStorage } from '@/utils/safeStorage';
+
 const GLOBAL_THEME_KEY = 'edusimulate:theme';
 
 const DashboardPage = React.lazy(() => import('@/pages/DashboardPage'));
 const MyLearningsPage = React.lazy(() => import('@/pages/MyLearningsPage'));
-const PublicExplorePage = React.lazy(() => import('@/pages/PublicExplorePage'));
+const ExploreCoursesPage = React.lazy(() => import('@/pages/ExploreCoursesPage'));
 const LeaderboardPage = React.lazy(() => import('@/pages/LeaderboardPage'));
 const ProfilePage = React.lazy(() => import('@/pages/ProfilePage'));
 const CourseDetailPage = React.lazy(() => import('@/pages/CourseDetailPage'));
@@ -32,8 +38,8 @@ const App: React.FC = () => {
   const [coursesLoading, setCoursesLoading] = useState(true);
   const [coursesError, setCoursesError] = useState<string | null>(null);
   const [authReady, setAuthReady] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
 
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const stored = safeLocalStorage.getItem(GLOBAL_THEME_KEY);
     return stored === 'dark';
   });
@@ -60,9 +66,11 @@ const App: React.FC = () => {
     async (options?: { forceRefresh?: boolean }) => {
       const requestId = ++fetchSequenceRef.current;
       const shouldShowLoading = options?.forceRefresh || coursesLengthRef.current === 0;
+
       if (shouldShowLoading) {
         setCoursesLoading(true);
       }
+
       try {
         const courseData = await getCourses({ forceRefresh: options?.forceRefresh });
         if (fetchSequenceRef.current === requestId) {
@@ -120,7 +128,6 @@ const App: React.FC = () => {
   const persistThemePreference = useCallback((mode: boolean, currentUser: User | null) => {
     const theme = mode ? 'dark' : 'light';
     if (currentUser) {
-
       safeLocalStorage.setItem(`${GLOBAL_THEME_KEY}:${currentUser.uid}`, theme);
     } else {
       safeLocalStorage.setItem(GLOBAL_THEME_KEY, theme);
@@ -141,19 +148,16 @@ const App: React.FC = () => {
   );
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
+    if (typeof window === 'undefined') return;
 
     if (user) {
-
       const stored = safeLocalStorage.getItem(`${GLOBAL_THEME_KEY}:${user.uid}`);
       const preference = stored ?? user.themePreference ?? 'light';
       const dark = preference === 'dark';
+
       setIsDarkMode(dark);
       persistThemePreference(dark, user);
     } else {
-
       const stored = safeLocalStorage.getItem(GLOBAL_THEME_KEY);
       setIsDarkMode(stored === 'dark');
     }
@@ -163,15 +167,12 @@ const App: React.FC = () => {
     setUser((previous) => (previous ? { ...previous, ...updates } : previous));
   }, []);
 
+  // After auth + courses are ready, handle pending course redirect
   useEffect(() => {
-    if (!authReady) {
-      return;
-    }
+    if (!authReady) return;
 
     const pendingCourseId = safeLocalStorage.getItem(PENDING_COURSE_STORAGE_KEY);
-    if (!pendingCourseId || coursesLoading) {
-      return;
-    }
+    if (!pendingCourseId || coursesLoading) return;
 
     safeLocalStorage.removeItem(PENDING_COURSE_STORAGE_KEY);
 
@@ -181,12 +182,13 @@ const App: React.FC = () => {
         replace: true,
       });
     } else {
-      navigate(user ? '/explore' : '/', { replace: true });
+      navigate(user ? '/dashboard' : '/', { replace: true });
     }
   }, [authReady, user, coursesLoading, courses, navigate]);
 
   const handlePublicCourseSelect = useCallback(
     (course: Course) => {
+      // From public pages: remember the target course and send user to login
       safeLocalStorage.setItem(PENDING_COURSE_STORAGE_KEY, course.id);
       navigate('/login');
     },
@@ -200,78 +202,87 @@ const App: React.FC = () => {
         return;
       }
 
+      // Guest → remember intention and go to login
+      safeLocalStorage.setItem(PENDING_COURSE_STORAGE_KEY, course.id);
+      navigate('/login');
+    },
+    [navigate, user],
+  );
+
+  console.log('APP_RENDER', {
+    authReady,
+    user,
+    path: location.pathname,
+  });
+
   return (
-    <>
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          fontSize: 10,
-          background: 'black',
-          color: 'white',
-          padding: '2px 6px',
-          zIndex: 9999,
-        }}
-      >
-        APP_DEBUG authReady={String(authReady)} user={user ? 'yes' : 'no'}
-      </div>
-      <Suspense fallback={<SuspenseFallback />}>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <HomePage
-                user={user}
+    <Suspense fallback={<SuspenseFallback />}>
+      <Routes>
+        {/* PUBLIC ROUTES */}
+        <Route
+          path="/"
+          element={
+            <HomePage
+              user={user}
               courses={courses}
               isLoading={coursesLoading}
               error={coursesError}
               onCourseSelect={handleExploreCourseNavigate}
-              onRefreshCourses={fetchCourseData}
+              onRefreshCourses={() => fetchCourseData({ forceRefresh: true })}
             />
           }
         />
+
+        <Route path="/login" element={<LoginRoute user={user} />} />
+
         <Route
           path="/courses/:courseId/preview"
+          element={
+            <CoursePreviewPage
+              courses={courses}
+              isDarkMode={isDarkMode}
+              onToggleTheme={handleThemeToggle}
+              user={user}
+              isLoading={coursesLoading}
+              onEnroll={handlePublicCourseSelect}
+            />
+          }
+        />
+
+        {/* PRIVATE ROUTES (AUTH REQUIRED) */}
+        <Route element={<ProtectedRoute user={user} authReady={authReady} />}>
+          <Route
             element={
-              <CoursePreviewPage
+              <SidebarLayout
+                user={user!}
                 courses={courses}
                 isDarkMode={isDarkMode}
-                onToggleTheme={handleThemeToggle}
-                user={user}
-                isLoading={coursesLoading}
+                onThemeToggle={handleThemeToggle}
+                onProfileUpdate={handleProfileUpdate}
+                coursesLoading={coursesLoading}
+                coursesError={coursesError}
+                onRefreshCourses={fetchCourseData}
               />
             }
-          />
-          <Route element={<ProtectedRoute user={user} authReady={authReady} />}>
+          >
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/my-learnings" element={<MyLearningsPage />} />
+            <Route path="/explore" element={<ExploreCoursesPage />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/courses/:courseId" element={<CourseDetailPage />} />
             <Route
-              element={
-                <SidebarLayout
-                  user={user!}
-                  courses={courses}
-                  isDarkMode={isDarkMode}
-                  onThemeToggle={handleThemeToggle}
-                  onProfileUpdate={handleProfileUpdate}
-                  coursesLoading={coursesLoading}
-                  coursesError={coursesError}
-                  onRefreshCourses={fetchCourseData}
-                />
-              }
-            >
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/my-learnings" element={<MyLearningsPage />} />
-              <Route path="/explore" element={<ExploreCoursesPage />} />
-              <Route path="/leaderboard" element={<LeaderboardPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/courses/:courseId" element={<CourseDetailPage />} />
-              <Route path="/courses/:courseId/lectures/:lectureId" element={<CourseLecturePage />} />
-            </Route>
+              path="/courses/:courseId/lectures/:lectureId"
+              element={<CourseLecturePage />}
+            />
           </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
-    </>
+        </Route>
+
+        {/* CATCH-ALL */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
 };
 
