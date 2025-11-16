@@ -23,6 +23,12 @@ const icons: { [key: string]: React.ReactNode } = {
   chevronLeft: <polyline points="15 18 9 12 15 6" />,
   chevronDown: <polyline points="6 9 12 15 18 9" />,
   chevronUp: <polyline points="18 15 12 9 6 6" />,
+  pause: (
+    <>
+      <rect x="6" y="4" width="4" height="16" rx="2" />
+      <rect x="14" y="4" width="4" height="16" rx="2" />
+    </>
+  ),
   menu: <><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></>,
   x: <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>,
   star: <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />,
@@ -72,6 +78,18 @@ const icons: { [key: string]: React.ReactNode } = {
   heart: <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />,
   'heart-filled': <path fill="currentColor" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />,
   'more-horizontal': <><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></>,
+  rewind: (
+    <>
+      <polygon points="11 19 2 12 11 5 11 19" />
+      <polygon points="22 19 13 12 22 5 22 19" />
+    </>
+  ),
+  'fast-forward': (
+    <>
+      <polygon points="2 19 11 12 2 5 2 19" />
+      <polygon points="13 19 22 12 13 5 13 19" />
+    </>
+  ),
   video: <><polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" /></>,
   download: <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></>,
   infinity: <path d="M18.5 12c-1.74 0-3.41.81-5.5 3-2.09-2.19-3.76-3-5.5-3s-3.5 1.79-3.5 4 1.64 4 3.5 4c1.74 0 3.41-.81 5.5-3 2.09 2.19 3.76 3 5.5 3 1.86 0 3.5-1.79 3.5-4s-1.64-4-3.5-4Z" />,
