@@ -10,6 +10,7 @@ interface HomepageProps {
   onNavigateToLogin: () => void;
   onCourseSelect: (course: Course) => void;
   courses: Course[];
+  isLoadingCourses?: boolean;
 }
 
 const CategoryCard: React.FC<{ category: { name: string; icon: string; tags: string[] } }> = ({ category }) => {
@@ -100,7 +101,7 @@ const SearchResultsModal: React.FC<{
   );
 };
 
-const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, courses }) => {
+const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, courses, isLoadingCourses = false }) => {
   const introRef = useScrollAnimation();
   const metricsRef = useScrollAnimation();
   const categoriesRef = useScrollAnimation();
@@ -132,8 +133,10 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
     { icon: 'cube', title: '100+', subtitle: 'Immersive 3D Models' },
   ];
 
+  const canSearch = Boolean(searchQuery.trim()) && !isSearching && !isLoadingCourses;
+
   const handleSearch = async () => {
-    if (!searchQuery.trim() || isSearching) return;
+    if (!canSearch) return;
     
     setIsSearching(true);
     setSearchResults([]);
@@ -254,7 +257,7 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
                     />
                     <button
                         onClick={handleSearch}
-                        disabled={isSearching || !searchQuery.trim()}
+                        disabled={!canSearch}
                         aria-label="Search courses"
                         className="absolute right-2 top-1/2 -translate-y-1/2 h-12 w-12 bg-slate-200 dark:bg-slate-700 text-brand-primary rounded-full flex items-center justify-center hover:bg-slate-300 dark:hover:bg-slate-600 transition-all transform hover:scale-110 active:scale-95 disabled:bg-slate-400 disabled:scale-100 dark:disabled:bg-slate-600 disabled:text-white"
                     >
@@ -262,6 +265,16 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
                     </button>
                 </div>
             </div>
+            {isLoadingCourses && (
+              <div
+                className="mt-4 inline-flex items-center justify-center gap-2 text-sm text-slate-500 dark:text-slate-400"
+                role="status"
+                aria-live="polite"
+              >
+                <Icon name="spinner" className="w-4 h-4 animate-spin text-brand-primary" />
+                <span>Loading featured courses…</span>
+              </div>
+            )}
         </section>
 
         {/* Metrics Section */}
