@@ -1,21 +1,25 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { User } from '@/types';
 
 interface ProtectedRouteProps {
   user: User | null;
-  children?: ReactNode;
+  authReady: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ user, children }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ user, authReady }) => {
   const location = useLocation();
 
-  if (!user) {
-    return <Navigate to="/" replace state={{ from: location }} />;
+  if (!authReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <span>Loading…</span>
+      </div>
+    );
   }
 
-  if (children) {
-    return <>{children}</>;
+  if (!user) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
   return <Outlet />;
