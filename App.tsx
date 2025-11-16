@@ -32,6 +32,7 @@ const App: React.FC = () => {
   const [coursesError, setCoursesError] = useState<string | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+
     const stored = safeLocalStorage.getItem(GLOBAL_THEME_KEY);
     return stored === 'dark';
   });
@@ -118,6 +119,7 @@ const App: React.FC = () => {
   const persistThemePreference = useCallback((mode: boolean, currentUser: User | null) => {
     const theme = mode ? 'dark' : 'light';
     if (currentUser) {
+
       safeLocalStorage.setItem(`${GLOBAL_THEME_KEY}:${currentUser.uid}`, theme);
     } else {
       safeLocalStorage.setItem(GLOBAL_THEME_KEY, theme);
@@ -143,12 +145,14 @@ const App: React.FC = () => {
     }
 
     if (user) {
+
       const stored = safeLocalStorage.getItem(`${GLOBAL_THEME_KEY}:${user.uid}`);
       const preference = stored ?? user.themePreference ?? 'light';
       const dark = preference === 'dark';
       setIsDarkMode(dark);
       persistThemePreference(dark, user);
     } else {
+
       const stored = safeLocalStorage.getItem(GLOBAL_THEME_KEY);
       setIsDarkMode(stored === 'dark');
     }
@@ -163,6 +167,7 @@ const App: React.FC = () => {
       return;
     }
 
+
     const pendingCourseId = safeLocalStorage.getItem(PENDING_COURSE_STORAGE_KEY);
     if (!pendingCourseId) {
       return;
@@ -171,6 +176,7 @@ const App: React.FC = () => {
     if (coursesLoading) {
       return;
     }
+
 
     safeLocalStorage.removeItem(PENDING_COURSE_STORAGE_KEY);
 
@@ -184,6 +190,7 @@ const App: React.FC = () => {
 
   const handlePublicCourseSelect = useCallback(
     (course: Course) => {
+
       safeLocalStorage.setItem(PENDING_COURSE_STORAGE_KEY, course.id);
       navigate('/login');
     },
