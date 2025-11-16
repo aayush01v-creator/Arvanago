@@ -164,28 +164,24 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!authReady || !user) {
+    if (!authReady) {
       return;
     }
-
 
     const pendingCourseId = safeLocalStorage.getItem(PENDING_COURSE_STORAGE_KEY);
-    if (!pendingCourseId) {
+    if (!pendingCourseId || coursesLoading) {
       return;
     }
-
-    if (coursesLoading) {
-      return;
-    }
-
 
     safeLocalStorage.removeItem(PENDING_COURSE_STORAGE_KEY);
 
-    const matchedCourse = courses.find(course => course.id === pendingCourseId);
+    const matchedCourse = courses.find((course) => course.id === pendingCourseId);
     if (matchedCourse) {
-      navigate(`/courses/${matchedCourse.id}`, { replace: true });
+      navigate(user ? `/courses/${matchedCourse.id}` : `/courses/${matchedCourse.id}/preview`, {
+        replace: true,
+      });
     } else {
-      navigate('/explore', { replace: true });
+      navigate(user ? '/explore' : '/', { replace: true });
     }
   }, [authReady, user, coursesLoading, courses, navigate]);
 
@@ -198,57 +194,54 @@ const App: React.FC = () => {
     [navigate],
   );
 
-  const isHomeRoute = location.pathname === '/';
+  console.log('APP_RENDER', { authReady, user, path: location.pathname });
 
-  if (!authReady && !isHomeRoute) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900">
-        <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-brand-primary" />
-      </div>
-    );
+  if (!authReady) {
+    return <SuspenseFallback />;
   }
 
   return (
     <Suspense fallback={<SuspenseFallback />}>
       <Routes>
-      <Route
-        path="/"
-        element={
-          <HomePage
-            user={user}
-            courses={courses}
-            isLoading={coursesLoading}
-            error={coursesError}
-            onCourseSelect={handlePublicCourseSelect}
-          />
-        }
-      />
-      <Route path="/login" element={<LoginRoute user={user} />} />
-      <Route
-        path="/courses/:courseId/preview"
-        element={
-          <CoursePreviewPage
-            courses={courses}
-            isDarkMode={isDarkMode}
-            onToggleTheme={handleThemeToggle}
-            user={user}
-            isLoading={coursesLoading}
-          />
-        }
-      />
-      <Route element={<ProtectedRoute user={user} isReady={authReady} />}>
         <Route
+          path="/"
           element={
-            <SidebarLayout
-              user={user!}
+            <HomePage
+              user={user}
+              courses={courses}
+              isLoading={coursesLoading}
+              error={coursesError}
+              onCourseSelect={handlePublicCourseSelect}
+            />
+          }
+        />
+        <Route path="/login" element={<LoginRoute user={user} />} />
+        <Route
+          path="/courses/:courseId/preview"
+          element={
+            <CoursePreviewPage
               courses={courses}
               isDarkMode={isDarkMode}
-              onThemeToggle={handleThemeToggle}
-              onProfileUpdate={handleProfileUpdate}
-              coursesLoading={coursesLoading}
-              coursesError={coursesError}
-              onRefreshCourses={fetchCourseData}
+              onToggleTheme={handleThemeToggle}
+              user={user}
+              isLoading={coursesLoading}
             />
+          }
+        />
+        <Route
+          element={
+            <ProtectedRoute user={user}>
+              <SidebarLayout
+                user={user!}
+                courses={courses}
+                isDarkMode={isDarkMode}
+                onThemeToggle={handleThemeToggle}
+                onProfileUpdate={handleProfileUpdate}
+                coursesLoading={coursesLoading}
+                coursesError={coursesError}
+                onRefreshCourses={fetchCourseData}
+              />
+            </ProtectedRoute>
           }
         >
           <Route index element={<Navigate to="/dashboard" replace />} />
@@ -260,8 +253,7 @@ const App: React.FC = () => {
           <Route path="/courses/:courseId" element={<CourseDetailPage />} />
           <Route path="/courses/:courseId/lectures/:lectureId" element={<CourseLecturePage />} />
         </Route>
-      </Route>
-      <Route path="*" element={<Navigate to={user ? '/dashboard' : '/'} replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
   );
