@@ -19,10 +19,19 @@ const qualityLabels: Record<string, string> = {
 
 const formatQualityLabel = (quality: string): string => qualityLabels[quality] ?? quality.toUpperCase();
 
+const YOUTUBE_FRAME_CLASS = 'glass-player-youtube-frame';
+
 const filterYoutubeChrome = (container?: HTMLElement | null): (() => void) | undefined => {
   if (!container) {
     return undefined;
   }
+
+  const iframeElement =
+    container.tagName === 'IFRAME'
+      ? (container as HTMLElement)
+      : (container.querySelector('iframe') as HTMLElement | null);
+
+  iframeElement?.classList.add(YOUTUBE_FRAME_CLASS);
 
   const selectors = [
     '.ytp-chrome-top',
@@ -66,7 +75,10 @@ const filterYoutubeChrome = (container?: HTMLElement | null): (() => void) | und
   const observer = new MutationObserver(() => hideChrome());
   observer.observe(container, { childList: true, subtree: true });
 
-  return () => observer.disconnect();
+  return () => {
+    observer.disconnect();
+    iframeElement?.classList.remove(YOUTUBE_FRAME_CLASS);
+  };
 };
 
 const loadScriptOnce = (src: string, id: string): Promise<void> => {
@@ -548,6 +560,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
                 <div id={playerElementId} className="h-full w-full" />
                 {/* Mask watermark */}
                 <div className="pointer-events-none absolute bottom-2 right-2 h-10 w-32 rounded-full bg-gradient-to-l from-black/60 via-black/30 to-transparent" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black via-black/50 to-transparent" />
               </div>
             ) : (
               <video
@@ -674,18 +687,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
               </button>
             </div>
 
-            <div className="flex flex-1 flex-col gap-3 text-xs font-semibold uppercase tracking-[0.3em] text-white/60 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-              <div className="flex flex-col gap-0.5 text-[11px] sm:flex-row sm:items-center sm:gap-2">
-                <span>Speed</span>
-                <span className="text-white/90">{playbackRate}x</span>
-              </div>
-              {isYouTube && (
-                <div className="flex flex-col gap-0.5 text-[11px] sm:flex-row sm:items-center sm:gap-2">
-                  <span>Quality</span>
-                  <span className="text-white/90">{formatQualityLabel(selectedQuality)}</span>
-                </div>
-              )}
-
+            <div className="flex flex-1 flex-wrap items-center justify-start gap-3 sm:justify-end">
               <div className="flex items-center gap-2 self-start sm:self-auto">
                 <div className="relative">
                   <button
@@ -739,7 +741,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
                           </div>
                         ) : (
                           <p className="mt-2 text-xs normal-case tracking-normal text-white/70">
-                            Quality selection becomes available when the YouTube player shares its formats.
+                            Quality selection will display when you play the lesson.
                           </p>
                         )}
                       </div>
