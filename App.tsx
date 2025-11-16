@@ -18,7 +18,7 @@ const GLOBAL_THEME_KEY = 'edusimulate:theme';
 
 const DashboardPage = React.lazy(() => import('@/pages/DashboardPage'));
 const MyLearningsPage = React.lazy(() => import('@/pages/MyLearningsPage'));
-const ExploreCoursesPage = React.lazy(() => import('@/pages/ExploreCoursesPage'));
+const PublicExplorePage = React.lazy(() => import('@/pages/PublicExplorePage'));
 const LeaderboardPage = React.lazy(() => import('@/pages/LeaderboardPage'));
 const ProfilePage = React.lazy(() => import('@/pages/ProfilePage'));
 const CourseDetailPage = React.lazy(() => import('@/pages/CourseDetailPage'));
@@ -220,10 +220,9 @@ const App: React.FC = () => {
       <Routes>
         {/* PUBLIC ROUTES */}
         <Route
-          path="/"
+          path="/explore"
           element={
-            <HomePage
-              user={user}
+            <PublicExplorePage
               courses={courses}
               isLoading={coursesLoading}
               error={coursesError}
