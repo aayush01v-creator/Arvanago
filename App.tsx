@@ -6,6 +6,7 @@ import { clearCoursesCache, getCourses, getOrCreateUser, updateUserThemePreferen
 import SidebarLayout from './components/SidebarLayout.tsx';
 import ProtectedRoute from './components/ProtectedRoute.tsx';
 import { PENDING_COURSE_STORAGE_KEY } from './constants.ts';
+import HomePage from '@/pages/HomePage';
 
 const GLOBAL_THEME_KEY = 'edusimulate:theme';
 
@@ -16,7 +17,6 @@ const LeaderboardPage = React.lazy(() => import('@/pages/LeaderboardPage'));
 const ProfilePage = React.lazy(() => import('@/pages/ProfilePage'));
 const CourseDetailPage = React.lazy(() => import('@/pages/CourseDetailPage'));
 const CourseLecturePage = React.lazy(() => import('@/pages/CourseLecturePage'));
-const HomePage = React.lazy(() => import('@/pages/HomePage'));
 const LoginRoute = React.lazy(() => import('@/pages/LoginRoute'));
 const CoursePreviewPage = React.lazy(() => import('@/pages/CoursePreviewPage'));
 
