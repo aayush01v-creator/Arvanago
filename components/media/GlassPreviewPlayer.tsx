@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Icon from '@/components/common/Icon.tsx';
 
-const fallbackPlaybackSpeeds = [0.75, 1, 1.25, 1.5, 1.75, 2];
+const playbackSpeeds = [0.75, 1, 1.25, 1.5, 1.75, 2];
 
 const loadScriptOnce = (src: string, id: string): Promise<void> => {
   if (typeof window === 'undefined') {
@@ -31,11 +31,6 @@ type YouTubePlayer = {
   getCurrentTime: () => number;
   setPlaybackRate: (rate: number) => void;
   getPlaybackRate: () => number;
-  getAvailablePlaybackRates?: () => number[];
-  getAvailableQualityLevels?: () => string[];
-  setPlaybackQuality?: (suggestedQuality: string) => void;
-  getPlaybackQuality?: () => string;
-  getIframe?: () => HTMLIFrameElement;
   destroy: () => void;
 };
 
@@ -153,10 +148,6 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
-  const [availableRates, setAvailableRates] = useState<number[]>(fallbackPlaybackSpeeds);
-  const [availableQualities, setAvailableQualities] = useState<string[]>([]);
-  const [selectedQuality, setSelectedQuality] = useState<string | null>(null);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [skipIndicator, setSkipIndicator] = useState<'back' | 'forward' | null>(null);
   const tapTimestamps = useRef<{ back: number; forward: number }>({ back: 0, forward: 0 });
 
@@ -165,18 +156,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
     setIsPlaying(false);
     setCurrentTime(0);
     setDuration(0);
-    setSettingsOpen(false);
-    setAvailableQualities([]);
-    setSelectedQuality(null);
   }, [videoUrl]);
-
-  useEffect(() => {
-    if (!isYouTube) {
-      setAvailableRates(fallbackPlaybackSpeeds);
-      setAvailableQualities([]);
-      setSelectedQuality(null);
-    }
-  }, [isYouTube]);
 
   useEffect(() => {
     if (!isYouTube || !videoId) {
@@ -210,13 +190,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
           onReady: ({ target }) => {
             youtubePlayerRef.current = target;
             setDuration(target.getDuration() || 0);
-            const rate = target.getPlaybackRate();
-            setPlaybackRate(rate);
-            const rates = target.getAvailablePlaybackRates?.() ?? fallbackPlaybackSpeeds;
-            setAvailableRates(rates);
-            const qualities = target.getAvailableQualityLevels?.() ?? [];
-            setAvailableQualities(qualities);
-            setSelectedQuality(target.getPlaybackQuality?.() ?? qualities[0] ?? null);
+            setPlaybackRate(target.getPlaybackRate());
             setPlayerReady(true);
           },
           onStateChange: ({ data, target }) => {
@@ -265,17 +239,6 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
       const newDuration = instance.getDuration();
       setCurrentTime(newCurrent);
       setDuration(newDuration);
-      const rate = instance.getPlaybackRate();
-      if (rate !== playbackRate) {
-        setPlaybackRate(rate);
-      }
-      if (availableQualities.length === 0) {
-        const qualities = instance.getAvailableQualityLevels?.() ?? [];
-        if (qualities.length) {
-          setAvailableQualities(qualities);
-          setSelectedQuality((prev) => prev ?? instance.getPlaybackQuality?.() ?? qualities[0] ?? null);
-        }
-      }
     }, 250);
 
     return () => {
@@ -284,20 +247,6 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
         progressIntervalRef.current = null;
       }
     };
-  }, [availableQualities.length, isYouTube, playbackRate, playerReady]);
-
-  useEffect(() => {
-    if (!isYouTube || !playerReady) {
-      return;
-    }
-
-    const iframe = youtubePlayerRef.current?.getIframe?.();
-    if (!iframe) {
-      return;
-    }
-
-    iframe.setAttribute('title', 'Course preview video');
-    iframe.style.filter = 'saturate(1.05)';
   }, [isYouTube, playerReady]);
 
   const handlePlayPause = () => {
@@ -386,29 +335,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
     }
   };
 
-  const changeQuality = (quality: string) => {
-    setSelectedQuality(quality);
-    if (isYouTube && youtubePlayerRef.current?.setPlaybackQuality) {
-      youtubePlayerRef.current.setPlaybackQuality(quality);
-    }
-  };
-
   const progressPercent = duration ? Math.min(100, (currentTime / duration) * 100) : 0;
-  const displayQuality = selectedQuality ? selectedQuality.toUpperCase() : 'AUTO';
-
-  const renderBrandingFilters = () => {
-    if (!isYouTube) {
-      return null;
-    }
-
-    return (
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-x-6 top-2 h-12 rounded-full bg-gradient-to-b from-black/40 via-black/30 to-transparent blur-lg" />
-        <div className="absolute left-4 bottom-4 h-10 w-10 rounded-full bg-black/40 blur-md" />
-        <div className="absolute right-4 bottom-4 h-12 w-28 rounded-full bg-gradient-to-l from-black/60 via-black/30 to-transparent" />
-      </div>
-    );
-  };
 
   return (
     <div className="relative">
@@ -419,7 +346,8 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
             isYouTube ? (
               <div className="relative h-full w-full">
                 <div id={playerElementId} className="h-full w-full" />
-                {renderBrandingFilters()}
+                {/* Mask watermark */}
+                <div className="pointer-events-none absolute bottom-2 right-2 h-10 w-32 rounded-full bg-gradient-to-l from-black/60 via-black/30 to-transparent" />
               </div>
             ) : (
               <video
@@ -467,7 +395,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
 
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/60" />
 
-          <div className="pointer-events-none absolute top-4 left-4 right-4 flex flex-wrap items-center justify-between gap-2 text-white">
+          <div className="pointer-events-none absolute top-4 left-4 right-4 flex items-center justify-between text-white">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-white/70">Preview</p>
               <h3 className="text-xl font-semibold drop-shadow-xl">{title}</h3>
@@ -477,19 +405,19 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
         </div>
 
         {/* Controls */}
-        <div className="relative z-10 flex flex-col gap-4 px-4 pb-5 pt-4 sm:px-6 sm:pb-6">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
+        <div className="relative z-10 flex flex-col gap-3 px-6 pb-6 pt-4">
+          <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={handlePlayPause}
               disabled={!videoUrl || (isYouTube && !playerReady)}
-              className="flex h-14 w-14 items-center justify-center self-start rounded-2xl bg-white text-slate-900 shadow-lg shadow-black/20 transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-900 shadow-lg shadow-black/20 transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
               aria-label={isPlaying ? 'Pause preview' : 'Play preview'}
             >
               <Icon name={isPlaying ? 'pause' : 'play'} className="h-7 w-7" />
             </button>
 
-            <div className="flex w-full flex-1 flex-col">
+            <div className="flex flex-1 flex-col">
               <input
                 type="range"
                 min={0}
@@ -503,15 +431,10 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
                 <span>{formatTime(duration)}</span>
               </div>
             </div>
-            <div className="flex items-center gap-2 self-start rounded-full border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-white/70 shadow-inner">
-              <span className="uppercase tracking-[0.3em]">{playbackRate.toFixed(2).replace(/\.00$/, '')}x</span>
-              <span className="text-white/40">•</span>
-              <span className="uppercase tracking-[0.3em]">{displayQuality}</span>
-            </div>
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-white/80">
-            <div className="flex flex-1 items-center gap-2">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => skipSeconds(-10)}
@@ -532,62 +455,24 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
               </button>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setSettingsOpen((prev) => !prev)}
-              disabled={!videoUrl}
-              className="flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/70 shadow-inner transition hover:bg-white/10 disabled:cursor-not-allowed"
-            >
-              <Icon name="settings" className="h-4 w-4" />
-              Settings
-            </button>
+            <div className="flex items-center gap-2 text-xs font-semibold">
+              <span className="uppercase tracking-[0.3em] text-white/60">Speed</span>
+              <div className="flex gap-1 overflow-hidden rounded-full border border-white/20 bg-white/10 p-0.5">
+                {playbackSpeeds.map((speed) => (
+                  <button
+                    key={speed}
+                    type="button"
+                    className={`rounded-full px-3 py-1 transition ${speed === playbackRate ? 'bg-white text-slate-900' : 'text-white/80'}`}
+                    onClick={() => changePlayback(speed)}
+                    disabled={!videoUrl}
+                  >
+                    {speed}x
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-
-        {settingsOpen && (
-          <div className="absolute bottom-[72px] right-4 z-20 w-64 rounded-3xl border border-white/15 bg-gradient-to-b from-white/40 via-white/10 to-white/5 p-4 text-xs text-white/80 shadow-2xl backdrop-blur-xl sm:right-8">
-            <div className="flex items-center justify-between">
-              <p className="text-[0.6rem] uppercase tracking-[0.4em] text-white/60">Controls</p>
-              <button type="button" onClick={() => setSettingsOpen(false)} className="text-white/50 transition hover:text-white">
-                Close
-              </button>
-            </div>
-            <div className="mt-3 space-y-3">
-              <div>
-                <p className="text-[0.65rem] uppercase tracking-[0.3em] text-white/60">Playback speed</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {availableRates.map((speed) => (
-                    <button
-                      key={speed}
-                      type="button"
-                      onClick={() => changePlayback(speed)}
-                      className={`rounded-full px-3 py-1 text-sm transition ${speed === playbackRate ? 'bg-white text-slate-900 shadow-lg' : 'bg-white/10 text-white/80'}`}
-                    >
-                      {speed}x
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {isYouTube && availableQualities.length > 0 && (
-                <div>
-                  <p className="text-[0.65rem] uppercase tracking-[0.3em] text-white/60">Quality</p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {availableQualities.map((quality) => (
-                      <button
-                        key={quality}
-                        type="button"
-                        onClick={() => changeQuality(quality)}
-                        className={`rounded-full px-3 py-1 text-sm transition ${quality === selectedQuality ? 'bg-white text-slate-900 shadow-lg' : 'bg-white/10 text-white/80'}`}
-                      >
-                        {quality.toUpperCase()}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Reflection */}
