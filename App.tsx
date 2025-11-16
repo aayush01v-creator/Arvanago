@@ -87,6 +87,10 @@ const App: React.FC = () => {
   );
 
   useEffect(() => {
+    void fetchCourseData();
+  }, [fetchCourseData]);
+
+  useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
       if (firebaseUser) {
         try {
