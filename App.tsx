@@ -2,7 +2,13 @@ import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { Course, User } from './types.ts';
 import { auth } from './services/firebase.ts';
-import { clearCoursesCache, getCourses, getOrCreateUser, updateUserThemePreference } from './services/firestoreService.ts';
+import {
+  clearCoursesCache,
+  getBundledFallbackCourses,
+  getCourses,
+  getOrCreateUser,
+  updateUserThemePreference,
+} from './services/firestoreService.ts';
 import SidebarLayout from './components/SidebarLayout.tsx';
 import ProtectedRoute from './components/ProtectedRoute.tsx';
 import { PENDING_COURSE_STORAGE_KEY } from './constants.ts';
@@ -106,8 +112,12 @@ const App: React.FC = () => {
       } else {
         setUser(null);
         clearCoursesCache();
+        const fallbackCourses = getBundledFallbackCourses();
+        setCourses(fallbackCourses);
+        coursesLengthRef.current = fallbackCourses.length;
+        setCoursesError(null);
+        setCoursesLoading(false);
         setAuthReady(true);
-        void fetchCourseData({ forceRefresh: true });
       }
     });
 

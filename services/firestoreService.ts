@@ -34,6 +34,336 @@ const defaultAuthor: User = {
   coursesAuthored: 3,
 };
 
+const FALLBACK_COURSE_SEEDS: ReadonlyArray<Course> = [
+  {
+    id: 'iit-jee-physics-foundations',
+    title: 'IIT JEE Physics Foundations',
+    description:
+      'Strengthen your physics fundamentals with immersive visualisations, targeted assignments, and weekly live doubt solving.',
+    category: 'IIT JEE',
+    thumbnail: 'https://images.unsplash.com/photo-1532105956626-9569c03602f6?auto=format&fit=crop&w=800&q=80',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1532105956626-9569c03602f6?auto=format&fit=crop&w=800&q=80',
+    isFree: true,
+    isPaid: false,
+    isPublished: true,
+    isFeaturedOnHome: true,
+    featuredPriority: 1,
+    lectures: [
+      {
+        id: 'iit-jee-physics-foundations-lecture-1',
+        title: 'Vectors & Motion',
+        duration: '18m',
+        videoUrl: 'https://player.vimeo.com/video/652519260',
+        isCompleted: false,
+        summary: 'Master the fundamentals of vectors and motion in a plane with guided problem walkthroughs.',
+      },
+      {
+        id: 'iit-jee-physics-foundations-lecture-2',
+        title: 'Newtonian Dynamics',
+        duration: '22m',
+        videoUrl: 'https://player.vimeo.com/video/652519261',
+        isCompleted: false,
+        summary: 'Tackle force and friction problems with live strategy breakdowns.',
+      },
+      {
+        id: 'iit-jee-physics-foundations-lecture-3',
+        title: 'Work, Power & Energy Labs',
+        duration: '26m',
+        videoUrl: 'https://player.vimeo.com/video/652519262',
+        isCompleted: false,
+        summary: 'Experiment with interactive energy conservation scenarios and timed drills.',
+      },
+    ],
+    progress: 0,
+    author: {
+      ...defaultAuthor,
+      uid: 'mentor-anika',
+      name: 'Anika Sharma',
+      avatar: 'https://i.pravatar.cc/150?u=mentor-anika',
+      bio: 'Lead Physics Mentor, Ex-IIT Bombay',
+    },
+    price: 0,
+    currency: 'INR',
+    rating: 4.8,
+    reviewCount: 1890,
+    studentCount: 12500,
+    lessonsCount: 48,
+    totalDuration: '18h',
+    skillLevel: 'Intermediate',
+    views: 32000,
+    subtitle: 'Daily problem-solving drills for confident ranks.',
+    headline: 'Structured Physics prep for IIT JEE 2025 aspirants.',
+    lastUpdated: '2024-07-10',
+    updatedAt: '2024-07-10',
+    language: 'English',
+    previewVideoUrl: 'https://player.vimeo.com/video/652519260',
+    previewImageUrl: 'https://images.unsplash.com/photo-1532105956626-9569c03602f6?auto=format&fit=crop&w=800&q=80',
+    learningOutcomes: [
+      'Apply mechanics concepts to multi-step questions.',
+      'Decode frequently tested question patterns.',
+      'Build speed with timed drills and live competitions.',
+    ],
+    requirements: [
+      'Comfort with class 11 Physics basics.',
+      'Notebook for derivations and problem-solving.',
+    ],
+    includes: [
+      'Live doubt solving rooms',
+      'Downloadable practice sheets',
+      'Weekly mock tests',
+    ],
+    faqs: [
+      {
+        question: 'Will sessions be recorded?',
+        answer: 'Yes, every live class is available on-demand within an hour.',
+      },
+      {
+        question: 'Do I get personal mentorship?',
+        answer: 'Dedicated mentors host weekly 1:1 strategy sessions.',
+      },
+    ],
+    suggestedCourses: ['neet-biology-masterclass', 'upsc-answer-writing-lab'],
+    tags: ['Physics', 'IIT JEE', 'Problem Solving'],
+  },
+  {
+    id: 'neet-biology-masterclass',
+    title: 'NEET Biology Masterclass',
+    description:
+      'Learn high-yield NCERT biology with mnemonics, live quizzes, and rapid revision notes designed for NEET toppers.',
+    category: 'NEET',
+    thumbnail: 'https://images.unsplash.com/photo-1559757175-5700dde6753d?auto=format&fit=crop&w=800&q=80',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1559757175-5700dde6753d?auto=format&fit=crop&w=800&q=80',
+    isFree: false,
+    isPaid: true,
+    isPublished: true,
+    isFeaturedOnHome: true,
+    featuredPriority: 2,
+    lectures: [
+      {
+        id: 'neet-biology-masterclass-lecture-1',
+        title: 'Plant Physiology Power Hour',
+        duration: '20m',
+        videoUrl: 'https://player.vimeo.com/video/652519270',
+        isCompleted: false,
+        summary: 'Visual mnemonics to master transport in plants and mineral nutrition.',
+      },
+      {
+        id: 'neet-biology-masterclass-lecture-2',
+        title: 'Human Reproduction Blueprint',
+        duration: '24m',
+        videoUrl: 'https://player.vimeo.com/video/652519271',
+        isCompleted: false,
+        summary: 'Decode frequently asked NEET questions with examiner tips.',
+      },
+      {
+        id: 'neet-biology-masterclass-lecture-3',
+        title: 'Genetics Rapid Revision',
+        duration: '28m',
+        videoUrl: 'https://player.vimeo.com/video/652519272',
+        isCompleted: false,
+        summary: 'Use story-based mnemonics to remember complex inheritance patterns.',
+      },
+    ],
+    progress: 0,
+    author: {
+      ...defaultAuthor,
+      uid: 'mentor-raghav',
+      name: 'Dr. Raghav Menon',
+      avatar: 'https://i.pravatar.cc/150?u=mentor-raghav',
+      bio: 'Senior Biology Faculty, 12+ years of NEET mentoring.',
+    },
+    price: 5999,
+    originalPrice: 8999,
+    currency: 'INR',
+    rating: 4.9,
+    reviewCount: 2480,
+    studentCount: 18200,
+    lessonsCount: 60,
+    totalDuration: '24h',
+    skillLevel: 'Intermediate',
+    views: 41000,
+    subtitle: 'Complete NCERT coverage with daily active recall.',
+    headline: 'Master every biology diagram and concept for NEET 2025.',
+    lastUpdated: '2024-08-22',
+    updatedAt: '2024-08-22',
+    language: 'English',
+    previewVideoUrl: 'https://player.vimeo.com/video/652519270',
+    previewImageUrl: 'https://images.unsplash.com/photo-1559757175-5700dde6753d?auto=format&fit=crop&w=800&q=80',
+    learningOutcomes: [
+      'Retain biology facts using smart mnemonics.',
+      'Solve NCERT exemplar questions with confidence.',
+      'Practice exam-level MCQs under time pressure.',
+    ],
+    requirements: [
+      'Basic understanding of class 11 biology.',
+      'Consistency to attempt daily practice quizzes.',
+    ],
+    includes: [
+      '4000+ exam-style MCQs',
+      'Rapid revision flashcards',
+      'Daily live quizzes',
+    ],
+    faqs: [
+      {
+        question: 'Is this course aligned with NCERT?',
+        answer: '100% NCERT coverage with additional PYQ focus sessions.',
+      },
+    ],
+    suggestedCourses: ['iit-jee-physics-foundations', 'upsc-answer-writing-lab'],
+    tags: ['Biology', 'NEET', 'NCERT'],
+  },
+  {
+    id: 'upsc-answer-writing-lab',
+    title: 'UPSC Answer Writing Lab',
+    description: 'Upgrade your GS mains answers with live evaluation, peer reviews, and the 7-5-3 framework.',
+    category: 'UPSC',
+    thumbnail: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=800&q=80',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=800&q=80',
+    isFree: false,
+    isPaid: true,
+    isPublished: true,
+    isFeaturedOnHome: false,
+    lectures: [
+      {
+        id: 'upsc-answer-writing-lab-lecture-1',
+        title: '7-5-3 Framework Deep Dive',
+        duration: '16m',
+        videoUrl: 'https://player.vimeo.com/video/652519280',
+        isCompleted: false,
+        summary: 'Craft impactful introductions, body, and conclusions for GS answers.',
+      },
+      {
+        id: 'upsc-answer-writing-lab-lecture-2',
+        title: 'Daily Drill & Feedback Loop',
+        duration: '21m',
+        videoUrl: 'https://player.vimeo.com/video/652519281',
+        isCompleted: false,
+        summary: 'Learn how to internalise examiner expectations with iterative feedback.',
+      },
+      {
+        id: 'upsc-answer-writing-lab-lecture-3',
+        title: 'Case Study Closers',
+        duration: '19m',
+        videoUrl: 'https://player.vimeo.com/video/652519282',
+        isCompleted: false,
+        summary: 'Practise ethics case studies with structured approaches.',
+      },
+    ],
+    progress: 0,
+    author: {
+      ...defaultAuthor,
+      uid: 'mentor-isha',
+      name: 'Isha Verma',
+      avatar: 'https://i.pravatar.cc/150?u=mentor-isha',
+      bio: 'Former Civil Servant & UPSC mentor.',
+    },
+    price: 2999,
+    originalPrice: 4999,
+    currency: 'INR',
+    rating: 4.7,
+    reviewCount: 980,
+    studentCount: 6200,
+    lessonsCount: 36,
+    totalDuration: '15h',
+    skillLevel: 'Advanced',
+    views: 15200,
+    subtitle: 'Craft high-scoring answers with actionable feedback.',
+    headline: 'Daily writing drills, evaluated by former civil servants.',
+    lastUpdated: '2024-06-18',
+    updatedAt: '2024-06-18',
+    language: 'English',
+    previewVideoUrl: 'https://player.vimeo.com/video/652519280',
+    previewImageUrl: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=800&q=80',
+    learningOutcomes: [
+      'Structure GS answers for maximum impact.',
+      'Practise answer writing under exam constraints.',
+      'Internalise scoring rubrics with peer review.',
+    ],
+    requirements: [
+      'Working knowledge of the GS syllabus.',
+      'Commitment to daily writing practice.',
+    ],
+    includes: [
+      'Weekly evaluated mocks',
+      'Personalised feedback reports',
+      'Live strategy workshops',
+    ],
+    faqs: [
+      {
+        question: 'Do I need an optional subject decided?',
+        answer: 'Not necessary, but a clear GS foundation helps you apply feedback faster.',
+      },
+    ],
+    suggestedCourses: ['iit-jee-physics-foundations'],
+    tags: ['UPSC', 'Answer Writing', 'Mains'],
+  },
+];
+
+const cloneFallbackCourse = (course: Course, courseMap: Map<string, Course>): Course => {
+  const lectures = course.lectures.map((lecture) => ({ ...lecture }));
+  const sections = course.sections?.map((section) => ({
+    ...section,
+    lectures: section.lectures.map((lecture) => ({ ...lecture })),
+  }));
+
+  const suggestedCourseDetails = course.suggestedCourses
+    ?.map((id) => {
+      const suggested = courseMap.get(id);
+      if (!suggested) {
+        return null;
+      }
+
+      return {
+        id: suggested.id,
+        title: suggested.title,
+        category: suggested.category,
+        thumbnailUrl: suggested.thumbnailUrl ?? suggested.thumbnail,
+        price: suggested.price,
+        currency: suggested.currency,
+        isPaid: suggested.isPaid,
+        tags: suggested.tags,
+      } satisfies SuggestedCourseSummary;
+    })
+    .filter((detail): detail is SuggestedCourseSummary => Boolean(detail) && Boolean(detail.id));
+
+  return {
+    ...course,
+    author: {
+      ...course.author,
+      ongoingCourses: [...course.author.ongoingCourses],
+      wishlist: [...course.author.wishlist],
+      pendingTasks: [...course.author.pendingTasks],
+    },
+    lectures,
+    sections,
+    suggestedCourseDetails:
+      suggestedCourseDetails && suggestedCourseDetails.length > 0
+        ? suggestedCourseDetails
+        : course.suggestedCourseDetails,
+  } satisfies Course;
+};
+
+const buildFallbackCourses = (): Course[] => {
+  const courseMap = new Map(FALLBACK_COURSE_SEEDS.map((course) => [course.id, course]));
+  return FALLBACK_COURSE_SEEDS.map((course) => cloneFallbackCourse(course, courseMap));
+};
+
+export const getBundledFallbackCourses = (): Course[] => buildFallbackCourses();
+
+const shouldUseFallbackCourses = (error: unknown): boolean => {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+
+  const code = (error as { code?: string }).code;
+  if (typeof code === 'string') {
+    return ['permission-denied', 'unavailable', 'failed-precondition'].includes(code);
+  }
+
+  const message = (error as { message?: string }).message;
+  return typeof message === 'string' && message.toLowerCase().includes('missing or insufficient permissions');
+};
+
 const coerceBoolean = (value: unknown, fallback = false): boolean => {
   if (typeof value === 'boolean') {
     return value;
@@ -894,6 +1224,15 @@ export const getCourses = async ({ forceRefresh = false }: { forceRefresh?: bool
       return coursesArray;
     } catch (error) {
       console.error('Failed to load courses from Firestore.', error);
+
+      if (shouldUseFallbackCourses(error)) {
+        console.info('Falling back to bundled sample courses because Firestore access is restricted.');
+        const fallbackCourses = buildFallbackCourses();
+        cachedCourses = fallbackCourses;
+        coursesCacheTimestamp = Date.now();
+        return fallbackCourses;
+      }
+
       throw error;
     }
   };
