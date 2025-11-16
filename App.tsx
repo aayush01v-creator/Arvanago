@@ -223,28 +223,34 @@ const App: React.FC = () => {
         <Route
           path="/"
           element={
-            <HomePage
-              user={user}
-              courses={courses}
-              isLoading={coursesLoading}
-              error={coursesError}
-              onCourseSelect={handlePublicCourseSelect}
-              onRefreshCourses={() => fetchCourseData({ forceRefresh: true })}
-            />
+            user ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <HomePage
+                user={user}
+                courses={courses}
+                isLoading={coursesLoading}
+                error={coursesError}
+                onCourseSelect={handlePublicCourseSelect}
+                onRefreshCourses={() => fetchCourseData({ forceRefresh: true })}
+              />
+            )
           }
         />
-        <Route
-          path="/explore"
-          element={
-            <PublicExplorePage
-              courses={courses}
-              isLoading={coursesLoading}
-              error={coursesError}
-              onCourseSelect={handleExploreCourseNavigate}
-              onRefreshCourses={() => fetchCourseData({ forceRefresh: true })}
-            />
-          }
-        />
+        {!user && (
+          <Route
+            path="/explore"
+            element={
+              <PublicExplorePage
+                courses={courses}
+                isLoading={coursesLoading}
+                error={coursesError}
+                onCourseSelect={handleExploreCourseNavigate}
+                onRefreshCourses={() => fetchCourseData({ forceRefresh: true })}
+              />
+            }
+          />
+        )}
 
         <Route path="/login" element={<LoginRoute user={user} />} />
 
