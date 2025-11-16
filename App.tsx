@@ -197,13 +197,28 @@ const App: React.FC = () => {
   console.log('APP_RENDER', { authReady, user, path: location.pathname });
 
   return (
-    <Suspense fallback={<SuspenseFallback />}>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <HomePage
-              user={user}
+    <>
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          fontSize: 10,
+          background: 'black',
+          color: 'white',
+          padding: '2px 6px',
+          zIndex: 9999,
+        }}
+      >
+        APP_DEBUG authReady={String(authReady)} user={user ? 'yes' : 'no'}
+      </div>
+      <Suspense fallback={<SuspenseFallback />}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <HomePage
+                user={user}
               courses={courses}
               isLoading={coursesLoading}
               error={coursesError}
@@ -214,44 +229,45 @@ const App: React.FC = () => {
         <Route path="/login" element={<LoginRoute user={user} />} />
         <Route
           path="/courses/:courseId/preview"
-          element={
-            <CoursePreviewPage
-              courses={courses}
-              isDarkMode={isDarkMode}
-              onToggleTheme={handleThemeToggle}
-              user={user}
-              isLoading={coursesLoading}
-            />
-          }
-        />
-        <Route element={<ProtectedRoute user={user} authReady={authReady} />}>
-          <Route
             element={
-              <SidebarLayout
-                user={user!}
+              <CoursePreviewPage
                 courses={courses}
                 isDarkMode={isDarkMode}
-                onThemeToggle={handleThemeToggle}
-                onProfileUpdate={handleProfileUpdate}
-                coursesLoading={coursesLoading}
-                coursesError={coursesError}
-                onRefreshCourses={fetchCourseData}
+                onToggleTheme={handleThemeToggle}
+                user={user}
+                isLoading={coursesLoading}
               />
             }
-          >
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/my-learnings" element={<MyLearningsPage />} />
-            <Route path="/explore" element={<ExploreCoursesPage />} />
-            <Route path="/leaderboard" element={<LeaderboardPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/courses/:courseId" element={<CourseDetailPage />} />
-            <Route path="/courses/:courseId/lectures/:lectureId" element={<CourseLecturePage />} />
+          />
+          <Route element={<ProtectedRoute user={user} authReady={authReady} />}>
+            <Route
+              element={
+                <SidebarLayout
+                  user={user!}
+                  courses={courses}
+                  isDarkMode={isDarkMode}
+                  onThemeToggle={handleThemeToggle}
+                  onProfileUpdate={handleProfileUpdate}
+                  coursesLoading={coursesLoading}
+                  coursesError={coursesError}
+                  onRefreshCourses={fetchCourseData}
+                />
+              }
+            >
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/my-learnings" element={<MyLearningsPage />} />
+              <Route path="/explore" element={<ExploreCoursesPage />} />
+              <Route path="/leaderboard" element={<LeaderboardPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/courses/:courseId" element={<CourseDetailPage />} />
+              <Route path="/courses/:courseId/lectures/:lectureId" element={<CourseLecturePage />} />
+            </Route>
           </Route>
-        </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Suspense>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
+    </>
   );
 };
 
