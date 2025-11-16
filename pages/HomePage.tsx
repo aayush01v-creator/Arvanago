@@ -1,5 +1,5 @@
-import React from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Homepage from '@/components/Homepage.tsx';
 import { Course, User } from '@/types';
 
@@ -14,9 +14,13 @@ interface HomePageProps {
 const HomePage: React.FC<HomePageProps> = ({ user, courses, isLoading, error, onCourseSelect }) => {
   const navigate = useNavigate();
 
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
+
+  console.log('HOMEPAGE_RENDER', { user });
 
   if (error && courses.length === 0) {
     return (
