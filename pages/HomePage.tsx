@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { User } from '@/types';
+import Homepage from '@/components/Homepage.tsx';
+import { Course, User } from '@/types';
 
 interface HomePageProps {
   user: User | null;
@@ -21,8 +22,13 @@ const sellingPoints = [
   },
 ];
 
-const HomePage: React.FC<HomePageProps> = ({ user }) => {
-  const navigate = useNavigate();
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
+
+  console.log('HOMEPAGE_RENDER', { user });
 
   useEffect(() => {
     if (user) {
