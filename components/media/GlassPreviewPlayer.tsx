@@ -551,7 +551,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
     () => ({
       aspectRatio: '16 / 9',
       width: '100%',
-      minHeight: '220px',
+      minHeight: '200px',
       maxHeight: 'min(70vh, 640px)',
     }),
     [],
@@ -695,17 +695,18 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
 
         {/* Controls */}
         <div
-          className={`relative z-10 flex flex-col gap-5 px-4 pb-5 pt-4 transition-all duration-300 sm:px-6 sm:pb-6 sm:pt-5 ${areControlsVisible ? 'pointer-events-auto opacity-100 translate-y-0' : 'pointer-events-none opacity-0 translate-y-3'}`}
+          className={`relative z-10 flex flex-col gap-3 px-4 pb-5 pt-4 transition-all duration-300 sm:gap-4 sm:px-6 sm:pb-6 sm:pt-5 ${areControlsVisible ? 'pointer-events-auto opacity-100 translate-y-0' : 'pointer-events-none opacity-0 translate-y-3'}`}
         >
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
+          {/* Play button and progress bar row */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
             <button
               type="button"
               onClick={handlePlayPause}
               disabled={!videoUrl || (isYouTube && !playerReady)}
-              className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-white text-slate-900 shadow-lg shadow-black/20 transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex h-12 w-12 flex-shrink-0 items-center justify-center self-center rounded-2xl bg-white text-slate-900 shadow-lg shadow-black/20 transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60 sm:h-14 sm:w-14 sm:self-auto"
               aria-label={isPlaying ? 'Pause preview' : 'Play preview'}
             >
-              <Icon name={isPlaying ? 'pause' : 'play'} className="h-7 w-7" />
+              <Icon name={isPlaying ? 'pause' : 'play'} className="h-6 w-6 sm:h-7 sm:w-7" />
             </button>
 
             <div className="flex flex-1 flex-col">
@@ -724,99 +725,100 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
             </div>
           </div>
 
-          <div className="mt-4 flex flex-col gap-4 text-sm text-white/80 lg:flex-row lg:items-center lg:justify-between">
+          {/* Skip buttons and settings row */}
+          <div className="flex items-center justify-between gap-3 text-sm text-white/80">
+            {/* Skip buttons - left side */}
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={() => skipSeconds(-10)}
-                className="flex items-center gap-1 rounded-full border border-white/20 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest"
+                className="flex items-center gap-1 rounded-full border border-white/20 px-2.5 py-1.5 text-xs font-semibold uppercase tracking-widest sm:px-3"
                 disabled={!videoUrl}
               >
-                <Icon name="rewind" className="h-4 w-4" />
-                10s
+                <Icon name="rewind" className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">10s</span>
               </button>
               <button
                 type="button"
                 onClick={() => skipSeconds(10)}
-                className="flex items-center gap-1 rounded-full border border-white/20 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest"
+                className="flex items-center gap-1 rounded-full border border-white/20 px-2.5 py-1.5 text-xs font-semibold uppercase tracking-widest sm:px-3"
                 disabled={!videoUrl}
               >
-                <Icon name="fast-forward" className="h-4 w-4" />
-                10s
+                <Icon name="fast-forward" className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">10s</span>
               </button>
             </div>
 
-            <div className="flex flex-1 flex-wrap items-center justify-start gap-3 sm:justify-end">
-              <div className="flex items-center gap-2 self-start sm:self-auto">
-                <div className="relative">
-                  <button
-                    ref={settingsButtonRef}
-                    type="button"
-                    onClick={() => setIsSettingsOpen((previous) => !previous)}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-white/15 text-white transition hover:bg-white/30"
-                    aria-haspopup="dialog"
-                    aria-expanded={isSettingsOpen}
-                    aria-label="Playback settings"
-                  >
-                    <Icon name="settings" className="h-4 w-4" />
-                  </button>
+            {/* Settings and fullscreen buttons - right side */}
+            <div className="flex flex-shrink-0 items-center gap-2">
+              <div className="relative">
+                <button
+                  ref={settingsButtonRef}
+                  type="button"
+                  onClick={() => setIsSettingsOpen((previous) => !previous)}
+                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/15 text-white transition hover:bg-white/30"
+                  aria-haspopup="dialog"
+                  aria-expanded={isSettingsOpen}
+                  aria-label="Playback settings"
+                >
+                  <Icon name="settings" className="h-4 w-4" />
+                </button>
 
-                  {isSettingsOpen && (
-                    <div
-                      ref={settingsPanelRef}
-                      className="absolute bottom-12 right-0 z-20 w-64 rounded-3xl border border-white/20 bg-gradient-to-br from-white/40 via-white/10 to-white/20 p-4 text-white shadow-2xl backdrop-blur-xl dark:from-slate-900/70 dark:via-slate-900/40 dark:to-slate-900/30"
-                    >
-                      <div>
-                        <p className="text-[10px] uppercase tracking-[0.4em] text-white/70">Playback speed</p>
+                {isSettingsOpen && (
+                  <div
+                    ref={settingsPanelRef}
+                    className="absolute bottom-12 right-0 z-20 w-64 rounded-3xl border border-white/20 bg-gradient-to-br from-white/40 via-white/10 to-white/20 p-4 text-white shadow-2xl backdrop-blur-xl dark:from-slate-900/70 dark:via-slate-900/40 dark:to-slate-900/30"
+                  >
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.4em] text-white/70">Playback speed</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {playbackSpeeds.map((speed) => (
+                          <button
+                            key={speed}
+                            type="button"
+                            onClick={() => changePlayback(speed)}
+                            disabled={!videoUrl}
+                            className={`rounded-full px-3 py-1 text-sm font-semibold transition ${speed === playbackRate ? 'bg-white text-slate-900' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                          >
+                            {speed}x
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 border-t border-white/10 pt-4">
+                      <p className="text-[10px] uppercase tracking-[0.4em] text-white/70">Video quality</p>
+                      {isYouTube && availableQualities.length > 0 ? (
                         <div className="mt-2 flex flex-wrap gap-2">
-                          {playbackSpeeds.map((speed) => (
+                          {availableQualities.map((quality) => (
                             <button
-                              key={speed}
+                              key={quality}
                               type="button"
-                              onClick={() => changePlayback(speed)}
-                              disabled={!videoUrl}
-                              className={`rounded-full px-3 py-1 text-sm font-semibold transition ${speed === playbackRate ? 'bg-white text-slate-900' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                              onClick={() => changeQuality(quality)}
+                              className={`rounded-full px-3 py-1 text-sm font-semibold transition ${quality === selectedQuality ? 'bg-white text-slate-900' : 'bg-white/10 text-white hover:bg-white/20'}`}
                             >
-                              {speed}x
+                              {formatQualityLabel(quality)}
                             </button>
                           ))}
                         </div>
-                      </div>
-
-                      <div className="mt-4 border-t border-white/10 pt-4">
-                        <p className="text-[10px] uppercase tracking-[0.4em] text-white/70">Video quality</p>
-                        {isYouTube && availableQualities.length > 0 ? (
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {availableQualities.map((quality) => (
-                              <button
-                                key={quality}
-                                type="button"
-                                onClick={() => changeQuality(quality)}
-                                className={`rounded-full px-3 py-1 text-sm font-semibold transition ${quality === selectedQuality ? 'bg-white text-slate-900' : 'bg-white/10 text-white hover:bg-white/20'}`}
-                              >
-                                {formatQualityLabel(quality)}
-                              </button>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="mt-2 text-xs normal-case tracking-normal text-white/70">
-                            Quality selection will display when you play the lesson.
-                          </p>
-                        )}
-                      </div>
+                      ) : (
+                        <p className="mt-2 text-xs normal-case tracking-normal text-white/70">
+                          Quality selection will display when you play the lesson.
+                        </p>
+                      )}
                     </div>
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={toggleFullscreen}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-white/15 text-white transition hover:bg-white/30"
-                  aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
-                >
-                  <Icon name={isFullscreen ? 'minimize' : 'maximize'} className="h-4 w-4" />
-                </button>
+                  </div>
+                )}
               </div>
+
+              <button
+                type="button"
+                onClick={toggleFullscreen}
+                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/15 text-white transition hover:bg-white/30"
+                aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
+              >
+                <Icon name={isFullscreen ? 'minimize' : 'maximize'} className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </div>
