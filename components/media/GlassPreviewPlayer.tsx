@@ -235,6 +235,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
   const [availableQualities, setAvailableQualities] = useState<string[]>([]);
   const [selectedQuality, setSelectedQuality] = useState('auto');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [settingsView, setSettingsView] = useState<'main' | 'speed' | 'quality'>('main');
   const [isPosterVisible, setIsPosterVisible] = useState(Boolean(poster && videoUrl));
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [areControlsVisible, setAreControlsVisible] = useState(true);
@@ -250,6 +251,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
     setAvailableQualities([]);
     setSelectedQuality('auto');
     setIsSettingsOpen(false);
+    setSettingsView('main');
   }, [videoUrl]);
 
   useEffect(() => {
@@ -414,6 +416,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
         !settingsButtonRef.current?.contains(target)
       ) {
         setIsSettingsOpen(false);
+        setSettingsView('main');
       }
     };
 
@@ -549,7 +552,6 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
   const progressPercent = duration ? Math.min(100, (currentTime / duration) * 100) : 0;
   const responsivePlayerStyle = useMemo<CSSProperties>(
     () => ({
-      aspectRatio: '16 / 9',
       width: '100%',
       minHeight: '200px',
       maxHeight: 'min(70vh, 640px)',
@@ -623,7 +625,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
               <video
                 key={videoUrl}
                 ref={htmlVideoRef}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-contain"
                 poster={poster}
                 onTimeUpdate={handleTimeUpdate}
                 onLoadedMetadata={handleTimeUpdate}
