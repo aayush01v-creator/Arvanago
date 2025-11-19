@@ -1,3 +1,4 @@
+import { uploadToImgBB } from "../utils/uploadToImgBB";
 import React, { useState, useRef } from 'react';
 import { User } from '../types.ts';
 import Icon from './common/Icon.tsx';
