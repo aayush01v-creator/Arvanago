@@ -175,13 +175,15 @@ const LectureView: React.FC<LectureViewProps> = ({ user, course, lecture, onBack
                 <main className="flex-1 flex gap-6 p-6 overflow-y-auto">
                     <div className="flex-1 space-y-6">
                         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-2 shadow-sm">
-                            <div className="aspect-w-16 aspect-h-9">
+                            <div className="aspect-w-16 aspect-h-9 relative" style={{ paddingBottom: '56.25%' }}>
                                 <iframe
                                     src={currentLecture.videoUrl}
                                     title={currentLecture.title}
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                     allowFullScreen
-                                    className="w-full h-full rounded-xl"
+                                    className="absolute top-0 left-0 w-full h-full rounded-xl"
+                                    loading="lazy"
+                                    frameBorder="0"
                                 ></iframe>
                             </div>
                         </div>
