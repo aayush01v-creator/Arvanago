@@ -6,7 +6,7 @@ import EditProfileModal from './EditProfileModal.tsx';
 
 // ⭐ NEW IMPORTS
 import { uploadToImgBB } from "../utils/uploadToImgBB"; 
-import { auth, db } from "../firebaseConfig"; 
+import { auth, db } from "../services/firebase"; 
 import { doc, updateDoc } from "firebase/firestore";
 
 interface ProfileProps {
