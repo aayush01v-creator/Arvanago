@@ -553,7 +553,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
   const responsivePlayerStyle = useMemo<CSSProperties>(
     () => ({
       width: '100%',
-      minHeight: '200px',
+      aspectRatio: '16 / 9',
       maxHeight: 'min(70vh, 640px)',
     }),
     [],
@@ -615,7 +615,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
         <div className="relative w-full overflow-hidden" style={responsivePlayerStyle}>
           {videoUrl ? (
             isYouTube ? (
-              <div className="relative h-full w-full">
+              <div className="relative h-full w-full bg-black">
                 <div id={playerElementId} className="h-full w-full" />
                 {/* Mask watermark */}
                 <div className="pointer-events-none absolute bottom-2 right-2 h-10 w-32 rounded-full bg-gradient-to-l from-black/60 via-black/30 to-transparent" />
@@ -625,7 +625,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
               <video
                 key={videoUrl}
                 ref={htmlVideoRef}
-                className="h-full w-full object-contain"
+                className="h-full w-full object-contain bg-black"
                 poster={poster}
                 onTimeUpdate={handleTimeUpdate}
                 onLoadedMetadata={handleTimeUpdate}
