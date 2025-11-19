@@ -1,7 +1,7 @@
-// utils/uploadToImgBB.ts
-const IMGBB_KEY = import.meta.env.VITE_IMGBB_KEY as string | undefined;
+// utils/uploadToImgBB.js
+const IMGBB_KEY = import.meta.env.VITE_IMGBB_KEY;
 
-export async function uploadToImgBB(file: File): Promise<string> {
+export async function uploadToImgBB(file) {
   if (!IMGBB_KEY) {
     throw new Error("VITE_IMGBB_KEY is missing. Check env vars on Vercel and .env.local.");
   }
@@ -22,5 +22,5 @@ export async function uploadToImgBB(file: File): Promise<string> {
   }
 
   // You can also use data.data.url or data.data.image.url
-  return data.data.display_url as string;
+  return data.data.display_url;
 }
