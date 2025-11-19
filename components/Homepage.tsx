@@ -338,6 +338,16 @@ const Homepage: React.FC<HomepageProps> = ({ onNavigateToLogin, onCourseSelect, 
              </div>
              <p>&copy; {new Date().getFullYear()} Edusimulate. All rights reserved.</p>
              <p className="text-sm mt-2">Empowering the next generation of learners through technology.</p>
+             <div className="mt-6">
+                <a
+                    href="https://www.freeprivacypolicy.com/live/6e77247b-f87d-45f6-8c8d-88e77554b487"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block bg-brand-primary text-white font-semibold px-4 py-2 rounded-full shadow hover:bg-brand-primary/90 transition"
+                >
+                    Terms and Conditions
+                </a>
+             </div>
         </div>
       </footer>
 
