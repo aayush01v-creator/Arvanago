@@ -703,7 +703,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
 
         {/* Controls */}
         <div
-          className={`relative z-10 flex flex-col gap-3 px-4 pb-5 pt-4 transition-all duration-300 sm:gap-4 sm:px-6 sm:pb-6 sm:pt-5 ${areControlsVisible ? 'pointer-events-auto opacity-100 translate-y-0' : 'pointer-events-none opacity-0 translate-y-3'}`}
+          className={`absolute bottom-0 left-0 right-0 z-30 flex flex-col gap-3 px-4 pb-5 pt-4 transition-all duration-300 sm:gap-4 sm:px-6 sm:pb-6 sm:pt-5 ${areControlsVisible ? 'pointer-events-auto opacity-100 translate-y-0' : 'pointer-events-none opacity-0 translate-y-3'}`}
         >
           {/* Play button and progress bar row */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
