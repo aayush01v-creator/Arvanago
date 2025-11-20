@@ -7,10 +7,11 @@ import {
   getCourses,
   getOrCreateUser,
   updateUserThemePreference,
+  updateUserProfile,
 } from './services/firestoreService.ts';
 import SidebarLayout from './components/SidebarLayout.tsx';
 import ProtectedRoute from './components/ProtectedRoute.tsx';
-import { PENDING_COURSE_STORAGE_KEY } from './constants.ts';
+import { PENDING_COURSE_STORAGE_KEY, PENDING_ACTION_STORAGE_KEY } from './constants.ts';
 import HomePage from '@/pages/HomePage';
 import { safeLocalStorage } from '@/utils/safeStorage';
 
@@ -168,17 +169,43 @@ const App: React.FC = () => {
     setUser((previous) => (previous ? { ...previous, ...updates } : previous));
   }, []);
 
-  // After auth + courses are ready, handle pending course redirect
+  // After auth + courses are ready, handle pending course redirect & pending actions
   useEffect(() => {
     if (!authReady) return;
 
     const pendingCourseId = safeLocalStorage.getItem(PENDING_COURSE_STORAGE_KEY);
+    const pendingAction = safeLocalStorage.getItem(PENDING_ACTION_STORAGE_KEY);
+    
     if (!pendingCourseId || coursesLoading) return;
 
     safeLocalStorage.removeItem(PENDING_COURSE_STORAGE_KEY);
+    safeLocalStorage.removeItem(PENDING_ACTION_STORAGE_KEY);
 
     const matchedCourse = courses.find((course) => course.id === pendingCourseId);
+    
     if (matchedCourse) {
+      // Handle Wishlist Action post-login
+      if (user && pendingAction === 'wishlist') {
+        const addToWishlist = async () => {
+          if (!user.wishlist.includes(matchedCourse.id)) {
+             const updatedWishlist = [...user.wishlist, matchedCourse.id];
+             // Update UI instantly
+             setUser(prev => prev ? ({ ...prev, wishlist: updatedWishlist }) : prev);
+             // Persist
+             await updateUserProfile(user.uid, { wishlist: updatedWishlist } as any);
+          }
+          // Navigate with state to show toast
+          navigate(`/courses/${matchedCourse.id}/preview`, { 
+            replace: true,
+            state: { showWishlistToast: true }
+          });
+        };
+        
+        void addToWishlist();
+        return;
+      }
+
+      // Default Redirect Logic
       navigate(user ? `/courses/${matchedCourse.id}` : `/courses/${matchedCourse.id}/preview`, {
         replace: true,
       });
@@ -263,7 +290,6 @@ const App: React.FC = () => {
               onToggleTheme={handleThemeToggle}
               user={user}
               isLoading={coursesLoading}
-              onEnroll={handlePublicCourseSelect}
             />
           }
         />
