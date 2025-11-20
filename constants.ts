@@ -1,3 +1,4 @@
+
 import { LeaderboardEntry, Task } from './types.ts';
 import logoUrl from '/newlogo.svg';
 
