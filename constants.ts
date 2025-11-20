@@ -2,6 +2,7 @@ import { LeaderboardEntry, Task } from './types.ts';
 import logoUrl from '/newlogo.svg';
 
 export const PENDING_COURSE_STORAGE_KEY = 'edusimulate:pendingCourse';
+export const PENDING_ACTION_STORAGE_KEY = 'edusimulate:pendingAction';
 
 export const pendingTasks: Task[] = [
     { id: 'task-1', text: 'Complete quiz for "Limits and Continuity"', dueDate: '3 days left', courseId: 'iit-1', courseTitle: 'Advanced Calculus for JEE' },
