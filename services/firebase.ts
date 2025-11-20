@@ -1,20 +1,18 @@
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
-// FIX: Switch to Firebase compat imports to resolve module export errors.
-import firebase from 'firebase/compat/app';
-import { firebaseConfig } from '../firebaseConfig.ts';
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+};
 
-// Step 1: Initialize the core Firebase app.
-// This ensures that the app instance exists before service modules try to register themselves.
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+const app = initializeApp(firebaseConfig);
 
-// Step 2: Import the service modules for their side effects (registration).
-import 'firebase/compat/auth';
-import 'firebase/compat/firestore';
-
-// Step 3: Get the service instances from the initialized app.
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-export { auth, db };
+export const db = getFirestore(app);
+export const auth = getAuth(app);
