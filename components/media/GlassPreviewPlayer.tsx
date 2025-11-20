@@ -58,6 +58,8 @@ const filterYoutubeChrome = (container?: HTMLElement | null): (() => void) | und
     '.ytp-related-title',
     '.ytp-pc-thumbnail',
     '.ytp-spinner',
+    '.ytp-large-play-button',
+    '.ytp-bezel',
   ];
 
   const hideChrome = () => {
@@ -662,19 +664,32 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
             <button
               type="button"
               onClick={handlePlayPause}
-              className="absolute inset-0 z-20 flex h-full w-full items-center justify-center overflow-hidden focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
+              className="absolute inset-0 z-20 flex h-full w-full items-center justify-center overflow-hidden focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40 group"
               aria-label="Play preview video"
             >
-              <img src={poster} alt={title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+              <img src={poster} alt={title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
-              <div className="relative z-10 flex flex-col items-center gap-4 text-center text-white">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/90 text-slate-900 shadow-2xl">
-                  <Icon name="play" className="ml-1 h-7 w-7" />
+              <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-4 text-center text-white">
+                <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-white/90 text-slate-900 shadow-2xl transition-transform duration-300 group-hover:scale-110 group-active:scale-95">
+                  <Icon name="play" className="ml-1 h-6 w-6 sm:h-7 sm:w-7" />
                 </div>
-                <div className="max-w-xs text-lg font-semibold leading-snug drop-shadow-lg">{title}</div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.4em] text-white/80">Tap to play</p>
+                <div className="max-w-[200px] sm:max-w-xs text-base sm:text-lg font-semibold leading-snug drop-shadow-lg line-clamp-2 px-4">{title}</div>
+                <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.4em] text-white/80">Tap to play</p>
               </div>
             </button>
+          )}
+
+          {/* Paused State Overlay - Beautifully Aligned Glass Effect */}
+          {!isPosterVisible && !isPlaying && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none pb-8 sm:pb-0">
+               <button 
+                  onClick={handlePlayPause}
+                  className="pointer-events-auto flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/30 text-white shadow-[0_8px_32px_rgba(0,0,0,0.3)] transition-all duration-300 hover:bg-white/20 hover:scale-110 active:scale-95"
+                  aria-label="Resume video"
+               >
+                  <Icon name="play" className="ml-1 h-6 w-6 sm:h-7 sm:w-7" />
+               </button>
+            </div>
           )}
 
           {/* Double-tap zones */}
@@ -707,10 +722,10 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
 
           <div className={`pointer-events-none absolute top-4 left-4 right-4 flex items-center justify-between text-white transition-opacity duration-300 ${areControlsVisible && !isPosterVisible ? 'opacity-100' : 'opacity-0'}`}>
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-white/70">Preview</p>
-              <h3 className="text-xl font-semibold drop-shadow-xl">{title}</h3>
+              <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-white/70">Preview</p>
+              <h3 className="text-base sm:text-xl font-semibold drop-shadow-xl line-clamp-1">{title}</h3>
             </div>
-            {caption && <span className="rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-semibold">{caption}</span>}
+            {caption && <span className="rounded-full border border-white/30 bg-white/10 px-3 py-1 text-[10px] sm:text-xs font-semibold backdrop-blur-sm">{caption}</span>}
           </div>
         </div>
 
@@ -725,13 +740,35 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
               type="button"
               onClick={handlePlayPause}
               disabled={!videoUrl || (isYouTube && !playerReady)}
-              className="flex h-10 w-10 flex-shrink-0 items-center justify-center self-center rounded-2xl bg-white text-slate-900 shadow-lg shadow-black/20 transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60 sm:h-14 sm:w-14 sm:self-auto"
+              className="hidden sm:flex h-10 w-10 flex-shrink-0 items-center justify-center self-center rounded-2xl bg-white text-slate-900 shadow-lg shadow-black/20 transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60 sm:h-14 sm:w-14 sm:self-auto"
               aria-label={isPlaying ? 'Pause preview' : 'Play preview'}
             >
               <Icon name={isPlaying ? 'pause' : 'play'} className="h-5 w-5 sm:h-7 sm:w-7" />
             </button>
+            
+            {/* Mobile small play/pause button inline with progress */}
+            <div className="flex items-center gap-3 sm:hidden">
+                <button
+                  type="button"
+                  onClick={handlePlayPause}
+                  disabled={!videoUrl || (isYouTube && !playerReady)}
+                  className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-white text-slate-900 shadow-md"
+                >
+                   <Icon name={isPlaying ? 'pause' : 'play'} className="h-4 w-4" />
+                </button>
+                 <div className="flex-1 flex flex-col">
+                   <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={progressPercent}
+                    onChange={(event) => handleSeek(Number(event.target.value))}
+                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/20 accent-white"
+                  />
+                 </div>
+            </div>
 
-            <div className="flex flex-1 flex-col">
+            <div className="hidden sm:flex flex-1 flex-col">
               <input
                 type="range"
                 min={0}
@@ -746,6 +783,12 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
               </div>
             </div>
           </div>
+          
+          {/* Mobile time display below progress */}
+          <div className="flex sm:hidden items-center justify-between text-[10px] font-semibold text-white/70 -mt-1">
+            <span>{formatTime(currentTime)}</span>
+            <span>{formatTime(duration)}</span>
+          </div>
 
           {/* Skip buttons and settings row */}
           <div className="flex items-center justify-between gap-3 text-sm text-white/80">
@@ -754,19 +797,19 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
               <button
                 type="button"
                 onClick={() => skipSeconds(-10)}
-                className="flex items-center gap-1 rounded-full border border-white/20 px-2 py-1.5 sm:px-3 text-xs font-semibold uppercase tracking-widest"
+                className="flex items-center gap-1 rounded-full border border-white/20 px-2 py-1.5 sm:px-3 text-[10px] sm:text-xs font-semibold uppercase tracking-widest hover:bg-white/10 transition"
                 disabled={!videoUrl}
               >
-                <Icon name="rewind" className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <Icon name="rewind" className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 <span className="hidden xs:inline">10s</span>
               </button>
               <button
                 type="button"
                 onClick={() => skipSeconds(10)}
-                className="flex items-center gap-1 rounded-full border border-white/20 px-2 py-1.5 sm:px-3 text-xs font-semibold uppercase tracking-widest"
+                className="flex items-center gap-1 rounded-full border border-white/20 px-2 py-1.5 sm:px-3 text-[10px] sm:text-xs font-semibold uppercase tracking-widest hover:bg-white/10 transition"
                 disabled={!videoUrl}
               >
-                <Icon name="fast-forward" className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <Icon name="fast-forward" className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 <span className="hidden xs:inline">10s</span>
               </button>
             </div>
