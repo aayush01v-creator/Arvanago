@@ -1,7 +1,8 @@
+
 import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Icon from '@/components/common/Icon.tsx';
 
-const playbackSpeeds = [0.75, 1, 1.25, 1.5, 1.75, 2];
+const playbackSpeeds = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 
 const qualityLabels: Record<string, string> = {
   auto: 'Auto',
@@ -14,7 +15,7 @@ const qualityLabels: Record<string, string> = {
   hd1080: '1080p',
   hd1440: '1440p',
   hd2160: '2160p',
-  highres: '2160p+',
+  highres: '4K',
 };
 
 const formatQualityLabel = (quality: string): string => qualityLabels[quality] ?? quality.toUpperCase();
@@ -237,12 +238,10 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
   const [availableQualities, setAvailableQualities] = useState<string[]>([]);
   const [selectedQuality, setSelectedQuality] = useState('auto');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [settingsView, setSettingsView] = useState<'main' | 'speed' | 'quality'>('main');
   const [isPosterVisible, setIsPosterVisible] = useState(Boolean(poster && videoUrl));
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [areControlsVisible, setAreControlsVisible] = useState(false); // Start hidden, show on play
+  const [areControlsVisible, setAreControlsVisible] = useState(false);
   const settingsPanelRef = useRef<HTMLDivElement | null>(null);
-  const settingsButtonRef = useRef<HTMLButtonElement | null>(null);
   const tapTimestamps = useRef<{ back: number; forward: number }>({ back: 0, forward: 0 });
 
   useEffect(() => {
@@ -253,12 +252,11 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
     setAvailableQualities([]);
     setSelectedQuality('auto');
     setIsSettingsOpen(false);
-    setSettingsView('main');
   }, [videoUrl]);
 
   useEffect(() => {
     setIsPosterVisible(Boolean(poster && videoUrl));
-    setAreControlsVisible(false); // Reset controls visibility on source change
+    setAreControlsVisible(false);
   }, [poster, videoUrl]);
 
   useEffect(() => {
@@ -267,7 +265,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
     }
 
     const handleFullScreenChange = () => {
-      setIsFullscreen(document.fullscreenElement === playerShellRef.current);
+      setIsFullscreen(!!document.fullscreenElement);
     };
 
     document.addEventListener('fullscreenchange', handleFullScreenChange);
@@ -407,28 +405,8 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
     };
   }, [isYouTube, playerElementId, playerReady]);
 
-  useEffect(() => {
-    if (!isSettingsOpen) {
-      return;
-    }
-
-    const handleClick = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (
-        !settingsPanelRef.current?.contains(target) &&
-        !settingsButtonRef.current?.contains(target)
-      ) {
-        setIsSettingsOpen(false);
-        setSettingsView('main');
-      }
-    };
-
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [isSettingsOpen]);
-
   const handlePlayPause = (e?: React.MouseEvent) => {
-    e?.stopPropagation(); // Prevent toggling controls when clicking big play button
+    e?.stopPropagation();
     if (!videoUrl) {
       return;
     }
@@ -554,13 +532,16 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
   };
 
   const progressPercent = duration ? Math.min(100, (currentTime / duration) * 100) : 0;
+  
   const responsivePlayerStyle = useMemo<CSSProperties>(
     () => ({
       width: '100%',
-      aspectRatio: '16 / 9',
-      maxHeight: 'min(70vh, 640px)',
+      height: isFullscreen ? '100%' : 'auto',
+      aspectRatio: isFullscreen ? 'unset' : '16 / 9',
+      maxHeight: isFullscreen ? 'none' : 'min(70vh, 640px)',
+      objectFit: 'contain',
     }),
-    [],
+    [isFullscreen],
   );
 
   const clearHideControlsTimeout = useCallback(() => {
@@ -587,16 +568,16 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
   }, [scheduleHideControls]);
 
   const handlePlayerTap = useCallback(() => {
-    if (isPosterVisible) return; // Don't toggle controls if poster is showing
+    if (isPosterVisible) return;
     
-    if (areControlsVisible) {
+    if (areControlsVisible && !isSettingsOpen) {
       setAreControlsVisible(false);
       clearHideControlsTimeout();
     } else {
       setAreControlsVisible(true);
       scheduleHideControls();
     }
-  }, [areControlsVisible, clearHideControlsTimeout, scheduleHideControls, isPosterVisible]);
+  }, [areControlsVisible, clearHideControlsTimeout, scheduleHideControls, isPosterVisible, isSettingsOpen]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -619,20 +600,23 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
   }, [clearHideControlsTimeout, isPlaying, isSettingsOpen, scheduleHideControls]);
 
   return (
-    <div className="relative">
+    <div className={`relative ${isFullscreen ? 'z-50 fixed inset-0 bg-black' : ''}`}>
       <div
         ref={playerShellRef}
-        className="relative overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-white/30 via-white/5 to-white/10 dark:from-slate-900/60 dark:via-slate-900/40 dark:to-slate-900/30 backdrop-blur-2xl shadow-[0_45px_85px_rgba(15,23,42,0.55)]"
-        onClick={handlePlayerTap}
+        className={`relative overflow-hidden bg-black group transition-all duration-300 ${
+          isFullscreen 
+            ? 'w-full h-full rounded-none' 
+            : 'rounded-[32px] border border-white/10 shadow-[0_45px_85px_rgba(15,23,42,0.55)]'
+        }`}
         onMouseMove={revealControlsTemporarily}
       >
-        <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black/60 via-black/30 to-transparent pointer-events-none" />
-        <div className="relative w-full overflow-hidden" style={responsivePlayerStyle}>
+        {!isFullscreen && <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black/60 via-black/30 to-transparent pointer-events-none" />}
+        
+        <div className="relative w-full h-full flex items-center justify-center bg-black" style={{...responsivePlayerStyle, height: isFullscreen ? '100%' : undefined}}>
           {videoUrl ? (
             isYouTube ? (
               <div className="relative h-full w-full bg-black">
                 <div id={playerElementId} className="h-full w-full" />
-                {/* Mask watermark */}
                 <div className="pointer-events-none absolute bottom-2 right-2 h-10 w-32 rounded-full bg-gradient-to-l from-black/60 via-black/30 to-transparent" />
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black via-black/50 to-transparent" />
               </div>
@@ -660,6 +644,26 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
             <img src={poster} alt={title} className="h-full w-full object-cover" />
           )}
 
+          {/* Unified Interaction Layer - Captures taps for toggling controls & double taps for skip */}
+          {!isPosterVisible && !isSettingsOpen && (
+             <div className="absolute inset-0 z-10 flex">
+                <div 
+                  className="w-[20%] h-full cursor-pointer" 
+                  onTouchEnd={() => handleDoubleTap('back')} 
+                  onClick={handlePlayerTap} 
+                />
+                <div 
+                  className="flex-1 h-full cursor-pointer" 
+                  onClick={handlePlayerTap} 
+                />
+                <div 
+                  className="w-[20%] h-full cursor-pointer" 
+                  onTouchEnd={() => handleDoubleTap('forward')} 
+                  onClick={handlePlayerTap} 
+                />
+             </div>
+          )}
+
           {poster && videoUrl && isPosterVisible && (
             <button
               type="button"
@@ -679,8 +683,7 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
             </button>
           )}
 
-          {/* Paused State Overlay - Beautifully Aligned Glass Effect */}
-          {!isPosterVisible && !isPlaying && (
+          {!isPosterVisible && !isPlaying && !isSettingsOpen && (
             <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none pb-8 sm:pb-0">
                <button 
                   onClick={handlePlayPause}
@@ -692,28 +695,8 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
             </div>
           )}
 
-          {/* Double-tap zones */}
-          {videoUrl && !isPosterVisible && (
-            <>
-              <button
-                type="button"
-                className="absolute left-0 top-0 h-full w-1/3 cursor-pointer bg-gradient-to-r from-black/10 via-black/0 to-transparent text-left text-white/0 opacity-0"
-                aria-label="Skip back 10 seconds"
-                onDoubleClick={(e) => { e.stopPropagation(); skipSeconds(-10); }}
-                onTouchEnd={(e) => { /* handled by parent click logic if single tap, but double tap logic can go here if needed */ handleDoubleTap('back'); }}
-              />
-              <button
-                type="button"
-                className="absolute right-0 top-0 h-full w-1/3 cursor-pointer bg-gradient-to-l from-black/10 via-black/0 to-transparent text-right text-white/0 opacity-0"
-                aria-label="Skip forward 10 seconds"
-                onDoubleClick={(e) => { e.stopPropagation(); skipSeconds(10); }}
-                onTouchEnd={() => handleDoubleTap('forward')}
-              />
-            </>
-          )}
-
           {skipIndicator && (
-            <div className={`pointer-events-none absolute ${skipIndicator === 'back' ? 'left-6' : 'right-6'} top-1/2 -translate-y-1/2 rounded-2xl bg-black/40 px-4 py-3 text-sm font-semibold text-white backdrop-blur`}> 
+            <div className={`pointer-events-none absolute ${skipIndicator === 'back' ? 'left-6' : 'right-6'} top-1/2 -translate-y-1/2 rounded-2xl bg-black/40 px-4 py-3 text-sm font-semibold text-white backdrop-blur animate-scale-in`}> 
               {skipIndicator === 'back' ? '−10s' : '+10s'}
             </div>
           )}
@@ -729,12 +712,75 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
           </div>
         </div>
 
-        {/* Controls */}
+        {isSettingsOpen && (
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setIsSettingsOpen(false)}>
+                <div
+                    ref={settingsPanelRef}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-[90%] max-w-sm bg-black/80 border border-white/10 rounded-3xl p-6 shadow-2xl animate-scale-in backdrop-blur-xl max-h-[80%] overflow-y-auto"
+                >
+                    <div className="flex items-center justify-between mb-6">
+                         <h3 className="text-lg font-bold tracking-wide text-white">Settings</h3>
+                         <button onClick={() => setIsSettingsOpen(false)} className="p-2 rounded-full bg-white/10 text-white/70 hover:text-white hover:bg-white/20 transition-colors">
+                            <Icon name="x" className="w-5 h-5" />
+                         </button>
+                    </div>
+
+                    <div className="space-y-6">
+                        {isYouTube && availableQualities.length > 0 && (
+                          <div>
+                              <div className="flex items-center gap-2 text-xs font-bold text-white/50 uppercase tracking-widest mb-3 pl-1">
+                                  <Icon name="settings" className="w-3.5 h-3.5 text-brand-secondary" />
+                                  <span>Video Quality</span>
+                              </div>
+                              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                                  {availableQualities.map((quality) => (
+                                      <button
+                                          key={quality}
+                                          onClick={() => changeQuality(quality)}
+                                          className={`py-2 px-1 rounded-xl text-xs font-semibold transition-all duration-200 border ${
+                                              quality === selectedQuality
+                                                  ? 'bg-brand-primary border-brand-primary text-white shadow-lg shadow-brand-primary/20'
+                                                  : 'bg-white/5 border-transparent text-slate-300 hover:bg-white/10 hover:border-white/10'
+                                          }`}
+                                      >
+                                          {formatQualityLabel(quality)}
+                                      </button>
+                                  ))}
+                              </div>
+                          </div>
+                        )}
+
+                        <div>
+                            <div className="flex items-center gap-2 text-xs font-bold text-white/50 uppercase tracking-widest mb-3 pl-1">
+                                <Icon name="clock" className="w-3.5 h-3.5 text-brand-secondary" />
+                                <span>Playback Speed</span>
+                            </div>
+                            <div className="grid grid-cols-4 gap-2">
+                                {playbackSpeeds.map((speed) => (
+                                    <button
+                                        key={speed}
+                                        onClick={() => changePlayback(speed)}
+                                        className={`py-2 px-1 rounded-xl text-xs font-semibold transition-all duration-200 border ${
+                                            speed === playbackRate
+                                                ? 'bg-brand-primary border-brand-primary text-white shadow-lg shadow-brand-primary/20'
+                                                : 'bg-white/5 border-transparent text-slate-300 hover:bg-white/10 hover:border-white/10'
+                                        }`}
+                                    >
+                                        {speed}x
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
+
         <div
           onClick={(e) => e.stopPropagation()}
-          className={`absolute bottom-0 left-0 right-0 z-30 flex flex-col gap-2 px-4 pb-4 pt-4 transition-all duration-300 sm:gap-4 sm:px-6 sm:pb-6 sm:pt-5 ${areControlsVisible && !isPosterVisible ? 'pointer-events-auto opacity-100 translate-y-0' : 'pointer-events-none opacity-0 translate-y-3'}`}
+          className={`absolute bottom-0 left-0 right-0 z-30 flex flex-col gap-2 px-4 pb-4 pt-4 transition-all duration-300 sm:gap-4 sm:px-6 sm:pb-6 sm:pt-5 ${areControlsVisible && !isPosterVisible && !isSettingsOpen ? 'pointer-events-auto opacity-100 translate-y-0' : 'pointer-events-none opacity-0 translate-y-3'}`}
         >
-          {/* Play button and progress bar row */}
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-6">
             <button
               type="button"
@@ -746,7 +792,6 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
               <Icon name={isPlaying ? 'pause' : 'play'} className="h-5 w-5 sm:h-7 sm:w-7" />
             </button>
             
-            {/* Mobile small play/pause button inline with progress */}
             <div className="flex items-center gap-3 sm:hidden">
                 <button
                   type="button"
@@ -784,15 +829,12 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
             </div>
           </div>
           
-          {/* Mobile time display below progress */}
           <div className="flex sm:hidden items-center justify-between text-[10px] font-semibold text-white/70 -mt-1">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
           </div>
 
-          {/* Skip buttons and settings row */}
           <div className="flex items-center justify-between gap-3 text-sm text-white/80">
-            {/* Skip buttons - left side */}
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
@@ -814,67 +856,15 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
               </button>
             </div>
 
-            {/* Settings and fullscreen buttons - right side */}
             <div className="flex flex-shrink-0 items-center gap-2">
-              <div className="relative">
-                <button
-                  ref={settingsButtonRef}
+              <button
                   type="button"
-                  onClick={() => setIsSettingsOpen((previous) => !previous)}
-                  className="flex h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/15 text-white transition hover:bg-white/30"
-                  aria-haspopup="dialog"
-                  aria-expanded={isSettingsOpen}
+                  onClick={() => setIsSettingsOpen(true)}
+                  className={`flex h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0 items-center justify-center rounded-full border transition hover:bg-white/30 ${isSettingsOpen ? 'bg-white text-black border-white' : 'bg-white/15 text-white border-white/30'}`}
                   aria-label="Playback settings"
                 >
                   <Icon name="settings" className="h-4 w-4" />
-                </button>
-
-                {isSettingsOpen && (
-                  <div
-                    ref={settingsPanelRef}
-                    className="absolute bottom-12 right-0 z-20 w-64 rounded-3xl border border-white/20 bg-gradient-to-br from-white/40 via-white/10 to-white/20 p-4 text-white shadow-2xl backdrop-blur-xl dark:from-slate-900/70 dark:via-slate-900/40 dark:to-slate-900/30"
-                  >
-                    <div>
-                      <p className="text-[10px] uppercase tracking-[0.4em] text-white/70">Playback speed</p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {playbackSpeeds.map((speed) => (
-                          <button
-                            key={speed}
-                            type="button"
-                            onClick={() => changePlayback(speed)}
-                            disabled={!videoUrl}
-                            className={`rounded-full px-3 py-1 text-sm font-semibold transition ${speed === playbackRate ? 'bg-white text-slate-900' : 'bg-white/10 text-white hover:bg-white/20'}`}
-                          >
-                            {speed}x
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="mt-4 border-t border-white/10 pt-4">
-                      <p className="text-[10px] uppercase tracking-[0.4em] text-white/70">Video quality</p>
-                      {isYouTube && availableQualities.length > 0 ? (
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {availableQualities.map((quality) => (
-                            <button
-                              key={quality}
-                              type="button"
-                              onClick={() => changeQuality(quality)}
-                              className={`rounded-full px-3 py-1 text-sm font-semibold transition ${quality === selectedQuality ? 'bg-white text-slate-900' : 'bg-white/10 text-white hover:bg-white/20'}`}
-                            >
-                              {formatQualityLabel(quality)}
-                            </button>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="mt-2 text-xs normal-case tracking-normal text-white/70">
-                          Quality selection will display when you play the lesson.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
+              </button>
 
               <button
                 type="button"
@@ -888,9 +878,6 @@ const GlassPreviewPlayer: React.FC<GlassPreviewPlayerProps> = ({ videoUrl, poste
           </div>
         </div>
       </div>
-
-      {/* Reflection */}
-      <div className="pointer-events-none absolute inset-x-6 -bottom-16 h-24 rounded-[32px] bg-gradient-to-t from-black/30 via-transparent to-transparent blur-2xl opacity-70" />
     </div>
   );
 };
