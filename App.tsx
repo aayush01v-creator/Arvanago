@@ -179,6 +179,7 @@ const App: React.FC = () => {
     
     if (!pendingCourseId || coursesLoading) return;
 
+    // Only clear if we are about to handle it
     safeLocalStorage.removeItem(PENDING_COURSE_STORAGE_KEY);
     safeLocalStorage.removeItem(PENDING_ACTION_STORAGE_KEY);
 
@@ -195,7 +196,7 @@ const App: React.FC = () => {
              // Persist
              await updateUserProfile(user.uid, { wishlist: updatedWishlist } as any);
           }
-          // Navigate with state to show toast
+          // Navigate to preview page so they can see the "Added to wishlist" toast
           navigate(`/courses/${matchedCourse.id}/preview`, { 
             replace: true,
             state: { showWishlistToast: true }
@@ -206,7 +207,9 @@ const App: React.FC = () => {
         return;
       }
 
-      // Default Redirect Logic
+      // Default Redirect Logic for Enrollment/Viewing
+      // If user is logged in and owns the course (or it's free and we auto-enroll), go to detail
+      // For now, we default to detail if logged in, unless it was a specific preview intent.
       navigate(user ? `/courses/${matchedCourse.id}` : `/courses/${matchedCourse.id}/preview`, {
         replace: true,
       });
