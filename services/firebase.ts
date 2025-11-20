@@ -2,23 +2,18 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-// All values come from Vite env variables
-// Make sure they are defined in .env.local and on Vercel
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+  apiKey: "AIzaSyBRo2obm7A4Bd4lwReB165IzeMCOmdxfrQ",
+  authDomain: "firstfly-ea93b.firebaseapp.com",
+  projectId: "firstfly-ea93b",
+  storageBucket: "firstfly-ea93b.firebasestorage.app",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "1:994056761685:web:ca979db9fd4b4b6febbfdc",
+  measurementId: "G-5JRFM7YLD3",
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Export modular instances
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-
 export default app;
