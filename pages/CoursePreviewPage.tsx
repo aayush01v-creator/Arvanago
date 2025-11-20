@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import CoursePreview from '@/components/CoursePreview.tsx';
