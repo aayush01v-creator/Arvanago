@@ -118,17 +118,11 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
 
-    const drawnWidth = image.width * displayedScale;
-    const drawnHeight = image.height * displayedScale;
-    const originX = frameSize / 2 + cropOffset.x - drawnWidth / 2;
-    const originY = frameSize / 2 + cropOffset.y - drawnHeight / 2;
-
-    const sourceX = Math.max(0, -originX / displayedScale);
-    const sourceY = Math.max(0, -originY / displayedScale);
-    const sourceWidth = Math.min(frameSize / displayedScale, image.width - sourceX);
-    const sourceHeight = Math.min(frameSize / displayedScale, image.height - sourceY);
-
-    ctx.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, frameSize, frameSize);
+    ctx.save();
+    ctx.translate(frameSize / 2 + cropOffset.x, frameSize / 2 + cropOffset.y);
+    ctx.scale(displayedScale, displayedScale);
+    ctx.drawImage(image, -image.width / 2, -image.height / 2);
+    ctx.restore();
 
     return new Promise<File | null>((resolve) => {
       canvas.toBlob((blob) => {
@@ -225,6 +219,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
               <button
                 onClick={openFilePicker}
                 disabled={uploading}
+                aria-label="Change profile photo"
                 className="absolute bottom-0 right-0 bg-brand-primary text-white p-2 rounded-full hover:bg-brand-secondary transition-colors transform hover:scale-110 shadow-sm border-2 border-white dark:border-gray-800"
               >
                 {uploading ? (
@@ -238,7 +233,6 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
                 )}
               </button>
 
-              {/* ⭐ NEW HIDDEN INPUT */}
               <input
                 type="file"
                 accept="image/*"
@@ -272,62 +266,6 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-3xl border border-white/30 dark:border-white/10 bg-white/60 dark:bg-gray-900/40 shadow-2xl backdrop-blur-2xl p-6 sm:p-8">
-          <div className="pointer-events-none absolute inset-0 opacity-60">
-            <div className="absolute -left-12 top-0 h-44 w-44 rounded-full bg-brand-primary/20 blur-3xl" />
-            <div className="absolute right-6 bottom-4 h-32 w-32 rounded-full bg-brand-accent/20 blur-3xl" />
-          </div>
-          <div className="grid gap-6 md:grid-cols-[1.2fr_1fr] items-center relative">
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/70 dark:bg-gray-800/70 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-primary shadow-sm">
-                Glass-mode update center
-              </div>
-              <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Update avatar</h3>
-              <p className="text-gray-600 dark:text-gray-300 max-w-xl">
-                Use the pencil button on your photo or pick a new image here to refresh your look in seconds.
-              </p>
-
-              <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={openFilePicker}
-                  disabled={uploading}
-                  className="group relative overflow-hidden rounded-full bg-gradient-to-r from-brand-primary to-brand-secondary px-6 py-3 text-white shadow-lg transition-transform hover:-translate-y-0.5 hover:shadow-xl"
-                >
-                  <span className="absolute inset-0 bg-white/30 opacity-0 transition-opacity group-hover:opacity-100" />
-                  <span className="relative flex items-center gap-2 font-semibold">
-                    {uploading ? "Uploading..." : "Choose a new photo"}
-                  </span>
-                </button>
-
-                <button
-                  onClick={resetCrop}
-                  className="rounded-full border border-white/50 bg-white/70 px-5 py-3 text-sm font-semibold text-gray-800 shadow-sm backdrop-blur dark:bg-gray-800/60 dark:text-gray-100"
-                >
-                  Reset framing
-                </button>
-              </div>
-            </div>
-
-            <div className="relative flex items-center justify-center">
-              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/50 via-white/20 to-white/0 dark:from-gray-800/60 dark:via-gray-800/30" />
-              <div className="relative w-64 h-64 rounded-3xl border border-white/60 bg-white/50 p-3 shadow-inner backdrop-blur-xl dark:border-gray-700/80 dark:bg-gray-800/60">
-                <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-brand-primary/15 via-transparent to-brand-accent/20" />
-                <div className="relative h-full w-full overflow-hidden rounded-2xl border border-white/60 shadow-lg dark:border-gray-700">
-                  <img
-                    src={selectedImage || avatarUrl}
-                    alt="Preview"
-                    className="h-full w-full object-cover"
-                  />
-                  <div className="pointer-events-none absolute inset-0 border-2 border-white/60 mix-blend-screen" />
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-xs font-semibold text-white">
-                    {selectedImage ? "Ready to crop" : "Current avatar"}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* STATS — unchanged */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <ProfileStat icon="star" value={user.points.toLocaleString()} label="Total Points" color="bg-yellow-400" />
@@ -356,7 +294,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
 
       {isCropModalOpen && selectedImage && (
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 backdrop-blur pt-8 sm:pt-12 overflow-y-auto"
+          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/50 backdrop-blur py-6 sm:py-10 overflow-y-auto"
           onMouseUp={stopDragging}
           onMouseLeave={stopDragging}
           onTouchEnd={stopDragging}
