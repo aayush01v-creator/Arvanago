@@ -11,6 +11,13 @@ export const useScrollAnimation = () => {
       return;
     }
 
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion) {
+      element?.classList.add('is-visible');
+      return;
+    }
+
     if (!('IntersectionObserver' in window)) {
       element?.classList.add('is-visible');
       return;
@@ -26,7 +33,8 @@ export const useScrollAnimation = () => {
         });
       },
       {
-        threshold: 0.1,
+        threshold: 0.12,
+        rootMargin: '0px 0px -5% 0px',
       },
     );
 
