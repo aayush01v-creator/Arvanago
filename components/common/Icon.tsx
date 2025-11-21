@@ -6,6 +6,28 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
 }
 
 const icons: { [key: string]: React.ReactNode } = {
+  magic: (
+    <>
+      <path d="m5 11 7-7 4 4-7 7-4 1z" />
+      <path d="M16 5 19 2" />
+      <path d="M19 8h3" />
+      <path d="M19 14h3" />
+      <path d="M16 17l3 3" />
+      <path d="M14 19v3" />
+      <path d="M8 19l-2 2" />
+      <path d="M5 16H2" />
+    </>
+  ),
+  crop: (
+    <>
+      <path d="M6 3v11a2 2 0 0 0 2 2h11" />
+      <path d="M3 6h11a2 2 0 0 1 2 2v11" />
+      <path d="M3 3v2" />
+      <path d="M3 3h2" />
+      <path d="M21 21h-2" />
+      <path d="M21 21v-2" />
+    </>
+  ),
   dashboard: <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />,
   courses: <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />,
   leaderboard: (

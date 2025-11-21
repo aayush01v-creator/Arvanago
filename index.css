@@ -26,6 +26,29 @@ body {
   min-height: 100vh;
 }
 
+@keyframes toastFloat {
+  0% {
+    transform: translate(-50%, 20px);
+    opacity: 0;
+  }
+  15% {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+  80% {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -10px);
+    opacity: 0;
+  }
+}
+
+.toast-float {
+  animation: toastFloat 3.6s ease forwards;
+}
+
 .glass-player-youtube-frame {
   position: absolute;
   inset: 0;
