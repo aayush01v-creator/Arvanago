@@ -224,11 +224,15 @@ const App: React.FC = () => {
 
   const handlePublicCourseSelect = useCallback(
     (course: Course) => {
-      // From public pages: remember the target course and send user to login
-      safeLocalStorage.setItem(PENDING_COURSE_STORAGE_KEY, course.id);
-      navigate('/login');
+      // Allow guests to preview courses directly from public surfaces
+      if (user) {
+        navigate(`/courses/${course.id}`);
+        return;
+      }
+
+      navigate(`/courses/${course.id}/preview`);
     },
-    [navigate],
+    [navigate, user],
   );
 
   const handleExploreCourseNavigate = useCallback(
