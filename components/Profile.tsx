@@ -45,6 +45,17 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
   const openFilePicker = () => fileInputRef.current?.click();
 
   useEffect(() => {
+    if (!isCropModalOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isCropModalOpen]);
+
+  useEffect(() => {
     if (!showToast) return;
     const timer = setTimeout(() => setShowToast(false), 3500);
     return () => clearTimeout(timer);
@@ -198,6 +209,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
   };
 
   const handleTouchMove: React.TouchEventHandler<HTMLDivElement> = (event) => {
+    event.preventDefault();
     if (!dragStart) return;
     const touch = event.touches[0];
     setCropOffset(clampOffsetForScale({ x: touch.clientX - dragStart.x, y: touch.clientY - dragStart.y }));
@@ -215,6 +227,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
 
   const handleTouchMoveGlobal = useCallback(
     (event: TouchEvent) => {
+      event.preventDefault();
       if (!dragStart) return;
       const touch = event.touches[0];
       if (!touch) return;
@@ -241,7 +254,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
 
     window.addEventListener('mousemove', handleDragMoveGlobal);
     window.addEventListener('mouseup', handleMouseUp);
-    window.addEventListener('touchmove', handleTouchMoveGlobal, { passive: true });
+    window.addEventListener('touchmove', handleTouchMoveGlobal, { passive: false });
     window.addEventListener('touchend', handleMouseUp);
     window.addEventListener('touchcancel', handleMouseUp);
 
@@ -273,18 +286,19 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
             >
               <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/20 via-transparent to-brand-accent/20" />
               <div className="relative z-10 w-[min(980px,94vw)] rounded-3xl border border-white/15 bg-white/95 p-6 shadow-2xl backdrop-blur-2xl dark:border-gray-700/60 dark:bg-gray-900/90 sm:p-8">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <button
+                  onClick={() => setCropModalOpen(false)}
+                  className="absolute right-4 top-4 rounded-full border border-white/60 bg-white/80 px-3 py-2 text-sm font-semibold text-gray-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-gray-700/70 dark:bg-gray-800/70 dark:text-gray-100"
+                  aria-label="Close crop image dialog"
+                >
+                  Close
+                </button>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between pr-16 sm:pr-0">
                   <div className="space-y-1">
                     <p className="text-xs font-semibold uppercase tracking-[0.08em] text-brand-primary">Profile picture</p>
                     <h4 className="text-2xl font-extrabold text-gray-900 dark:text-white">Crop image</h4>
                     <p className="text-sm text-gray-700 dark:text-gray-300">Image preview (1:1). Minimum 200x200 pixels, Maximum 6000x6000 pixels.</p>
                   </div>
-                  <button
-                    onClick={() => setCropModalOpen(false)}
-                    className="self-end rounded-full border border-white/60 bg-white/80 px-3 py-2 text-sm font-semibold text-gray-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-gray-700/70 dark:bg-gray-800/70 dark:text-gray-100"
-                  >
-                    Close
-                  </button>
                 </div>
 
                 <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_280px] items-start">
@@ -312,9 +326,9 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
                             onLoad={handleImageLoad}
                             className="absolute left-1/2 top-1/2 select-none"
                             style={{
-                              width: imageSize.width || 'auto',
-                              height: imageSize.height || 'auto',
-                              transform: `translate(-50%, -50%) translate(${cropOffset.x}px, ${cropOffset.y}px) scale(${displayedScale})`,
+                              width: imageSize.width ? imageSize.width * displayedScale : undefined,
+                              height: imageSize.height ? imageSize.height * displayedScale : undefined,
+                              transform: `translate(-50%, -50%) translate(${cropOffset.x}px, ${cropOffset.y}px)`,
                             }}
                             draggable={false}
                           />
