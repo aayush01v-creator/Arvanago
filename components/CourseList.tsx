@@ -72,8 +72,10 @@ const CourseCardComponent: React.FC<CourseCardProps> = ({
           loading="lazy"
         />
         <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-brand-primary shadow-lg shadow-brand-primary/30 backdrop-blur-sm">
-          <Icon name={isPaid ? 'unlock' : 'tag'} className="h-3.5 w-3.5 text-brand-primary" />
-          <span>{priceLabel}</span>
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-primary text-white shadow-md shadow-brand-primary/40">
+            <Icon name={course.level === 'Advanced' ? 'flame' : course.level === 'Intermediate' ? 'sparkle' : 'sparkles'} className="h-3.5 w-3.5" />
+          </span>
+          {course.level ?? 'All levels'}
         </div>
         <div className="absolute right-4 top-4 flex flex-col items-end gap-2">
           <button
@@ -83,6 +85,9 @@ const CourseCardComponent: React.FC<CourseCardProps> = ({
           >
             <Icon name={wishlisted ? 'heart-filled' : 'heart'} className={`h-4 w-4 ${wishlisted ? 'text-red-400' : ''}`} />
           </button>
+          <div className="rounded-full bg-black/60 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+            {priceLabel}
+          </div>
         </div>
         <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-4 pb-3 text-sm text-white">
           <div className="flex items-center gap-2">

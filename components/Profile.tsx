@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { doc, updateDoc } from "firebase/firestore";
 import { User } from '../types.ts';
 import Icon from './common/Icon.tsx';
@@ -82,6 +82,24 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
     return Math.max(frameSize / imageSize.width, frameSize / imageSize.height);
   }, [frameSize, imageSize.height, imageSize.width]);
 
+  const clampOffsetForScale = useCallback(
+    (
+      offset: { x: number; y: number },
+      scale: number = cropScale
+    ) => {
+      if (!imageSize.width || !imageSize.height) return offset;
+      const scaledWidth = imageSize.width * baseScale * scale;
+      const scaledHeight = imageSize.height * baseScale * scale;
+      const maxX = Math.max(0, (scaledWidth - frameSize) / 2);
+      const maxY = Math.max(0, (scaledHeight - frameSize) / 2);
+      return {
+        x: Math.max(-maxX, Math.min(maxX, offset.x)),
+        y: Math.max(-maxY, Math.min(maxY, offset.y)),
+      };
+    },
+    [baseScale, cropScale, frameSize, imageSize.height, imageSize.width]
+  );
+
   const displayedScale = baseScale * cropScale;
 
   const cropImage = async () => {
@@ -100,17 +118,11 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
 
-    const drawnWidth = image.width * displayedScale;
-    const drawnHeight = image.height * displayedScale;
-    const originX = frameSize / 2 + cropOffset.x - drawnWidth / 2;
-    const originY = frameSize / 2 + cropOffset.y - drawnHeight / 2;
-
-    const sourceX = Math.max(0, -originX / displayedScale);
-    const sourceY = Math.max(0, -originY / displayedScale);
-    const sourceWidth = Math.min(frameSize / displayedScale, image.width - sourceX);
-    const sourceHeight = Math.min(frameSize / displayedScale, image.height - sourceY);
-
-    ctx.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, frameSize, frameSize);
+    ctx.save();
+    ctx.translate(frameSize / 2 + cropOffset.x, frameSize / 2 + cropOffset.y);
+    ctx.scale(displayedScale, displayedScale);
+    ctx.drawImage(image, -image.width / 2, -image.height / 2);
+    ctx.restore();
 
     return new Promise<File | null>((resolve) => {
       canvas.toBlob((blob) => {
@@ -159,7 +171,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
 
   const handleDragMove: React.MouseEventHandler<HTMLDivElement> = (event) => {
     if (!dragStart) return;
-    setCropOffset({ x: event.clientX - dragStart.x, y: event.clientY - dragStart.y });
+    setCropOffset(clampOffsetForScale({ x: event.clientX - dragStart.x, y: event.clientY - dragStart.y }));
   };
 
   const stopDragging = () => setDragStart(null);
@@ -172,13 +184,17 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
   const handleTouchMove: React.TouchEventHandler<HTMLDivElement> = (event) => {
     if (!dragStart) return;
     const touch = event.touches[0];
-    setCropOffset({ x: touch.clientX - dragStart.x, y: touch.clientY - dragStart.y });
+    setCropOffset(clampOffsetForScale({ x: touch.clientX - dragStart.x, y: touch.clientY - dragStart.y }));
   };
 
   const resetCrop = () => {
     setCropScale(1.12);
     setCropOffset({ x: 0, y: 0 });
   };
+
+  useEffect(() => {
+    setCropOffset((current) => clampOffsetForScale(current));
+  }, [clampOffsetForScale]);
 
   // Calculate level progress
   const pointsForCurrentLevel = (user.level - 1) * 1000;
@@ -203,6 +219,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
               <button
                 onClick={openFilePicker}
                 disabled={uploading}
+                aria-label="Change profile photo"
                 className="absolute bottom-0 right-0 bg-brand-primary text-white p-2 rounded-full hover:bg-brand-secondary transition-colors transform hover:scale-110 shadow-sm border-2 border-white dark:border-gray-800"
               >
                 {uploading ? (
@@ -216,7 +233,6 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
                 )}
               </button>
 
-              {/* ⭐ NEW HIDDEN INPUT */}
               <input
                 type="file"
                 accept="image/*"
@@ -250,76 +266,6 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-3xl border border-white/30 dark:border-white/10 bg-white/60 dark:bg-gray-900/40 shadow-2xl backdrop-blur-2xl p-6 sm:p-8">
-          <div className="pointer-events-none absolute inset-0 opacity-60">
-            <div className="absolute -left-12 top-0 h-44 w-44 rounded-full bg-brand-primary/20 blur-3xl" />
-            <div className="absolute right-6 bottom-4 h-32 w-32 rounded-full bg-brand-accent/20 blur-3xl" />
-          </div>
-          <div className="grid gap-6 md:grid-cols-[1.2fr_1fr] items-center relative">
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/70 dark:bg-gray-800/70 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-primary shadow-sm">
-                Glass-mode update center
-              </div>
-              <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Refresh your avatar with precision</h3>
-              <p className="text-gray-600 dark:text-gray-300 max-w-xl">
-                Drop in a new photo, drag to re-center, and fine tune the zoom before we save it. The glass panel keeps everything crisp while your changes shimmer into place.
-              </p>
-              <div className="flex flex-wrap gap-3 text-sm text-gray-700 dark:text-gray-200">
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/70 dark:bg-gray-800/70 px-3 py-2 shadow-sm">
-                  <Icon name="magic" className="w-4 h-4 text-brand-primary" />
-                  Live glass preview
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/70 dark:bg-gray-800/70 px-3 py-2 shadow-sm">
-                  <Icon name="crop" className="w-4 h-4 text-brand-secondary" />
-                  Drag to crop
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/70 dark:bg-gray-800/70 px-3 py-2 shadow-sm">
-                  <Icon name="sparkle" className="w-4 h-4 text-brand-accent" />
-                  Smooth confirmation toast
-                </span>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={openFilePicker}
-                  disabled={uploading}
-                  className="group relative overflow-hidden rounded-full bg-gradient-to-r from-brand-primary to-brand-secondary px-6 py-3 text-white shadow-lg transition-transform hover:-translate-y-0.5 hover:shadow-xl"
-                >
-                  <span className="absolute inset-0 bg-white/30 opacity-0 transition-opacity group-hover:opacity-100" />
-                  <span className="relative flex items-center gap-2 font-semibold">
-                    {uploading ? "Uploading..." : "Choose a new photo"}
-                  </span>
-                </button>
-
-                <button
-                  onClick={resetCrop}
-                  className="rounded-full border border-white/50 bg-white/70 px-5 py-3 text-sm font-semibold text-gray-800 shadow-sm backdrop-blur dark:bg-gray-800/60 dark:text-gray-100"
-                >
-                  Reset framing
-                </button>
-              </div>
-            </div>
-
-            <div className="relative flex items-center justify-center">
-              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/50 via-white/20 to-white/0 dark:from-gray-800/60 dark:via-gray-800/30" />
-              <div className="relative w-64 h-64 rounded-3xl border border-white/60 bg-white/50 p-3 shadow-inner backdrop-blur-xl dark:border-gray-700/80 dark:bg-gray-800/60">
-                <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-brand-primary/15 via-transparent to-brand-accent/20" />
-                <div className="relative h-full w-full overflow-hidden rounded-2xl border border-white/60 shadow-lg dark:border-gray-700">
-                  <img
-                    src={selectedImage || avatarUrl}
-                    alt="Preview"
-                    className="h-full w-full object-cover"
-                  />
-                  <div className="pointer-events-none absolute inset-0 border-2 border-white/60 mix-blend-screen" />
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-xs font-semibold text-white">
-                    {selectedImage ? "Ready to crop" : "Current avatar"}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* STATS — unchanged */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <ProfileStat icon="star" value={user.points.toLocaleString()} label="Total Points" color="bg-yellow-400" />
@@ -348,7 +294,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
 
       {isCropModalOpen && selectedImage && (
         <div
-          className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 backdrop-blur"
+          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/50 backdrop-blur py-6 sm:py-10 overflow-y-auto"
           onMouseUp={stopDragging}
           onMouseLeave={stopDragging}
           onTouchEnd={stopDragging}
@@ -356,10 +302,9 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
           <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/20 via-transparent to-brand-accent/20" />
           <div className="relative z-10 w-[min(960px,92vw)] rounded-3xl border border-white/15 bg-white/90 p-6 shadow-2xl backdrop-blur-3xl dark:border-gray-700/60 dark:bg-gray-900/85 sm:p-8">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-primary">Crop & align</p>
-                <h4 className="text-2xl font-bold text-gray-900 dark:text-white">Glass cropper</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300">Drag the photo, glide the zoom, then save. We will crop it square before uploading.</p>
+              <div className="space-y-1">
+                <h4 className="text-2xl font-extrabold text-gray-900 dark:text-white">Crop & align</h4>
+                <p className="text-sm text-gray-700 dark:text-gray-300">Drag to reposition and use the zoom for a precise square avatar.</p>
               </div>
               <button
                 onClick={() => setCropModalOpen(false)}
@@ -373,7 +318,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
               <div className="relative flex justify-center">
                 <div className="relative rounded-[26px] border border-white/50 bg-gradient-to-br from-white/80 via-white/50 to-white/30 p-4 shadow-inner backdrop-blur-xl dark:border-gray-700/80 dark:from-gray-800/90 dark:via-gray-800/70 dark:to-gray-900/70">
                   <div
-                    className="relative overflow-hidden rounded-2xl bg-black/5 shadow-xl dark:bg-gray-800/60"
+                    className="relative overflow-hidden rounded-2xl bg-black/5 shadow-xl dark:bg-gray-800/60 cursor-move active:cursor-grabbing"
                     style={{ width: frameSize + 32, height: frameSize + 32 }}
                     onMouseDown={handleDragStart}
                     onMouseMove={handleDragMove}
@@ -412,7 +357,11 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
                     max={2.2}
                     step={0.02}
                     value={cropScale}
-                    onChange={(event) => setCropScale(Number(event.target.value))}
+                    onChange={(event) => {
+                      const nextScale = Number(event.target.value);
+                      setCropScale(nextScale);
+                      setCropOffset((current) => clampOffsetForScale(current, nextScale));
+                    }}
                     className="mt-3 w-full accent-brand-primary"
                   />
                   <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">Slide to zoom into the area you want to spotlight.</p>
