@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { User } from '../types.ts';
 import Icon from './common/Icon.tsx';
 import { updateUserProfile } from '../services/firestoreService.ts';
@@ -14,6 +15,8 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ user, onClose, onSa
     const [bio, setBio] = useState(user.bio || '');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+
+    if (typeof document === 'undefined') return null;
 
     const handleSave = async () => {
         if (!name.trim()) {
@@ -37,9 +40,9 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ user, onClose, onSa
         }
     };
 
-    return (
+    return createPortal(
         <div
-            className="fixed inset-0 bg-black bg-opacity-60 flex items-start sm:items-center justify-center z-50 animate-fade-in overflow-y-auto p-4 sm:p-8"
+            className="fixed inset-0 bg-black bg-opacity-60 flex items-start sm:items-center justify-center z-[2000] animate-fade-in overflow-y-auto p-4 sm:p-8"
             onClick={onClose}
         >
             <div
@@ -80,13 +83,13 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ user, onClose, onSa
                 {error && <p className="text-red-500 text-sm mt-4 text-center">{error}</p>}
 
                 <div className="mt-6 flex justify-end space-x-4">
-                    <button 
+                    <button
                         onClick={onClose}
                         className="px-6 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
                     >
                         Cancel
                     </button>
-                    <button 
+                    <button
                         onClick={handleSave}
                         disabled={isLoading}
                         className="px-6 py-2 bg-brand-primary text-white font-bold rounded-lg hover:bg-brand-secondary transition-all duration-300 shadow-lg hover:shadow-brand-primary/50 transform hover:scale-105 active:scale-95 disabled:bg-gray-400 disabled:scale-100 disabled:shadow-none"
@@ -95,7 +98,8 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ user, onClose, onSa
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 
