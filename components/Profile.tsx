@@ -310,7 +310,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
 
       {isCropModalOpen && selectedImage && (
         <div
-          className="fixed inset-0 z-[60] flex items-start justify-center bg-black/60 backdrop-blur-sm py-6 sm:py-10 overflow-y-auto"
+          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/50 backdrop-blur py-6 sm:py-10 overflow-y-auto"
           onMouseUp={stopDragging}
           onMouseLeave={stopDragging}
           onTouchEnd={stopDragging}

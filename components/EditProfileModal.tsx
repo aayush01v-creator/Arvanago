@@ -39,7 +39,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ user, onClose, onSa
 
     return (
         <div
-            className="fixed inset-0 z-[60] bg-black bg-opacity-60 flex items-start justify-center animate-fade-in overflow-y-auto p-4 sm:p-8 pt-10"
+            className="fixed inset-0 bg-black bg-opacity-60 flex items-start sm:items-center justify-center z-50 animate-fade-in overflow-y-auto p-4 sm:p-8"
             onClick={onClose}
         >
             <div
