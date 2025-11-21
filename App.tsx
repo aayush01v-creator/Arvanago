@@ -1,3 +1,4 @@
+
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Course, User } from './types.ts';
