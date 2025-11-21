@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { doc, updateDoc } from "firebase/firestore";
 import { User } from '../types.ts';
 import Icon from './common/Icon.tsx';
@@ -180,6 +181,8 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
     }
   };
 
+  const stopDragging = useCallback(() => setDragStart(null), []);
+
   const handleDragStart: React.MouseEventHandler<HTMLDivElement> = (event) => {
     setDragStart({ x: event.clientX - cropOffset.x, y: event.clientY - cropOffset.y });
   };
@@ -188,8 +191,6 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
     if (!dragStart) return;
     setCropOffset(clampOffsetForScale({ x: event.clientX - dragStart.x, y: event.clientY - dragStart.y }));
   };
-
-  const stopDragging = () => setDragStart(null);
 
   const handleTouchStart: React.TouchEventHandler<HTMLDivElement> = (event) => {
     const touch = event.touches[0];
@@ -202,6 +203,28 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
     setCropOffset(clampOffsetForScale({ x: touch.clientX - dragStart.x, y: touch.clientY - dragStart.y }));
   };
 
+  const handleDragMoveGlobal = useCallback(
+    (event: MouseEvent) => {
+      if (!dragStart) return;
+      setCropOffset(
+        clampOffsetForScale({ x: event.clientX - dragStart.x, y: event.clientY - dragStart.y })
+      );
+    },
+    [clampOffsetForScale, dragStart]
+  );
+
+  const handleTouchMoveGlobal = useCallback(
+    (event: TouchEvent) => {
+      if (!dragStart) return;
+      const touch = event.touches[0];
+      if (!touch) return;
+      setCropOffset(
+        clampOffsetForScale({ x: touch.clientX - dragStart.x, y: touch.clientY - dragStart.y })
+      );
+    },
+    [clampOffsetForScale, dragStart]
+  );
+
   const resetCrop = () => {
     setCropScale(1.12);
     setCropOffset({ x: 0, y: 0 });
@@ -211,12 +234,172 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
     setCropOffset((current) => clampOffsetForScale(current));
   }, [clampOffsetForScale]);
 
+  useEffect(() => {
+    if (!dragStart) return;
+
+    const handleMouseUp = () => stopDragging();
+
+    window.addEventListener('mousemove', handleDragMoveGlobal);
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('touchmove', handleTouchMoveGlobal, { passive: true });
+    window.addEventListener('touchend', handleMouseUp);
+    window.addEventListener('touchcancel', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleDragMoveGlobal);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleTouchMoveGlobal);
+      window.removeEventListener('touchend', handleMouseUp);
+      window.removeEventListener('touchcancel', handleMouseUp);
+    };
+  }, [dragStart, handleDragMoveGlobal, handleTouchMoveGlobal, stopDragging]);
+
   // Calculate level progress
   const pointsForCurrentLevel = (user.level - 1) * 1000;
   const pointsForNextLevel = user.level * 1000;
   const pointsInCurrentLevel = user.points - pointsForCurrentLevel;
   const pointsNeededForLevelUp = pointsForNextLevel - pointsForCurrentLevel;
   const progressPercentage = Math.max(0, Math.min(100, (pointsInCurrentLevel / pointsNeededForLevelUp) * 100));
+
+  const cropModal =
+    isCropModalOpen && selectedImage
+      ? createPortal(
+          (
+            <div
+              className="fixed inset-0 z-[9999] flex items-start sm:items-center justify-center bg-black/50 backdrop-blur py-6 sm:py-10 overflow-y-auto"
+              onMouseUp={stopDragging}
+              onMouseLeave={stopDragging}
+              onTouchEnd={stopDragging}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/20 via-transparent to-brand-accent/20" />
+              <div className="relative z-10 w-[min(980px,94vw)] rounded-3xl border border-white/15 bg-white/95 p-6 shadow-2xl backdrop-blur-2xl dark:border-gray-700/60 dark:bg-gray-900/90 sm:p-8">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold uppercase tracking-[0.08em] text-brand-primary">Profile picture</p>
+                    <h4 className="text-2xl font-extrabold text-gray-900 dark:text-white">Crop image</h4>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">Image preview (1:1). Minimum 200x200 pixels, Maximum 6000x6000 pixels.</p>
+                  </div>
+                  <button
+                    onClick={() => setCropModalOpen(false)}
+                    className="self-end rounded-full border border-white/60 bg-white/80 px-3 py-2 text-sm font-semibold text-gray-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-gray-700/70 dark:bg-gray-800/70 dark:text-gray-100"
+                  >
+                    Close
+                  </button>
+                </div>
+
+                <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_280px] items-start">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-sm font-semibold text-gray-700 dark:text-gray-200">
+                      <span>Image preview</span>
+                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Crop image</span>
+                    </div>
+                    <div className="relative flex justify-center">
+                      <div className="relative rounded-[26px] border border-white/50 bg-gradient-to-br from-white/80 via-white/50 to-white/30 p-4 shadow-inner backdrop-blur-xl dark:border-gray-700/80 dark:from-gray-800/90 dark:via-gray-800/70 dark:to-gray-900/70">
+                        <div
+                          className="relative overflow-hidden rounded-2xl bg-black/5 shadow-xl dark:bg-gray-800/60 cursor-grab active:cursor-grabbing"
+                          style={{ width: frameSize + 32, height: frameSize + 32 }}
+                          onMouseDown={handleDragStart}
+                          onMouseMove={handleDragMove}
+                          onMouseUp={stopDragging}
+                          onTouchStart={handleTouchStart}
+                          onTouchMove={handleTouchMove}
+                          onTouchEnd={stopDragging}
+                          aria-label="Crop region"
+                        >
+                          <img
+                            src={selectedImage}
+                            alt="Crop selection"
+                            onLoad={handleImageLoad}
+                            className="absolute left-1/2 top-1/2 select-none"
+                            style={{
+                              width: imageSize.width || 'auto',
+                              height: imageSize.height || 'auto',
+                              transform: `translate(-50%, -50%) translate(${cropOffset.x}px, ${cropOffset.y}px) scale(${displayedScale})`,
+                            }}
+                            draggable={false}
+                          />
+                          <div
+                            className="absolute inset-0"
+                            onMouseDown={handleDragStart}
+                            onMouseMove={handleDragMove}
+                            onTouchStart={handleTouchStart}
+                            onTouchMove={handleTouchMove}
+                          >
+                            <div className="pointer-events-none absolute inset-[14px] rounded-xl border-2 border-dashed border-white/85 mix-blend-screen shadow-[0_0_0_999px_rgba(0,0,0,0.45)]" />
+                            <div className="pointer-events-none absolute inset-[14px] rounded-xl">
+                              {[['left-3', 'top-3'], ['right-3', 'top-3'], ['left-3', 'bottom-3'], ['right-3', 'bottom-3']].map((pos, index) => (
+                                <span
+                                  key={index}
+                                  className={`absolute h-3 w-3 rounded-[6px] border-2 border-white/90 bg-white/80 shadow ${pos.join(' ')}`}
+                                />
+                              ))}
+                            </div>
+                            <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/40" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-5">
+                    <div className="rounded-2xl border border-white/50 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-gray-700/80 dark:bg-gray-800/70">
+                      <div className="flex items-center justify-between text-sm font-semibold text-gray-700 dark:text-gray-200">
+                        <span>Zoom & focus</span>
+                        <span>{Math.round(cropScale * 100)}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={1}
+                        max={2.2}
+                        step={0.02}
+                        value={cropScale}
+                        onChange={(event) => {
+                          const nextScale = Number(event.target.value);
+                          setCropScale(nextScale);
+                          setCropOffset((current) => clampOffsetForScale(current, nextScale));
+                        }}
+                        className="mt-3 w-full accent-brand-primary"
+                      />
+                      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">Drag to position the dotted square over the part of the photo you want to keep. We will crop it to a perfect square before saving.</p>
+                      {imageValidationMessage && (
+                        <p className="mt-2 text-xs font-medium text-red-500">{imageValidationMessage}</p>
+                      )}
+                    </div>
+
+                    <div className="rounded-2xl border border-white/50 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-gray-700/80 dark:bg-gray-800/70 space-y-4">
+                      <div className="flex items-center justify-between text-sm font-semibold text-gray-700 dark:text-gray-200">
+                        <span>Center crop</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">1:1 ratio</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          onClick={resetCrop}
+                          className="w-full rounded-xl border border-white/70 bg-white px-4 py-3 text-sm font-semibold text-gray-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700/60 dark:bg-gray-800 dark:text-gray-100"
+                          disabled={uploading}
+                        >
+                          Center crop
+                        </button>
+                        <button
+                          onClick={handleCropAndUpload}
+                          disabled={uploading || !!imageValidationMessage}
+                          className="w-full rounded-xl bg-gradient-to-r from-brand-primary to-brand-accent px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {uploading ? 'Saving...' : 'Save'}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-white/50 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-gray-700/80 dark:bg-gray-800/70">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Minimum 200x200 pixels, Maximum 6000x6000 pixels. Avoid blurry or dark photos for best results.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ),
+          document.body
+        )
+      : null;
 
   return (
     <>
@@ -308,126 +491,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
       </div>
 
 
-      {isCropModalOpen && selectedImage && (
-        <div
-          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/50 backdrop-blur py-6 sm:py-10 overflow-y-auto"
-          onMouseUp={stopDragging}
-          onMouseLeave={stopDragging}
-          onTouchEnd={stopDragging}
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/20 via-transparent to-brand-accent/20" />
-          <div className="relative z-10 w-[min(980px,94vw)] rounded-3xl border border-white/15 bg-white/95 p-6 shadow-2xl backdrop-blur-2xl dark:border-gray-700/60 dark:bg-gray-900/90 sm:p-8">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div className="space-y-1">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-brand-primary">Profile picture</p>
-                <h4 className="text-2xl font-extrabold text-gray-900 dark:text-white">Crop image</h4>
-                <p className="text-sm text-gray-700 dark:text-gray-300">Image preview (1:1). Minimum 200x200 pixels, Maximum 6000x6000 pixels.</p>
-              </div>
-              <button
-                onClick={() => setCropModalOpen(false)}
-                className="self-end rounded-full border border-white/60 bg-white/80 px-3 py-2 text-sm font-semibold text-gray-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-gray-700/70 dark:bg-gray-800/70 dark:text-gray-100"
-              >
-                Close
-              </button>
-            </div>
-
-            <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_280px] items-start">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm font-semibold text-gray-700 dark:text-gray-200">
-                  <span>Image preview</span>
-                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Crop image</span>
-                </div>
-                <div className="relative flex justify-center">
-                  <div className="relative rounded-[26px] border border-white/50 bg-gradient-to-br from-white/80 via-white/50 to-white/30 p-4 shadow-inner backdrop-blur-xl dark:border-gray-700/80 dark:from-gray-800/90 dark:via-gray-800/70 dark:to-gray-900/70">
-                    <div
-                      className="relative overflow-hidden rounded-2xl bg-black/5 shadow-xl dark:bg-gray-800/60 cursor-grab active:cursor-grabbing"
-                      style={{ width: frameSize + 32, height: frameSize + 32 }}
-                      onMouseDown={handleDragStart}
-                      onMouseMove={handleDragMove}
-                      onMouseUp={stopDragging}
-                      onTouchStart={handleTouchStart}
-                      onTouchMove={handleTouchMove}
-                      onTouchEnd={stopDragging}
-                      aria-label="Crop region"
-                    >
-                      <img
-                        src={selectedImage}
-                        alt="Crop selection"
-                        onLoad={handleImageLoad}
-                        className="absolute left-1/2 top-1/2 select-none"
-                        style={{
-                          width: imageSize.width || 'auto',
-                          height: imageSize.height || 'auto',
-                          transform: `translate(-50%, -50%) translate(${cropOffset.x}px, ${cropOffset.y}px) scale(${displayedScale})`,
-                        }}
-                        draggable={false}
-                      />
-                      <div className="pointer-events-none absolute inset-[14px] rounded-xl border-2 border-dashed border-white/85 mix-blend-screen shadow-[0_0_0_999px_rgba(0,0,0,0.45)]" />
-                      <div className="pointer-events-none absolute inset-[14px] rounded-xl">
-                        {[['left-3', 'top-3'], ['right-3', 'top-3'], ['left-3', 'bottom-3'], ['right-3', 'bottom-3']].map((pos, index) => (
-                          <span
-                            key={index}
-                            className={`absolute h-3 w-3 rounded-[6px] border-2 border-white/90 bg-white/80 shadow ${pos.join(' ')}`}
-                          />
-                        ))}
-                      </div>
-                      <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/40" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-5">
-                <div className="rounded-2xl border border-white/50 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-gray-700/80 dark:bg-gray-800/70">
-                  <div className="flex items-center justify-between text-sm font-semibold text-gray-700 dark:text-gray-200">
-                    <span>Zoom & focus</span>
-                    <span>{Math.round(cropScale * 100)}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={1}
-                    max={2.2}
-                    step={0.02}
-                    value={cropScale}
-                    onChange={(event) => {
-                      const nextScale = Number(event.target.value);
-                      setCropScale(nextScale);
-                      setCropOffset((current) => clampOffsetForScale(current, nextScale));
-                    }}
-                    className="mt-3 w-full accent-brand-primary"
-                  />
-                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">Drag to position the dotted square over the part of the photo you want to keep. We will crop it to a perfect square before saving.</p>
-                  {imageValidationMessage && (
-                    <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 dark:bg-red-900/30 dark:text-red-200" role="alert" aria-live="polite">
-                      {imageValidationMessage}
-                    </p>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={resetCrop}
-                    className="rounded-xl border border-white/60 bg-white/90 px-4 py-3 font-semibold text-gray-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-gray-700/70 dark:bg-gray-800/70 dark:text-gray-100"
-                  >
-                    Center crop
-                  </button>
-                  <button
-                    onClick={handleCropAndUpload}
-                    disabled={uploading || !!imageValidationMessage}
-                    className="rounded-xl bg-gradient-to-r from-brand-primary to-brand-secondary px-4 py-3 font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                    {uploading ? 'Saving...' : 'Save'}
-                  </button>
-                </div>
-
-                <div className="rounded-xl border border-white/50 bg-white/80 p-3 text-xs text-gray-600 shadow-sm backdrop-blur dark:border-gray-700/70 dark:bg-gray-800/70 dark:text-gray-300">
-                  Minimum 200x200 pixels, Maximum 6000x6000 pixels. Use the dotted frame and corner handles to isolate exactly what you want before you save.
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {cropModal}
       {showToast && (
         <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
           <div className="toast-float flex items-center gap-3 rounded-full bg-white/90 px-4 py-3 text-sm font-semibold text-gray-900 shadow-xl ring-1 ring-white/50 backdrop-blur dark:bg-gray-900/90 dark:text-white dark:ring-gray-700">
