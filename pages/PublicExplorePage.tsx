@@ -1,6 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CourseList from '@/components/CourseList.tsx';
 import type { Course } from '@/types';
+import { PENDING_ACTION_STORAGE_KEY, PENDING_COURSE_STORAGE_KEY } from '@/constants.ts';
+import { safeLocalStorage } from '@/utils/safeStorage';
 
 interface PublicExplorePageProps {
   courses: Course[];
@@ -17,6 +20,24 @@ const PublicExplorePage: React.FC<PublicExplorePageProps> = ({
   onCourseSelect,
   onRefreshCourses,
 }) => {
+  const navigate = useNavigate();
+
+  const handlePreviewCourse = useCallback(
+    (course: Course) => {
+      navigate(`/courses/${course.id}/preview`);
+    },
+    [navigate],
+  );
+
+  const handleWishlistRequest = useCallback(
+    (course: Course) => {
+      safeLocalStorage.setItem(PENDING_COURSE_STORAGE_KEY, course.id);
+      safeLocalStorage.setItem(PENDING_ACTION_STORAGE_KEY, 'wishlist');
+      navigate('/login');
+    },
+    [navigate],
+  );
+
   useEffect(() => {
     void onRefreshCourses();
   }, [onRefreshCourses]);
@@ -36,6 +57,8 @@ const PublicExplorePage: React.FC<PublicExplorePageProps> = ({
           <CourseList
             courses={courses}
             navigateToCourse={onCourseSelect}
+            onPreviewCourse={handlePreviewCourse}
+            onToggleWishlist={handleWishlistRequest}
             isLoading={isLoading}
             errorMessage={error}
           />

@@ -172,43 +172,43 @@ const App: React.FC = () => {
 
   // After auth + courses are ready, handle pending course redirect & pending actions
   useEffect(() => {
-    if (!authReady) return;
+    if (!authReady || !user) return;
 
     const pendingCourseId = safeLocalStorage.getItem(PENDING_COURSE_STORAGE_KEY);
     const pendingAction = safeLocalStorage.getItem(PENDING_ACTION_STORAGE_KEY);
-    
+
     if (!pendingCourseId || coursesLoading) return;
 
     const matchedCourse = courses.find((course) => course.id === pendingCourseId);
-    
+
     if (matchedCourse) {
       safeLocalStorage.removeItem(PENDING_COURSE_STORAGE_KEY);
       safeLocalStorage.removeItem(PENDING_ACTION_STORAGE_KEY);
 
       // Handle Wishlist Action post-login
-      if (user && pendingAction === 'wishlist') {
+      if (pendingAction === 'wishlist') {
         const addToWishlist = async () => {
           // Check if already in wishlist to avoid duplicates
           if (!user.wishlist.includes(matchedCourse.id)) {
-             const updatedWishlist = [...user.wishlist, matchedCourse.id];
-             // Update UI instantly
-             setUser(prev => prev ? ({ ...prev, wishlist: updatedWishlist }) : prev);
-             // Persist
-             await updateUserProfile(user.uid, { wishlist: updatedWishlist });
+            const updatedWishlist = [...user.wishlist, matchedCourse.id];
+            // Update UI instantly
+            setUser((prev) => (prev ? { ...prev, wishlist: updatedWishlist } : prev));
+            // Persist
+            await updateUserProfile(user.uid, { wishlist: updatedWishlist });
           }
           // Navigate with state to show toast
-          navigate(`/courses/${matchedCourse.id}/preview`, { 
+          navigate(`/courses/${matchedCourse.id}/preview`, {
             replace: true,
-            state: { showWishlistToast: true }
+            state: { showWishlistToast: true },
           });
         };
-        
+
         void addToWishlist();
         return;
       }
 
       // Default Redirect Logic
-      navigate(user ? `/courses/${matchedCourse.id}` : `/courses/${matchedCourse.id}/preview`, {
+      navigate(`/courses/${matchedCourse.id}`, {
         replace: true,
       });
     } else {
@@ -217,7 +217,7 @@ const App: React.FC = () => {
       safeLocalStorage.removeItem(PENDING_COURSE_STORAGE_KEY);
       safeLocalStorage.removeItem(PENDING_ACTION_STORAGE_KEY);
       if (!location.pathname.startsWith('/courses')) {
-          navigate(user ? '/dashboard' : '/', { replace: true });
+        navigate('/dashboard', { replace: true });
       }
     }
   }, [authReady, user, coursesLoading, courses, navigate]); // Removed location.pathname from dependency to avoid loops

@@ -1149,10 +1149,7 @@ export const updateUserThemePreference = async (uid: string, theme: 'light' | 'd
   await userRef.set({ themePreference: theme }, { merge: true });
 };
 
-export const updateUserProfile = async (
-  uid: string,
-  updates: { name?: string; bio?: string },
-): Promise<void> => {
+export const updateUserProfile = async (uid: string, updates: Partial<User>): Promise<void> => {
   const userRef = db.collection('users').doc(uid);
   await userRef.update(updates);
 };
