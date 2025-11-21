@@ -14,7 +14,10 @@ interface MyLearningsProps {
 type Tab = 'courses' | 'wishlist' | 'tasks';
 
 const CourseCard: React.FC<{ course: Course; onClick: () => void }> = ({ course, onClick }) => (
-    <div onClick={onClick} className="bg-white dark:bg-slate-800 rounded-lg shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden group transition-all duration-300 hover:shadow-lg dark:hover:shadow-dark-glow-hover hover:-translate-y-1 cursor-pointer flex flex-col">
+    <div
+        onClick={onClick}
+        className="interactive-card neon-border bg-white/80 dark:bg-slate-900/70 rounded-xl border border-white/40 dark:border-slate-700 overflow-hidden group cursor-pointer flex flex-col backdrop-blur-xl"
+    >
         <div className="relative">
             <img src={course.thumbnailUrl ?? course.thumbnail} alt={course.title} className="w-full h-40 object-cover" />
              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-100 group-hover:opacity-100 transition-opacity"></div>
@@ -26,9 +29,9 @@ const CourseCard: React.FC<{ course: Course; onClick: () => void }> = ({ course,
             <h3 className="font-bold text-md text-gray-900 dark:text-white flex-grow mb-1">{course.title}</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{course.author.name}</p>
             <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-1.5 mb-4">
-                <div className="bg-brand-primary h-1.5 rounded-full" style={{ width: `${course.progress}%` }}></div>
+                <div className="bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-primary h-1.5 rounded-full transition-all" style={{ width: `${course.progress}%` }}></div>
             </div>
-            <span className="text-sm font-semibold text-brand-primary dark:text-brand-light mt-auto text-left uppercase">
+            <span className="text-sm font-semibold text-brand-primary dark:text-brand-light mt-auto text-left uppercase tracking-wide">
                 {course.progress > 0 ? 'Continue' : 'Start Course'}
             </span>
         </div>
@@ -36,7 +39,7 @@ const CourseCard: React.FC<{ course: Course; onClick: () => void }> = ({ course,
 );
 
 const TaskItem: React.FC<{ task: Task; onClick: () => void }> = ({ task, onClick }) => (
-    <div onClick={onClick} className="bg-white dark:bg-slate-800 rounded-lg p-4 flex items-center justify-between border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+    <div onClick={onClick} className="interactive-card bg-white/80 dark:bg-slate-900/70 rounded-xl p-4 flex items-center justify-between border border-white/50 dark:border-slate-700 cursor-pointer hover-gradient">
         <div>
             <p className="font-semibold text-slate-800 dark:text-slate-100">{task.text}</p>
             <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -153,31 +156,34 @@ const MyLearnings: React.FC<MyLearningsProps> = ({ user, courses, navigateToCour
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white">
-                My Learning
-            </h1>
-            
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex items-center space-x-1 border border-slate-200 dark:border-slate-700 rounded-lg p-1 bg-slate-100 dark:bg-slate-800 self-start">
-                    <TabButton tabId="courses" label="All Courses" />
-                    <TabButton tabId="wishlist" label="Wishlist" />
-                    <TabButton tabId="tasks" label="Pending Tasks" />
-                </div>
-                
-                <div className="relative w-full sm:max-w-xs">
-                    <input
-                        type="text"
-                        placeholder="Search my content..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none"
-                    />
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                        <Icon name="search" className="w-5 h-5 text-slate-400" />
+            <div className="flex flex-col gap-2">
+                <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white">My Learning</h1>
+                <p className="text-sm text-slate-500 dark:text-slate-300">A fluid, high-frame-rate hub for everything you are mastering.</p>
+            </div>
+
+            <div className="glass-ambient rounded-2xl p-4 sm:p-5 dark:bg-[var(--glass-dark)]">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="flex items-center space-x-2 rounded-full bg-white/70 p-1 shadow-inner shadow-white/60 backdrop-blur-lg dark:bg-white/5 dark:shadow-brand-primary/20 self-start">
+                        <TabButton tabId="courses" label="All Courses" />
+                        <TabButton tabId="wishlist" label="Wishlist" />
+                        <TabButton tabId="tasks" label="Pending Tasks" />
+                    </div>
+
+                    <div className="relative w-full sm:max-w-xs">
+                        <input
+                            type="text"
+                            placeholder="Search my content..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 bg-white/80 dark:bg-slate-900/70 border border-white/60 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none backdrop-blur"
+                        />
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                            <Icon name="search" className="w-5 h-5 text-slate-400" />
+                        </div>
                     </div>
                 </div>
             </div>
-
+            
             <div className="animate-fade-in-up min-h-[400px]">
                 {renderContent()}
             </div>
