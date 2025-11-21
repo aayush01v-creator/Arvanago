@@ -112,6 +112,17 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ course, onLoginClick, onB
     const [toastMessage, setToastMessage] = useState('');
     const [showToast, setShowToast] = useState(false);
     const [activeTab, setActiveTab] = useState<'overview' | 'curriculum' | 'instructor'>('overview');
+    
+    const [showCouponInput, setShowCouponInput] = useState(false);
+    const [couponCode, setCouponCode] = useState('');
+
+    const handleApplyCoupon = () => {
+        if (!couponCode.trim()) return;
+        setToastMessage(`Coupon "${couponCode}" applied!`);
+        setShowCouponInput(false);
+        setCouponCode('');
+        setShowToast(true);
+    };
 
     // Handle post-login toast
     useEffect(() => {
@@ -440,6 +451,46 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ course, onLoginClick, onB
                                                 <Icon name="share" className="w-5 h-5" />
                                             </button>
                                         </div>
+
+                                        {/* Coupon Code Section */}
+                                        <div className="pt-2">
+                                            {!showCouponInput ? (
+                                                <button 
+                                                    onClick={() => setShowCouponInput(true)}
+                                                    className="w-full py-2.5 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-slate-500 dark:text-slate-400 text-sm font-semibold hover:border-brand-primary hover:text-brand-primary dark:hover:border-brand-primary dark:hover:text-brand-primary transition-all duration-300 flex justify-center items-center gap-2 group"
+                                                >
+                                                    <Icon name="ticket" className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                                                    Apply Coupon Code
+                                                </button>
+                                            ) : (
+                                                <div className="flex items-center gap-2 animate-fade-in">
+                                                    <div className="relative flex-1">
+                                                        <input 
+                                                            type="text" 
+                                                            value={couponCode}
+                                                            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                                            placeholder="Enter code"
+                                                            className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-sm focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary outline-none transition-all uppercase placeholder:normal-case"
+                                                            autoFocus
+                                                        />
+                                                        <Icon name="ticket" className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                                                    </div>
+                                                    <button 
+                                                        onClick={handleApplyCoupon}
+                                                        className="p-2.5 bg-brand-primary text-white rounded-xl shadow-lg hover:shadow-brand-primary/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:hover:scale-100"
+                                                        disabled={!couponCode.trim()}
+                                                    >
+                                                        <Icon name="check" className="w-4 h-4" />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => setShowCouponInput(false)}
+                                                        className="p-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                                                    >
+                                                        <Icon name="x" className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
 
                                     <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
@@ -460,12 +511,6 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ course, onLoginClick, onB
                                         </ul>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div className="text-center">
-                                <button className="text-sm font-semibold text-slate-500 hover:text-brand-primary underline decoration-dotted underline-offset-4 transition-colors">
-                                    Apply Coupon Code
-                                </button>
                             </div>
                         </div>
                     </div>
