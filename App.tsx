@@ -179,21 +179,22 @@ const App: React.FC = () => {
     
     if (!pendingCourseId || coursesLoading) return;
 
-    safeLocalStorage.removeItem(PENDING_COURSE_STORAGE_KEY);
-    safeLocalStorage.removeItem(PENDING_ACTION_STORAGE_KEY);
-
     const matchedCourse = courses.find((course) => course.id === pendingCourseId);
     
     if (matchedCourse) {
+      safeLocalStorage.removeItem(PENDING_COURSE_STORAGE_KEY);
+      safeLocalStorage.removeItem(PENDING_ACTION_STORAGE_KEY);
+
       // Handle Wishlist Action post-login
       if (user && pendingAction === 'wishlist') {
         const addToWishlist = async () => {
+          // Check if already in wishlist to avoid duplicates
           if (!user.wishlist.includes(matchedCourse.id)) {
              const updatedWishlist = [...user.wishlist, matchedCourse.id];
              // Update UI instantly
              setUser(prev => prev ? ({ ...prev, wishlist: updatedWishlist }) : prev);
              // Persist
-             await updateUserProfile(user.uid, { wishlist: updatedWishlist } as any);
+             await updateUserProfile(user.uid, { wishlist: updatedWishlist });
           }
           // Navigate with state to show toast
           navigate(`/courses/${matchedCourse.id}/preview`, { 
@@ -211,9 +212,15 @@ const App: React.FC = () => {
         replace: true,
       });
     } else {
-      navigate(user ? '/dashboard' : '/', { replace: true });
+      // No matching course found or no pending course, default routing handled below/already done
+      // Just clean up if pendingCourseId existed but course wasn't found
+      safeLocalStorage.removeItem(PENDING_COURSE_STORAGE_KEY);
+      safeLocalStorage.removeItem(PENDING_ACTION_STORAGE_KEY);
+      if (!location.pathname.startsWith('/courses')) {
+          navigate(user ? '/dashboard' : '/', { replace: true });
+      }
     }
-  }, [authReady, user, coursesLoading, courses, navigate]);
+  }, [authReady, user, coursesLoading, courses, navigate]); // Removed location.pathname from dependency to avoid loops
 
   const handlePublicCourseSelect = useCallback(
     (course: Course) => {
@@ -291,6 +298,7 @@ const App: React.FC = () => {
               onToggleTheme={handleThemeToggle}
               user={user}
               isLoading={coursesLoading}
+              onProfileUpdate={handleProfileUpdate}
             />
           }
         />
