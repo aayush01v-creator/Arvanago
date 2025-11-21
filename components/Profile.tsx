@@ -219,6 +219,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
               <button
                 onClick={openFilePicker}
                 disabled={uploading}
+                aria-label="Change profile photo"
                 className="absolute bottom-0 right-0 bg-brand-primary text-white p-2 rounded-full hover:bg-brand-secondary transition-colors transform hover:scale-110 shadow-sm border-2 border-white dark:border-gray-800"
               >
                 {uploading ? (
@@ -232,7 +233,6 @@ const Profile: React.FC<ProfileProps> = ({ user, onProfileUpdate }) => {
                 )}
               </button>
 
-              {/* ⭐ NEW HIDDEN INPUT */}
               <input
                 type="file"
                 accept="image/*"
