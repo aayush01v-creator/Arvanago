@@ -125,14 +125,14 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ course, onLoginClick, onB
     };
 
     // Handle post-login toast
-    useEffect(() => {
-        if (location.state && (location.state as any).showWishlistToast) {
-            setToastMessage(`${course.title} added to wishlist`);
-            setShowToast(true);
-            setIsWishlisted(true); // Optimistically set true
-            // Clear state to prevent showing on reload
-            window.history.replaceState({}, document.title);
-        }
+  useEffect(() => {
+    if (location.state && (location.state as any).showWishlistToast) {
+      setToastMessage(`(${course.title}) added to wishlist`);
+      setShowToast(true);
+      setIsWishlisted(true); // Optimistically set true
+      // Clear state to prevent showing on reload
+      window.history.replaceState({}, document.title);
+    }
     }, [location, course.title]);
 
     // Check wishlist status on mount
@@ -161,10 +161,10 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ course, onLoginClick, onB
                 message = 'Removed from Wishlist';
                 setIsWishlisted(false);
             } else {
-                updatedWishlist = [...user.wishlist, course.id];
-                message = 'Added to Wishlist';
-                setIsWishlisted(true);
-            }
+        updatedWishlist = [...user.wishlist, course.id];
+        message = `(${course.title}) added to wishlist`;
+        setIsWishlisted(true);
+      }
 
             setToastMessage(message);
             setShowToast(true);
@@ -182,6 +182,30 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ course, onLoginClick, onB
             setShowToast(true);
             setIsWishlisted(!isWishlisted); // Revert on error
         }
+    };
+
+    const handleEnroll = async () => {
+        if (!user) {
+            safeLocalStorage.setItem(PENDING_COURSE_STORAGE_KEY, course.id);
+            onLoginClick();
+            return;
+        }
+
+        const alreadyEnrolled = user.ongoingCourses.includes(course.id);
+
+        if (!alreadyEnrolled) {
+            const updatedCourses = [...user.ongoingCourses, course.id];
+            try {
+                await updateUserProfile(user.uid, { ongoingCourses: updatedCourses });
+                onProfileUpdate({ ongoingCourses: updatedCourses });
+                setToastMessage(`Enrolled in ${course.title}`);
+                setShowToast(true);
+            } catch (error) {
+                console.error('Failed to enroll user', error);
+            }
+        }
+
+        navigate(`/courses/${course.id}`);
     };
 
     const handleShare = async () => {
@@ -429,7 +453,10 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ course, onLoginClick, onB
                                     </div>
 
                                     <div className="flex flex-col gap-3">
-                                        <button className="w-full py-4 rounded-xl bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-bold text-lg shadow-lg shadow-brand-primary/30 hover:shadow-brand-primary/50 hover:scale-[1.02] active:scale-[0.98] transition-all flex justify-center items-center gap-2 group">
+                                        <button
+                                            onClick={handleEnroll}
+                                            className="w-full py-4 rounded-xl bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-bold text-lg shadow-lg shadow-brand-primary/30 hover:shadow-brand-primary/50 hover:scale-[1.02] active:scale-[0.98] transition-all flex justify-center items-center gap-2 group"
+                                        >
                                             {user ? 'Enroll Now' : 'Join to Enroll'}
                                             <Icon name="arrowRight" className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                         </button>
