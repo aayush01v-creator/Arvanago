@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
@@ -176,6 +177,12 @@ const icons: { [key: string]: React.ReactNode } = {
       <polyline points="15 21 21 21 21 15" />
       <line x1="3" y1="3" x2="10" y2="10" />
       <line x1="21" y1="21" x2="14" y2="14" />
+    </>
+  ),
+  ticket: (
+    <>
+        <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+        <path d="M13 5v14" strokeDasharray="4 4" />
     </>
   ),
 };
