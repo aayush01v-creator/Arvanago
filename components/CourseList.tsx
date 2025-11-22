@@ -1,4 +1,5 @@
 import React, { memo, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Course } from '../types.ts';
 import Icon from './common/Icon.tsx';
 import SkeletonCard from './common/SkeletonCard.tsx';
@@ -174,6 +175,7 @@ const CourseList: React.FC<CourseListProps> = ({
   isLoading = false,
   errorMessage,
 }) => {
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
 
   useEffect(() => {
@@ -211,8 +213,8 @@ const CourseList: React.FC<CourseListProps> = ({
       return;
     }
 
-    navigateToCourse(course);
-  }, [navigateToCourse, onPreviewCourse]);
+    navigate(`/courses/${course.id}`);
+  }, [navigate, onPreviewCourse]);
 
   return (
     <div className="space-y-8 p-4 sm:p-6 lg:p-8">
