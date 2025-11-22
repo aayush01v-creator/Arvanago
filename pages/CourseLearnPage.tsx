@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import Icon from '@/components/common/Icon.tsx';
 import { SidebarLayoutContext } from '@/components/SidebarLayout.tsx';
@@ -117,7 +117,6 @@ const CourseLearnPage: React.FC = () => {
 
   const [currentLectureId, setCurrentLectureId] = useState<string | null>(primaryLecture?.id ?? null);
   const [activeSection, setActiveSection] = useState<string>('Course content');
-  const mainSectionRef = useRef<HTMLDivElement | null>(null);
 
   const [tasks, setTasks] = useState([
     { id: 'task-1', title: 'Review lecture notes', status: 'In progress' },
@@ -244,7 +243,6 @@ const CourseLearnPage: React.FC = () => {
 
   const handleNavigation = useCallback((sectionLabel: string) => {
     setActiveSection(sectionLabel);
-    mainSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
   const handleAddTask = useCallback(() => {
@@ -393,7 +391,7 @@ const CourseLearnPage: React.FC = () => {
           </div>
         </div>
 
-        <div ref={mainSectionRef} className="mt-8 grid gap-6 lg:grid-cols-3">
+        <div className="mt-8 grid gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
             {activeSection === 'Course content' && (
               <GlassCard
