@@ -246,10 +246,17 @@ const App: React.FC = () => {
 
   const CourseRouteWrapper: React.FC = () => {
     const { courseId } = useParams<{ courseId: string }>();
-    const isEnrolled = Boolean(courseId && user?.enrolledCourses?.includes(courseId));
+    const isEnrolled = Boolean(
+      courseId &&
+        (user?.enrolledCourses?.includes(courseId) || user?.ongoingCourses?.includes(courseId)),
+    );
 
     if (!authReady) {
       return <SuspenseFallback />;
+    }
+
+    if (user && isEnrolled) {
+      return <Navigate to={`/courses/${courseId}/learn`} replace />;
     }
 
     if (!user || !isEnrolled) {
