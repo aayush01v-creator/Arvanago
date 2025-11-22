@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import Icon from '@/components/common/Icon.tsx';
 import { SidebarLayoutContext } from '@/components/SidebarLayout.tsx';
@@ -82,15 +82,22 @@ const Badge: React.FC<{ icon: string; label: string; value: string | number }> =
   </div>
 );
 
-const GlassCard: React.FC<React.PropsWithChildren<{ title: string; action?: React.ReactNode }>> = ({ title, action, children }) => (
-  <section className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur-xl sm:p-6">
-    <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
-      <h3 className="text-lg font-semibold text-white">{title}</h3>
-      {action}
-    </header>
-    <div className="space-y-4 text-sm leading-relaxed text-white/80">{children}</div>
-  </section>
+const GlassCard = React.forwardRef<HTMLElement, React.PropsWithChildren<{ title: string; action?: React.ReactNode }>>(
+  ({ title, action, children }, ref) => (
+    <section
+      ref={ref}
+      className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-white/10 p-5 shadow-xl shadow-black/10 backdrop-blur-xl transition hover:-translate-y-0.5 hover:shadow-brand-primary/20 sm:p-6"
+    >
+      <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h3 className="text-lg font-semibold text-white">{title}</h3>
+        {action}
+      </header>
+      <div className="space-y-4 text-sm leading-relaxed text-white/80">{children}</div>
+    </section>
+  ),
 );
+
+GlassCard.displayName = 'GlassCard';
 
 const CourseLearnPage: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
@@ -109,6 +116,12 @@ const CourseLearnPage: React.FC = () => {
   );
 
   const [currentLectureId, setCurrentLectureId] = useState<string | null>(primaryLecture?.id ?? null);
+
+  const contentRef = useRef<HTMLElement | null>(null);
+  const overviewRef = useRef<HTMLElement | null>(null);
+  const simulationsRef = useRef<HTMLElement | null>(null);
+  const tasksRef = useRef<HTMLElement | null>(null);
+  const doubtsRef = useRef<HTMLElement | null>(null);
 
   const sectionList = useMemo(
     () => course?.sections ?? [{ title: 'All lectures', lectures }],
@@ -216,6 +229,24 @@ const CourseLearnPage: React.FC = () => {
     });
   }, [course, coursesLoading, isEnrolled, onProfileUpdate, user]);
 
+  const navigationSections = useMemo(
+    () => [
+      { label: 'Course content', icon: 'list', ref: contentRef },
+      { label: 'Overview', icon: 'layout', ref: overviewRef },
+      { label: 'Simulations', icon: 'cpu', ref: simulationsRef },
+      { label: 'Add task', icon: 'plus-square', ref: tasksRef },
+      { label: 'My doubts', icon: 'message-circle', ref: doubtsRef },
+    ],
+    [],
+  );
+
+  const scrollToSection = useCallback((sectionRef: React.RefObject<HTMLElement>) => {
+    const element = sectionRef.current;
+    if (!element) return;
+
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
   if (coursesLoading || !course) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -229,16 +260,16 @@ const CourseLearnPage: React.FC = () => {
   }
 
   return (
-    <div className="relative min-h-screen bg-slate-950 text-white">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-brand-primary/15 via-slate-900/90 to-slate-950" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.08),transparent_25%)]" />
+    <div className="relative min-h-screen bg-gradient-to-b from-slate-900 via-slate-950 to-[#0b1020] text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(102,178,255,0.12),transparent_28%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_10%,rgba(244,114,182,0.08),transparent_26%)]" />
 
       <div className="relative z-10 mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/80 transition hover:border-brand-primary/40 hover:text-white"
+            className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/80 shadow-lg shadow-black/20 transition hover:-translate-y-0.5 hover:border-brand-primary/60 hover:text-white"
           >
             <Icon name="arrowLeft" className="h-4 w-4" />
             Back
@@ -261,7 +292,7 @@ const CourseLearnPage: React.FC = () => {
           </div>
         )}
 
-        <div className="mt-6 rounded-3xl border border-white/10 bg-white/5 p-5 shadow-2xl backdrop-blur-2xl sm:p-6">
+        <div className="mt-6 rounded-3xl border border-white/10 bg-white/10 p-5 shadow-2xl shadow-brand-primary/10 backdrop-blur-2xl sm:p-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="space-y-1">
               <p className="text-xs uppercase tracking-[0.2em] text-white/60">Current course</p>
@@ -275,7 +306,7 @@ const CourseLearnPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-black/30 shadow-inner">
+          <div className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-black/30 shadow-inner shadow-brand-primary/20">
             <div className="relative aspect-video w-full">
               {displayedLecture.videoUrl ? (
                 <iframe
@@ -320,9 +351,35 @@ const CourseLearnPage: React.FC = () => {
           </div>
         </div>
 
+        <div className="mt-8 overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-4 shadow-xl shadow-brand-primary/10 backdrop-blur-xl">
+          <div className="flex items-center justify-between gap-3 pb-3">
+            <p className="text-sm font-semibold text-white">Quick navigation</p>
+            <span className="text-xs text-white/60">Swipe or scroll horizontally</span>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-2 pr-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20" aria-label="Learning sections navigation">
+            {navigationSections.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => scrollToSection(item.ref)}
+                className="group flex min-w-[150px] items-center gap-3 rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-white/10 px-4 py-3 text-left shadow-md transition hover:-translate-y-0.5 hover:border-brand-primary/50 hover:shadow-brand-primary/30"
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-primary/15 text-brand-primary transition group-hover:scale-105 group-hover:bg-brand-primary/25">
+                  <Icon name={item.icon} className="h-5 w-5" />
+                </span>
+                <div className="space-y-0.5">
+                  <p className="text-sm font-semibold text-white">{item.label}</p>
+                  <p className="text-xs text-white/60">Jump to this section</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="mt-8 grid gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
             <GlassCard
+              ref={contentRef}
               title="Course content"
               action={
                 <span className="rounded-full bg-brand-primary/15 px-3 py-1 text-xs font-semibold text-brand-primary">
@@ -347,7 +404,8 @@ const CourseLearnPage: React.FC = () => {
               </div>
             </GlassCard>
 
-            <GlassCard title="Overview">
+            <GlassCard title="Overview" ref={overviewRef}>
+              <div className="space-y-4">
               <p className="text-sm leading-relaxed text-white/80">{course.longDescription || course.description}</p>
               {course.learningOutcomes && course.learningOutcomes.length > 0 && (
                 <ul className="grid gap-2 sm:grid-cols-2">
@@ -359,10 +417,11 @@ const CourseLearnPage: React.FC = () => {
                   ))}
                 </ul>
               )}
+              </div>
             </GlassCard>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <GlassCard title="Simulations">
+              <GlassCard title="Simulations" ref={simulationsRef}>
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/5 px-4 py-3">
                     <div>
@@ -379,6 +438,7 @@ const CourseLearnPage: React.FC = () => {
 
               <GlassCard
                 title="Add task"
+                ref={tasksRef}
                 action={<button className="text-sm font-semibold text-brand-primary hover:underline">Add</button>}
               >
                 <p>Break down what you learned into actionable next steps.</p>
@@ -417,7 +477,7 @@ const CourseLearnPage: React.FC = () => {
                 </div>
               </GlassCard>
 
-              <GlassCard title="My doubts">
+              <GlassCard title="My doubts" ref={doubtsRef}>
                 <div className="space-y-3 text-sm text-white/80">
                   <p>Capture anything that felt unclear while watching this lecture.</p>
                   <textarea
