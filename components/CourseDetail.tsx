@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import Icon from './common/Icon.tsx';
 import { Course, CourseInstructor, Lecture, SuggestedCourseSummary } from '../types.ts';
 
@@ -6,6 +6,7 @@ interface CourseDetailProps {
   course: Course;
   navigateToLecture: (course: Course, lecture: Lecture) => void;
   onNavigateToCourse: (courseId: string) => void;
+  onStartLearning?: (course: Course) => void;
 }
 
 const parseDurationToMinutes = (value?: string): number => {
@@ -299,11 +300,22 @@ const InstructorCard: React.FC<{ instructor: CourseInstructor }> = ({ instructor
   </div>
 );
 
-const CourseDetail: React.FC<CourseDetailProps> = ({ course, navigateToLecture, onNavigateToCourse }) => {
+const CourseDetail: React.FC<CourseDetailProps> = ({ course, navigateToLecture, onNavigateToCourse, onStartLearning }) => {
   const [openSectionIndex, setOpenSectionIndex] = useState<number | null>(0);
 
   const primaryLecture = course.lectures.find((lecture) => lecture.isPreview) ?? course.lectures[0];
   const instructors = useMemo(() => getInstructorList(course), [course]);
+
+  const handleStartLearning = useCallback(() => {
+    if (!primaryLecture) return;
+
+    if (onStartLearning) {
+      onStartLearning(course);
+      return;
+    }
+
+    navigateToLecture(course, primaryLecture);
+  }, [course, navigateToLecture, onStartLearning, primaryLecture]);
 
   const computedDuration = useMemo(() => {
     if (course.totalDuration) {
@@ -436,7 +448,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course, navigateToLecture, 
                 <button
                   type="button"
                   disabled={!primaryLecture}
-                  onClick={() => primaryLecture && navigateToLecture(course, primaryLecture)}
+                  onClick={handleStartLearning}
                   className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-primary/40 transition-all duration-300 ${
                     primaryLecture
                       ? 'bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-primary hover:-translate-y-0.5 hover:shadow-brand-primary/60'
@@ -502,7 +514,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course, navigateToLecture, 
 
                 <button
                   type="button"
-                  onClick={() => primaryLecture && navigateToLecture(course, primaryLecture)}
+                  onClick={handleStartLearning}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-primary px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-primary/40 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-brand-primary/60"
                 >
                   <Icon name="play" className="h-5 w-5" /> Start learning now

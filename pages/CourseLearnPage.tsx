@@ -1,15 +1,18 @@
 import React, { useMemo } from 'react';
 import { Navigate, useNavigate, useOutletContext, useParams } from 'react-router-dom';
-import CourseDetail from '@/components/CourseDetail.tsx';
-import { Lecture } from '@/types';
+import LectureView from '@/components/LectureView.tsx';
 import { SidebarLayoutContext } from '@/components/SidebarLayout.tsx';
 
-const CourseDetailPage: React.FC = () => {
+const CourseLearnPage: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
-  const { courses, coursesLoading } = useOutletContext<SidebarLayoutContext>();
+  const { courses, user, coursesLoading } = useOutletContext<SidebarLayoutContext>();
   const navigate = useNavigate();
 
   const course = useMemo(() => courses.find((c) => c.id === courseId), [courses, courseId]);
+  const primaryLecture = useMemo(
+    () => course?.lectures.find((lecture) => lecture.isPreview) ?? course?.lectures[0],
+    [course],
+  );
 
   if (coursesLoading) {
     return (
@@ -19,20 +22,19 @@ const CourseDetailPage: React.FC = () => {
     );
   }
 
-  if (!course) {
-    return <Navigate to="/explore" replace />;
+  if (!course || !primaryLecture) {
+    return <Navigate to={course ? `/courses/${course.id}` : '/dashboard'} replace />;
   }
 
   return (
-    <CourseDetail
+    <LectureView
+      user={user}
       course={course}
-      navigateToLecture={(selectedCourse, lecture: Lecture) =>
-        navigate(`/courses/${selectedCourse.id}/lectures/${lecture.id}`)
-      }
-      onStartLearning={(selectedCourse) => navigate(`/courses/${selectedCourse.id}/learn`)}
-      onNavigateToCourse={(targetCourseId) => navigate(`/courses/${targetCourseId}`)}
+      lecture={primaryLecture}
+      onBack={() => navigate(`/courses/${course.id}`)}
+      onExit={() => navigate('/dashboard')}
     />
   );
 };
 
-export default CourseDetailPage;
+export default CourseLearnPage;

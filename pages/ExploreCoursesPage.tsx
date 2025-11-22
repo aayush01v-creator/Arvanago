@@ -24,7 +24,7 @@ const ExploreCoursesPage: React.FC = () => {
         }
       }
 
-      navigate(`/courses/${course.id}`);
+      navigate(`/courses/${course.id}/learn`);
     },
     [navigate, onProfileUpdate, user],
   );

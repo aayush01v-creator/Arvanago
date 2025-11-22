@@ -25,6 +25,7 @@ const LeaderboardPage = React.lazy(() => import('@/pages/LeaderboardPage'));
 const ProfilePage = React.lazy(() => import('@/pages/ProfilePage'));
 const CourseDetailPage = React.lazy(() => import('@/pages/CourseDetailPage'));
 const CourseLecturePage = React.lazy(() => import('@/pages/CourseLecturePage'));
+const CourseLearnPage = React.lazy(() => import('@/pages/CourseLearnPage'));
 const LoginRoute = React.lazy(() => import('@/pages/LoginRoute'));
 const CoursePreviewPage = React.lazy(() => import('@/pages/CoursePreviewPage'));
 const ExploreCoursesPage = React.lazy(() => import('@/pages/ExploreCoursesPage'));
@@ -329,6 +330,7 @@ const App: React.FC = () => {
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/courses/:courseId" element={<CourseDetailPage />} />
+            <Route path="/courses/:courseId/learn" element={<CourseLearnPage />} />
             <Route
               path="/courses/:courseId/lectures/:lectureId"
               element={<CourseLecturePage />}
