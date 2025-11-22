@@ -71,6 +71,8 @@ const ExploreCoursesPage: React.FC = () => {
       onPreviewCourse={handlePreviewCourse}
       onToggleWishlist={handleWishlistToggle}
       wishlistCourseIds={user?.wishlist}
+      enrolledCourseIds={user?.enrolledCourses}
+      ongoingCourseIds={user?.ongoingCourses}
       initialCategory={initialCategory}
       isLoading={coursesLoading}
       errorMessage={coursesError}

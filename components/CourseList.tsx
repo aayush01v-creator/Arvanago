@@ -9,6 +9,8 @@ interface CourseListProps {
   onPreviewCourse?: (course: Course) => void;
   onToggleWishlist?: (course: Course) => void;
   wishlistCourseIds?: string[];
+  enrolledCourseIds?: string[];
+  ongoingCourseIds?: string[];
   initialCategory?: string;
   isLoading?: boolean;
   errorMessage?: string | null;
@@ -20,6 +22,7 @@ interface CourseCardProps {
   onPreviewCourse: (course: Course) => void;
   onToggleWishlist?: (course: Course) => void;
   isWishlisted?: boolean;
+  isEnrolled?: boolean;
 }
 
 const CourseCardComponent: React.FC<CourseCardProps> = ({
@@ -28,6 +31,7 @@ const CourseCardComponent: React.FC<CourseCardProps> = ({
   onPreviewCourse,
   onToggleWishlist,
   isWishlisted = false,
+  isEnrolled = false,
 }) => {
   const coverImage = course.thumbnailUrl ?? course.thumbnail;
   const isPaid = course.isPaid ?? !course.isFree;
@@ -72,17 +76,19 @@ const CourseCardComponent: React.FC<CourseCardProps> = ({
           loading="lazy"
         />
         <div className="absolute left-4 top-4 inline-flex items-center rounded-full bg-white/90 px-4 py-1 text-xs font-semibold text-brand-primary shadow-lg shadow-brand-primary/30 backdrop-blur-sm">
-          {priceLabel}
+          {isEnrolled ? 'Enrolled' : priceLabel}
         </div>
-        <div className="absolute right-4 top-4 flex flex-col items-end gap-2">
-          <button
-            onClick={handleWishlistClick}
-            aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-            className={`rounded-full bg-black/60 p-2 text-white shadow-lg backdrop-blur-sm transition hover:scale-105 hover:bg-black/80 ${wishlisted ? 'ring-2 ring-red-300' : ''}`}
-          >
-            <Icon name={wishlisted ? 'heart-filled' : 'heart'} className={`h-4 w-4 ${wishlisted ? 'text-red-400' : ''}`} />
-          </button>
-        </div>
+        {!isEnrolled && (
+          <div className="absolute right-4 top-4 flex flex-col items-end gap-2">
+            <button
+              onClick={handleWishlistClick}
+              aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+              className={`rounded-full bg-black/60 p-2 text-white shadow-lg backdrop-blur-sm transition hover:scale-105 hover:bg-black/80 ${wishlisted ? 'ring-2 ring-red-300' : ''}`}
+            >
+              <Icon name={wishlisted ? 'heart-filled' : 'heart'} className={`h-4 w-4 ${wishlisted ? 'text-red-400' : ''}`} />
+            </button>
+          </div>
+        )}
         <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-4 pb-3 text-sm text-white">
           <div className="flex items-center gap-2">
             <div className="flex items-center -space-x-2 overflow-hidden rounded-full border border-white/30 bg-white/10 px-2 py-1">
@@ -133,7 +139,14 @@ const CourseCardComponent: React.FC<CourseCardProps> = ({
               {(course.studentCount ?? 0).toLocaleString()} learners
             </span>
           </div>
-          {isPaid ? (
+          {isEnrolled ? (
+            <button
+              onClick={() => onEnrollCourse(course)}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-primary px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-primary/40 transition-all duration-500 hover:-translate-y-0.5 hover:shadow-brand-primary/60"
+            >
+              <Icon name="play" className="h-4 w-4" /> Continue learning
+            </button>
+          ) : isPaid ? (
             <div className="flex flex-col gap-2 sm:flex-row">
               <button
                 onClick={() => onEnrollCourse(course)}
@@ -170,6 +183,8 @@ const CourseList: React.FC<CourseListProps> = ({
   onPreviewCourse,
   onToggleWishlist,
   wishlistCourseIds,
+  enrolledCourseIds,
+  ongoingCourseIds,
   initialCategory = 'All',
   isLoading = false,
   errorMessage,
@@ -260,6 +275,9 @@ const CourseList: React.FC<CourseListProps> = ({
               onPreviewCourse={handlePreview}
               onToggleWishlist={onToggleWishlist}
               isWishlisted={wishlistCourseIds?.includes(course.id)}
+              isEnrolled={
+                enrolledCourseIds?.includes(course.id) || ongoingCourseIds?.includes(course.id)
+              }
             />
           ))
         ) : (
