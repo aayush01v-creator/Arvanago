@@ -10,7 +10,7 @@ const MyLearningsPage: React.FC = () => {
 
   const handleCourseSelect = useCallback(
     (course: Course) => {
-      navigate(`/courses/${course.id}`);
+      navigate(`/courses/${course.id}/learn`);
     },
     [navigate],
   );
