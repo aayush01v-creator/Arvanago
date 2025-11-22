@@ -31,7 +31,7 @@ const ExploreCoursesPage: React.FC = () => {
 
   const handlePreviewCourse = useCallback(
     (course: Course) => {
-      navigate(`/courses/${course.id}/preview`);
+      navigate(`/courses/${course.id}`);
     },
     [navigate],
   );
