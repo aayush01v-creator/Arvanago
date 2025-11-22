@@ -90,6 +90,15 @@ const CourseLearnPage: React.FC = () => {
   const navigate = useNavigate();
 
   const course = useMemo(() => courses.find((c) => c.id === courseId), [courses, courseId]);
+  const isEnrolled = useMemo(
+    () =>
+      Boolean(
+        course &&
+          user &&
+          (user.enrolledCourses.includes(course.id) || user.ongoingCourses.includes(course.id)),
+      ),
+    [course, user],
+  );
   const primaryLecture = useMemo(
     () => course?.lectures.find((lecture) => lecture.isPreview) ?? course?.lectures[0],
     [course],
@@ -102,15 +111,15 @@ const CourseLearnPage: React.FC = () => {
   }, [primaryLecture]);
 
   useEffect(() => {
-    if (!user || !course) return;
+    if (!user || !course || !isEnrolled) return;
 
-    const isEnrolled = user.enrolledCourses.includes(course.id);
-    const isOngoing = user.ongoingCourses.includes(course.id);
+    const alreadyEnrolled = user.enrolledCourses.includes(course.id);
+    const alreadyOngoing = user.ongoingCourses.includes(course.id);
 
-    if (isEnrolled && isOngoing) return;
+    if (alreadyEnrolled && alreadyOngoing) return;
 
-    const updatedEnrolledCourses = isEnrolled ? user.enrolledCourses : [...user.enrolledCourses, course.id];
-    const updatedOngoingCourses = isOngoing ? user.ongoingCourses : [...user.ongoingCourses, course.id];
+    const updatedEnrolledCourses = alreadyEnrolled ? user.enrolledCourses : [...user.enrolledCourses, course.id];
+    const updatedOngoingCourses = alreadyOngoing ? user.ongoingCourses : [...user.ongoingCourses, course.id];
 
     onProfileUpdate({
       enrolledCourses: updatedEnrolledCourses,
@@ -121,7 +130,7 @@ const CourseLearnPage: React.FC = () => {
       enrolledCourses: updatedEnrolledCourses,
       ongoingCourses: updatedOngoingCourses,
     });
-  }, [course, onProfileUpdate, user]);
+  }, [course, isEnrolled, onProfileUpdate, user]);
 
   if (coursesLoading) {
     return (
@@ -129,6 +138,10 @@ const CourseLearnPage: React.FC = () => {
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-dashed border-brand-primary" />
       </div>
     );
+  }
+
+  if (!isEnrolled && !coursesLoading) {
+    return <Navigate to={course ? `/courses/${course.id}` : '/dashboard'} replace />;
   }
 
   if (!course || !primaryLecture || !currentLecture) {
