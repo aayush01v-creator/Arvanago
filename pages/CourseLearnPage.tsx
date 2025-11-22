@@ -122,11 +122,62 @@ const CourseLearnPage: React.FC = () => {
 
   const resourcesCount = useMemo(() => course?.resources?.length ?? 0, [course?.resources]);
 
+  const currentLecture = useMemo(
+    () => lectures.find((lecture) => lecture.id === currentLectureId) ?? primaryLecture ?? null,
+    [currentLectureId, lectures, primaryLecture],
+  );
+
+  const isLectureDataReady = useMemo(
+    () => lectures.length > 0 && Boolean(primaryLecture) && Boolean(currentLecture),
+    [currentLecture, lectures, primaryLecture],
+  );
+
+  const placeholderLecture: Lecture = useMemo(
+    () => ({
+      id: 'pending-sync',
+      title: 'Content is syncing...',
+      duration: 'Updating from cloud',
+      videoUrl: '',
+      isCompleted: false,
+      summary: 'Your lecture list is being updated. This view will refresh automatically.',
+      isPreview: true,
+    }),
+    [],
+  );
+
+  const displaySectionList = useMemo<CourseSection[]>(
+    () =>
+      isLectureDataReady
+        ? sectionList
+        : Array.from({ length: 3 }, (_, index) => ({
+            title: `Syncing section ${index + 1}`,
+            lectures: [
+              {
+                ...placeholderLecture,
+                id: `sync-${index + 1}`,
+                title: `Lecture ${index + 1} syncing...`,
+                duration: 'Preparing',
+              },
+            ],
+          })),
+    [isLectureDataReady, placeholderLecture, sectionList],
+  );
+
+  const displayTotalLessons = useMemo(
+    () => displaySectionList.reduce((total, section) => total + section.lectures.length, 0),
+    [displaySectionList],
+  );
+
+  const displayedLecture = isLectureDataReady ? (currentLecture as Lecture) : placeholderLecture;
+  const isSyncingLectures = !isLectureDataReady;
+
   const handleSelectLecture = useCallback(
     (lecture: Lecture) => {
+      if (!isLectureDataReady) return;
+
       setCurrentLectureId((prev) => (prev === lecture.id ? prev : lecture.id));
     },
-    [],
+    [isLectureDataReady],
   );
 
   const quickTools = useMemo(
@@ -137,11 +188,6 @@ const CourseLearnPage: React.FC = () => {
       { icon: 'message-circle', label: 'Mentor', description: 'Chat with your mentor.' },
     ],
     [resourcesCount],
-  );
-
-  const currentLecture = useMemo(
-    () => lectures.find((lecture) => lecture.id === currentLectureId) ?? primaryLecture ?? null,
-    [currentLectureId, lectures, primaryLecture],
   );
 
   useEffect(() => {
@@ -182,41 +228,6 @@ const CourseLearnPage: React.FC = () => {
     return <Navigate to={course ? `/courses/${course.id}` : '/dashboard'} replace />;
   }
 
-  if (lectures.length === 0 || !primaryLecture || !currentLecture) {
-    return (
-      <div className="relative min-h-screen bg-slate-950 text-white">
-        <div className="flex flex-col items-center justify-center gap-4 px-6 py-20 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/5 text-brand-primary">
-            <Icon name="alertTriangle" className="h-7 w-7" />
-          </div>
-          <div className="space-y-2">
-            <h1 className="text-2xl font-semibold">Course content is still loading</h1>
-            <p className="text-white/70">
-              We couldn&apos;t load the lectures for this course yet. Please refresh or visit the course overview while we
-              sync your content.
-            </p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-3">
-            <button
-              type="button"
-              onClick={() => navigate(0)}
-              className="rounded-full bg-brand-primary px-5 py-2 text-sm font-semibold text-slate-900 shadow-lg shadow-brand-primary/40 transition hover:-translate-y-0.5"
-            >
-              Retry loading
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate(`/courses/${course.id}`)}
-              className="rounded-full border border-white/15 bg-white/5 px-5 py-2 text-sm font-semibold text-white transition hover:border-brand-primary/40 hover:bg-brand-primary/10"
-            >
-              Go to course overview
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="relative min-h-screen bg-slate-950 text-white">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-brand-primary/15 via-slate-900/90 to-slate-950" />
@@ -238,6 +249,18 @@ const CourseLearnPage: React.FC = () => {
           </div>
         </div>
 
+        {isSyncingLectures && (
+          <div className="mt-4 flex items-center gap-3 rounded-2xl border border-amber-200/20 bg-amber-500/10 p-4 text-amber-50">
+            <div className="h-10 w-10 shrink-0 rounded-full border border-amber-200/20 bg-amber-500/15">
+              <div className="m-2 h-6 w-6 animate-spin rounded-full border-2 border-dashed border-amber-200" />
+            </div>
+            <div className="text-sm text-amber-50">
+              <p className="font-semibold">Syncing your course content</p>
+              <p className="text-white/70">Lectures are updating from Firebase. You can keep browsing while we finish syncing.</p>
+            </div>
+          </div>
+        )}
+
         <div className="mt-6 rounded-3xl border border-white/10 bg-white/5 p-5 shadow-2xl backdrop-blur-2xl">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -248,26 +271,32 @@ const CourseLearnPage: React.FC = () => {
             <div className="flex flex-wrap gap-2 sm:justify-end">
               <Badge icon="star" label="Rating" value={`${course.rating ?? 4.8}★`} />
               <Badge icon="clock" label="Duration" value={course.totalDuration ?? 'Self paced'} />
-              <Badge icon="book" label="Lessons" value={totalLessons} />
+              <Badge icon="book" label="Lessons" value={displayTotalLessons} />
             </div>
           </div>
 
           <div className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-black/30 shadow-inner">
             <div className="relative aspect-video w-full">
-              <iframe
-                src={currentLecture.videoUrl}
-                title={currentLecture.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-                loading="lazy"
-                className="absolute inset-0 h-full w-full"
-              />
+              {displayedLecture.videoUrl ? (
+                <iframe
+                  src={displayedLecture.videoUrl}
+                  title={displayedLecture.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  loading="lazy"
+                  className="absolute inset-0 h-full w-full"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-900/60">
+                  <div className="h-12 w-12 animate-spin rounded-full border-4 border-dashed border-brand-primary" />
+                </div>
+              )}
             </div>
             <div className="flex flex-col gap-2 border-t border-white/10 bg-white/5 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs uppercase tracking-wide text-white/60">Now playing</p>
-                <p className="text-lg font-semibold text-white">{currentLecture.title}</p>
-                <p className="text-sm text-white/60">{currentLecture.duration}</p>
+                <p className="text-lg font-semibold text-white">{displayedLecture.title}</p>
+                <p className="text-sm text-white/60">{displayedLecture.duration}</p>
               </div>
               <div className="flex flex-wrap gap-3">
                 <button
@@ -302,16 +331,16 @@ const CourseLearnPage: React.FC = () => {
               }
             >
               <div className="flex flex-wrap gap-2 text-xs text-white/60">
-                <span className="rounded-full bg-white/5 px-3 py-1">{totalLessons} lessons</span>
+                <span className="rounded-full bg-white/5 px-3 py-1">{displayTotalLessons} lessons</span>
                 <span className="rounded-full bg-white/5 px-3 py-1">{resourcesCount} resources</span>
                 <span className="rounded-full bg-white/5 px-3 py-1">{course.sections?.length ?? 1} sections</span>
               </div>
               <div className="space-y-3">
-                {sectionList.map((section) => (
+                {displaySectionList.map((section) => (
                   <MemoizedSectionSummary
                     key={section.title}
                     section={section}
-                    currentLectureId={currentLecture.id}
+                    currentLectureId={displayedLecture.id}
                     onSelect={handleSelectLecture}
                   />
                 ))}
