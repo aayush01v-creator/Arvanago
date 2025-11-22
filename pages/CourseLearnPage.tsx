@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import Icon from '@/components/common/Icon.tsx';
 import { SidebarLayoutContext } from '@/components/SidebarLayout.tsx';
@@ -64,6 +64,14 @@ const SectionSummary: React.FC<{ section: CourseSection; currentLectureId: strin
   );
 };
 
+const MemoizedSectionSummary = React.memo(SectionSummary, (prev, next) => {
+  if (prev.currentLectureId !== next.currentLectureId) return false;
+
+  if (prev.section.lectures.length !== next.section.lectures.length) return false;
+
+  return prev.section.lectures.every((lecture, index) => lecture.id === next.section.lectures[index].id);
+});
+
 const Badge: React.FC<{ icon: string; label: string; value: string | number }> = ({ icon, label, value }) => (
   <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 backdrop-blur">
     <Icon name={icon} className="h-4 w-4 text-brand-primary" />
@@ -106,6 +114,35 @@ const CourseLearnPage: React.FC = () => {
 
   const [currentLecture, setCurrentLecture] = useState<Lecture | undefined>(primaryLecture);
 
+  const sectionList = useMemo(
+    () => course?.sections ?? [{ title: 'All lectures', lectures: course?.lectures ?? [] }],
+    [course?.lectures, course?.sections],
+  );
+
+  const totalLessons = useMemo(
+    () => sectionList.reduce((total, section) => total + section.lectures.length, 0),
+    [sectionList],
+  );
+
+  const resourcesCount = useMemo(() => course?.resources?.length ?? 0, [course?.resources]);
+
+  const handleSelectLecture = useCallback(
+    (lecture: Lecture) => {
+      setCurrentLecture((prev) => (prev?.id === lecture.id ? prev : lecture));
+    },
+    [],
+  );
+
+  const quickTools = useMemo(
+    () => [
+      { icon: 'edit', label: 'Notes', description: 'Capture highlights for this lecture.' },
+      { icon: 'download', label: 'Downloads', description: `${resourcesCount} resources available.` },
+      { icon: 'award', label: 'Achievements', description: 'Earn badges as you progress.' },
+      { icon: 'message-circle', label: 'Mentor', description: 'Chat with your mentor.' },
+    ],
+    [resourcesCount],
+  );
+
   useEffect(() => {
     setCurrentLecture(primaryLecture);
   }, [primaryLecture]);
@@ -147,9 +184,6 @@ const CourseLearnPage: React.FC = () => {
   if (!course || !primaryLecture || !currentLecture) {
     return <Navigate to={course ? `/courses/${course.id}` : '/dashboard'} replace />;
   }
-
-  const totalLessons = course.sections?.reduce((total, section) => total + section.lectures.length, 0) ?? course.lectures.length;
-  const resourcesCount = course.resources?.length ?? 0;
 
   return (
     <div className="relative min-h-screen bg-slate-950 text-white">
@@ -241,12 +275,12 @@ const CourseLearnPage: React.FC = () => {
                 <span className="rounded-full bg-white/5 px-3 py-1">{course.sections?.length ?? 1} sections</span>
               </div>
               <div className="space-y-3">
-                {(course.sections ?? [{ title: 'All lectures', lectures: course.lectures }]).map((section) => (
-                  <SectionSummary
+                {sectionList.map((section) => (
+                  <MemoizedSectionSummary
                     key={section.title}
                     section={section}
                     currentLectureId={currentLecture.id}
-                    onSelect={setCurrentLecture}
+                    onSelect={handleSelectLecture}
                   />
                 ))}
               </div>
@@ -363,12 +397,7 @@ const CourseLearnPage: React.FC = () => {
             <div className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-xl backdrop-blur-xl">
               <h3 className="text-lg font-semibold text-white">Quick tools</h3>
               <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                {[
-                  { icon: 'edit', label: 'Notes', description: 'Capture highlights for this lecture.' },
-                  { icon: 'download', label: 'Downloads', description: `${resourcesCount} resources available.` },
-                  { icon: 'award', label: 'Achievements', description: 'Earn badges as you progress.' },
-                  { icon: 'message-circle', label: 'Mentor', description: 'Chat with your mentor.' },
-                ].map((item) => (
+                {quickTools.map((item) => (
                   <div key={item.label} className="rounded-2xl border border-white/5 bg-white/5 px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-primary/15 text-brand-primary">
