@@ -255,6 +255,10 @@ const App: React.FC = () => {
       return <SuspenseFallback />;
     }
 
+    if (user && isEnrolled) {
+      return <Navigate to={`/courses/${courseId}/learn`} replace />;
+    }
+
     if (!user || !isEnrolled) {
       return (
         <CoursePreviewPage
