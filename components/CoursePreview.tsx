@@ -191,13 +191,23 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ course, onLoginClick, onB
             return;
         }
 
-        const alreadyEnrolled = user.ongoingCourses.includes(course.id);
+        const alreadyEnrolled = user.enrolledCourses.includes(course.id) || user.ongoingCourses.includes(course.id);
 
         if (!alreadyEnrolled) {
-            const updatedCourses = [...user.ongoingCourses, course.id];
+            const updatedOngoingCourses = [...user.ongoingCourses, course.id];
+            const updatedEnrolledCourses = [...user.enrolledCourses, course.id];
+
             try {
-                await updateUserProfile(user.uid, { ongoingCourses: updatedCourses });
-                onProfileUpdate({ ongoingCourses: updatedCourses });
+                await updateUserProfile(user.uid, {
+                    ongoingCourses: updatedOngoingCourses,
+                    enrolledCourses: updatedEnrolledCourses,
+                });
+
+                onProfileUpdate({
+                    ongoingCourses: updatedOngoingCourses,
+                    enrolledCourses: updatedEnrolledCourses,
+                });
+
                 setToastMessage(`Enrolled in ${course.title}`);
                 setShowToast(true);
             } catch (error) {

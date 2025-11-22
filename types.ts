@@ -15,6 +15,7 @@ export interface User {
   points: number;
   streak: number;
   completedChallenges: number;
+  enrolledCourses: string[];
   ongoingCourses: string[]; // Changed from Course[]
   wishlist: string[]; // Array of course IDs
   pendingTasks: Task[];

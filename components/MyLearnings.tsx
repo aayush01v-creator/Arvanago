@@ -54,12 +54,16 @@ const MyLearnings: React.FC<MyLearningsProps> = ({ user, courses, navigateToCour
     const [activeTab, setActiveTab] = useState<Tab>('courses');
     const [searchTerm, setSearchTerm] = useState('');
 
-    const ongoingCourses = useMemo(() => 
-        user.ongoingCourses
+    const enrolledCourses = useMemo(() => {
+        const enrolledCourseIds = Array.from(new Set([
+            ...user.enrolledCourses,
+            ...user.ongoingCourses,
+        ]));
+
+        return enrolledCourseIds
             .map(id => courses.find(c => c.id === id))
-            .filter((c): c is Course => !!c), 
-        [user.ongoingCourses, courses]
-    );
+            .filter((c): c is Course => !!c);
+    }, [courses, user.enrolledCourses, user.ongoingCourses]);
 
     const wishlistCourses = useMemo(() => 
         user.wishlist
@@ -69,11 +73,11 @@ const MyLearnings: React.FC<MyLearningsProps> = ({ user, courses, navigateToCour
     );
 
     const filteredCourses = useMemo(() => {
-        return ongoingCourses.filter(course =>
+        return enrolledCourses.filter(course =>
             course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
             course.author.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
-    }, [ongoingCourses, searchTerm]);
+    }, [enrolledCourses, searchTerm]);
 
     const filteredWishlist = useMemo(() => {
         return wishlistCourses.filter(course =>
