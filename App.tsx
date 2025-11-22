@@ -225,7 +225,7 @@ const App: React.FC = () => {
 
   const handlePublicCourseSelect = useCallback(
     (course: Course) => {
-      navigate(`/courses/${course.id}/learn`);
+      navigate(`/courses/${course.id}`);
     },
     [navigate, user],
   );
