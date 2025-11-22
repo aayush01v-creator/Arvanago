@@ -119,11 +119,11 @@ const CourseLearnPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState<string>('Course content');
   const mainSectionRef = useRef<HTMLDivElement | null>(null);
 
-  const contentRef = useRef<HTMLElement | null>(null);
-  const overviewRef = useRef<HTMLElement | null>(null);
-  const simulationsRef = useRef<HTMLElement | null>(null);
-  const tasksRef = useRef<HTMLElement | null>(null);
-  const doubtsRef = useRef<HTMLElement | null>(null);
+  const [tasks, setTasks] = useState([
+    { id: 'task-1', title: 'Review lecture notes', status: 'In progress' },
+    { id: 'task-2', title: 'Try the coding exercise', status: 'Pending' },
+  ]);
+  const [taskInput, setTaskInput] = useState('');
 
   const sectionList = useMemo(
     () => course?.sections ?? [{ title: 'All lectures', lectures }],
@@ -233,21 +233,29 @@ const CourseLearnPage: React.FC = () => {
 
   const navigationSections = useMemo(
     () => [
-      { label: 'Course content', icon: 'list', ref: contentRef },
-      { label: 'Overview', icon: 'layout', ref: overviewRef },
-      { label: 'Simulations', icon: 'cpu', ref: simulationsRef },
-      { label: 'Add task', icon: 'plus-square', ref: tasksRef },
-      { label: 'My doubts', icon: 'message-circle', ref: doubtsRef },
+      { label: 'Course content', icon: 'list' },
+      { label: 'Overview', icon: 'layout' },
+      { label: 'Simulations', icon: 'cpu' },
+      { label: 'Add task', icon: 'plus-square' },
+      { label: 'My doubts', icon: 'message-circle' },
     ],
     [],
   );
 
-  const scrollToSection = useCallback((sectionRef: React.RefObject<HTMLElement>) => {
-    const element = sectionRef.current;
-    if (!element) return;
-
-    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const handleNavigation = useCallback((sectionLabel: string) => {
+    setActiveSection(sectionLabel);
+    mainSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
+
+  const handleAddTask = useCallback(() => {
+    if (!taskInput.trim()) return;
+
+    setTasks((prev) => [
+      { id: `task-${prev.length + 1}`, title: taskInput.trim(), status: 'Pending' },
+      ...prev,
+    ]);
+    setTaskInput('');
+  }, [taskInput]);
 
   if (coursesLoading || !course) {
     return (
@@ -358,13 +366,20 @@ const CourseLearnPage: React.FC = () => {
             <p className="text-sm font-semibold text-white">Quick navigation</p>
             <span className="text-xs text-white/60">Swipe or scroll horizontally</span>
           </div>
-          <div className="flex gap-3 overflow-x-auto pb-2 pr-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20" aria-label="Learning sections navigation">
+          <div
+            className="flex gap-3 overflow-x-auto pb-2 pr-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20"
+            aria-label="Learning sections navigation"
+          >
             {navigationSections.map((item) => (
               <button
                 key={item.label}
                 type="button"
-                onClick={() => scrollToSection(item.ref)}
-                className="group flex min-w-[150px] items-center gap-3 rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-white/10 px-4 py-3 text-left shadow-md transition hover:-translate-y-0.5 hover:border-brand-primary/50 hover:shadow-brand-primary/30"
+                onClick={() => handleNavigation(item.label)}
+                className={`group flex min-w-[150px] items-center gap-3 rounded-2xl border px-4 py-3 text-left shadow-md transition hover:-translate-y-0.5 hover:border-brand-primary/50 hover:shadow-brand-primary/30 ${
+                  activeSection === item.label
+                    ? 'border-brand-primary/60 bg-brand-primary/15'
+                    : 'border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-white/10'
+                }`}
               >
                 <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-primary/15 text-brand-primary transition group-hover:scale-105 group-hover:bg-brand-primary/25">
                   <Icon name={item.icon} className="h-5 w-5" />
@@ -378,52 +393,55 @@ const CourseLearnPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-3">
+        <div ref={mainSectionRef} className="mt-8 grid gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
-            <GlassCard
-              ref={contentRef}
-              title="Course content"
-              action={
-                <span className="rounded-full bg-brand-primary/15 px-3 py-1 text-xs font-semibold text-brand-primary">
-                  {course.progress}% complete
-                </span>
-              }
-            >
-              <div className="flex flex-wrap gap-2 text-xs text-white/60">
-                <span className="rounded-full bg-white/5 px-3 py-1">{displayTotalLessons} lessons</span>
-                <span className="rounded-full bg-white/5 px-3 py-1">{resourcesCount} resources</span>
-                <span className="rounded-full bg-white/5 px-3 py-1">{course.sections?.length ?? 1} sections</span>
-              </div>
-              <div className="space-y-3 rounded-2xl bg-black/20 p-3 sm:p-4">
-                {displaySectionList.map((section) => (
-                  <MemoizedSectionSummary
-                    key={section.title}
-                    section={section}
-                    currentLectureId={displayedLecture.id}
-                    onSelect={handleSelectLecture}
-                  />
-                ))}
-              </div>
-            </GlassCard>
-
-            <GlassCard title="Overview" ref={overviewRef}>
-              <div className="space-y-4">
-              <p className="text-sm leading-relaxed text-white/80">{course.longDescription || course.description}</p>
-              {course.learningOutcomes && course.learningOutcomes.length > 0 && (
-                <ul className="grid gap-2 sm:grid-cols-2">
-                  {course.learningOutcomes.map((item) => (
-                    <li key={item} className="flex items-start gap-2 rounded-xl border border-white/5 bg-white/5 px-3 py-2 text-sm">
-                      <Icon name="check" className="mt-1 h-4 w-4 text-emerald-400" />
-                      <span>{item}</span>
-                    </li>
+            {activeSection === 'Course content' && (
+              <GlassCard
+                title="Course content"
+                action={
+                  <span className="rounded-full bg-brand-primary/15 px-3 py-1 text-xs font-semibold text-brand-primary">
+                    {course.progress}% complete
+                  </span>
+                }
+              >
+                <div className="flex flex-wrap gap-2 text-xs text-white/60">
+                  <span className="rounded-full bg-white/5 px-3 py-1">{displayTotalLessons} lessons</span>
+                  <span className="rounded-full bg-white/5 px-3 py-1">{resourcesCount} resources</span>
+                  <span className="rounded-full bg-white/5 px-3 py-1">{course.sections?.length ?? 1} sections</span>
+                </div>
+                <div className="space-y-3 rounded-2xl bg-black/20 p-3 sm:p-4">
+                  {displaySectionList.map((section) => (
+                    <MemoizedSectionSummary
+                      key={section.title}
+                      section={section}
+                      currentLectureId={displayedLecture.id}
+                      onSelect={handleSelectLecture}
+                    />
                   ))}
-                </ul>
-              )}
-              </div>
-            </GlassCard>
+                </div>
+              </GlassCard>
+            )}
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <GlassCard title="Simulations" ref={simulationsRef}>
+            {activeSection === 'Overview' && (
+              <GlassCard title="Overview">
+                <div className="space-y-4">
+                  <p className="text-sm leading-relaxed text-white/80">{course.longDescription || course.description}</p>
+                  {course.learningOutcomes && course.learningOutcomes.length > 0 && (
+                    <ul className="grid gap-2 sm:grid-cols-2">
+                      {course.learningOutcomes.map((item) => (
+                        <li key={item} className="flex items-start gap-2 rounded-xl border border-white/5 bg-white/5 px-3 py-2 text-sm">
+                          <Icon name="check" className="mt-1 h-4 w-4 text-emerald-400" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </GlassCard>
+            )}
+
+            {activeSection === 'Simulations' && (
+              <GlassCard title="Simulations">
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/5 px-4 py-3">
                     <div>
@@ -437,44 +455,61 @@ const CourseLearnPage: React.FC = () => {
                   </div>
                 </div>
               </GlassCard>
+            )}
 
+            {activeSection === 'Add task' && (
               <GlassCard
                 title="Add task"
-                ref={tasksRef}
-                action={<button className="text-sm font-semibold text-brand-primary hover:underline">Add</button>}
-              >
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-primary/15 text-brand-primary transition group-hover:scale-105 group-hover:bg-brand-primary/25">
-                  <Icon name={item.icon} className="h-5 w-5" />
-                </span>
-                <div className="space-y-0.5">
-                  <p className="text-sm font-semibold text-white">{item.label}</p>
-                  <p className="text-xs text-white/60">Jump to this section</p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <GlassCard
-                title="Q&A"
-                action={<button className="text-sm font-semibold text-brand-primary hover:underline">Ask a question</button>}
+                action={
+                  <div className="flex items-center gap-2">
+                    <input
+                      value={taskInput}
+                      onChange={(event) => setTaskInput(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault();
+                          handleAddTask();
+                        }
+                      }}
+                      className="w-40 rounded-full border border-white/15 bg-white/5 px-3 py-2 text-xs text-white placeholder:text-white/60 focus:border-brand-primary/50 focus:outline-none"
+                      placeholder="New task"
+                    />
+                    <button
+                      onClick={handleAddTask}
+                      className="rounded-full bg-brand-primary px-3 py-2 text-xs font-semibold text-slate-900 shadow-lg shadow-brand-primary/40 transition hover:-translate-y-0.5"
+                    >
+                      Add
+                    </button>
+                  </div>
+                }
               >
                 <div className="space-y-3">
-                  {(course.comments ?? []).slice(0, 3).map((comment) => (
-                    <div key={comment.id} className="rounded-2xl border border-white/5 bg-white/5 px-4 py-3">
-                      <p className="text-sm font-semibold text-white">{comment.user.name}</p>
-                      <p className="text-xs text-white/50">{comment.timestamp}</p>
-                      <p className="mt-1 text-sm text-white/80">{comment.text}</p>
+                  {tasks.map((task) => (
+                    <div
+                      key={task.id}
+                      className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/5 px-4 py-3 text-sm"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-primary/15 text-brand-primary">
+                          <Icon name="check-circle" className="h-4 w-4" />
+                        </span>
+                        <div>
+                          <p className="font-semibold text-white">{task.title}</p>
+                          <p className="text-xs text-white/60">{task.status}</p>
+                        </div>
+                      </div>
+                      <button className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white transition hover:bg-brand-primary/20">
+                        Mark done
+                      </button>
                     </div>
                   ))}
-                  {(!course.comments || course.comments.length === 0) && (
-                    <p className="text-sm text-white/70">No questions yet. Start the conversation!</p>
-                  )}
+                  {tasks.length === 0 && <p className="text-sm text-white/70">No tasks yet. Add your first action item.</p>}
                 </div>
               </GlassCard>
+            )}
 
-              <GlassCard title="My doubts" ref={doubtsRef}>
+            {activeSection === 'My doubts' && (
+              <GlassCard title="My doubts">
                 <div className="space-y-3 text-sm text-white/80">
                   <p>Capture anything that felt unclear while watching this lecture.</p>
                   <textarea
@@ -490,7 +525,25 @@ const CourseLearnPage: React.FC = () => {
                   </div>
                 </div>
               </GlassCard>
-            </div>
+            )}
+
+            <GlassCard
+              title="Q&A"
+              action={<button className="text-sm font-semibold text-brand-primary hover:underline">Ask a question</button>}
+            >
+              <div className="space-y-3">
+                {(course.comments ?? []).slice(0, 3).map((comment) => (
+                  <div key={comment.id} className="rounded-2xl border border-white/5 bg-white/5 px-4 py-3">
+                    <p className="text-sm font-semibold text-white">{comment.user.name}</p>
+                    <p className="text-xs text-white/50">{comment.timestamp}</p>
+                    <p className="mt-1 text-sm text-white/80">{comment.text}</p>
+                  </div>
+                ))}
+                {(!course.comments || course.comments.length === 0) && (
+                  <p className="text-sm text-white/70">No questions yet. Start the conversation!</p>
+                )}
+              </div>
+            </GlassCard>
 
             <GlassCard title="Certificate">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
