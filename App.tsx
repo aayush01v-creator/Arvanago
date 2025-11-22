@@ -1,6 +1,6 @@
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Course, User } from './types.ts';
 import { auth } from './services/firebase.ts';
 import {
@@ -245,11 +245,14 @@ const App: React.FC = () => {
   );
 
   const CourseRouteWrapper: React.FC = () => {
+    const { courseId } = useParams<{ courseId: string }>();
+    const isEnrolled = Boolean(courseId && user?.enrolledCourses?.includes(courseId));
+
     if (!authReady) {
       return <SuspenseFallback />;
     }
 
-    if (!user) {
+    if (!user || !isEnrolled) {
       return (
         <CoursePreviewPage
           courses={courses}
