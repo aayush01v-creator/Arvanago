@@ -98,25 +98,21 @@ const CourseLearnPage: React.FC = () => {
   const navigate = useNavigate();
 
   const course = useMemo(() => courses.find((c) => c.id === courseId), [courses, courseId]);
+  const lectures = course?.lectures ?? [];
   const isEnrolled = useMemo(
-    () =>
-      Boolean(
-        course &&
-          user &&
-          (user.enrolledCourses.includes(course.id) || user.ongoingCourses.includes(course.id)),
-      ),
-    [course, user],
+    () => Boolean(course && (user.enrolledCourses.includes(course.id) || user.ongoingCourses.includes(course.id))),
+    [course, user.enrolledCourses, user.ongoingCourses],
   );
   const primaryLecture = useMemo(
-    () => course?.lectures.find((lecture) => lecture.isPreview) ?? course?.lectures[0],
-    [course],
+    () => lectures.find((lecture) => lecture.isPreview) ?? lectures[0],
+    [lectures],
   );
 
-  const [currentLecture, setCurrentLecture] = useState<Lecture | undefined>(primaryLecture);
+  const [currentLectureId, setCurrentLectureId] = useState<string | null>(primaryLecture?.id ?? null);
 
   const sectionList = useMemo(
-    () => course?.sections ?? [{ title: 'All lectures', lectures: course?.lectures ?? [] }],
-    [course?.lectures, course?.sections],
+    () => course?.sections ?? [{ title: 'All lectures', lectures }],
+    [course?.sections, lectures],
   );
 
   const totalLessons = useMemo(
@@ -128,7 +124,7 @@ const CourseLearnPage: React.FC = () => {
 
   const handleSelectLecture = useCallback(
     (lecture: Lecture) => {
-      setCurrentLecture((prev) => (prev?.id === lecture.id ? prev : lecture));
+      setCurrentLectureId((prev) => (prev === lecture.id ? prev : lecture.id));
     },
     [],
   );
@@ -143,12 +139,17 @@ const CourseLearnPage: React.FC = () => {
     [resourcesCount],
   );
 
-  useEffect(() => {
-    setCurrentLecture(primaryLecture);
-  }, [primaryLecture]);
+  const currentLecture = useMemo(
+    () => lectures.find((lecture) => lecture.id === currentLectureId) ?? primaryLecture ?? null,
+    [currentLectureId, lectures, primaryLecture],
+  );
 
   useEffect(() => {
-    if (!user || !course || !isEnrolled) return;
+    setCurrentLectureId(primaryLecture?.id ?? null);
+  }, [primaryLecture?.id]);
+
+  useEffect(() => {
+    if (!user || !course || coursesLoading || !isEnrolled) return;
 
     const alreadyEnrolled = user.enrolledCourses.includes(course.id);
     const alreadyOngoing = user.ongoingCourses.includes(course.id);
@@ -167,9 +168,9 @@ const CourseLearnPage: React.FC = () => {
       enrolledCourses: updatedEnrolledCourses,
       ongoingCourses: updatedOngoingCourses,
     });
-  }, [course, isEnrolled, onProfileUpdate, user]);
+  }, [course, coursesLoading, isEnrolled, onProfileUpdate, user]);
 
-  if (coursesLoading) {
+  if (coursesLoading || !course) {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-dashed border-brand-primary" />
@@ -177,12 +178,43 @@ const CourseLearnPage: React.FC = () => {
     );
   }
 
-  if (!isEnrolled && !coursesLoading) {
+  if (!isEnrolled) {
     return <Navigate to={course ? `/courses/${course.id}` : '/dashboard'} replace />;
   }
 
-  if (!course || !primaryLecture || !currentLecture) {
-    return <Navigate to={course ? `/courses/${course.id}` : '/dashboard'} replace />;
+  if (lectures.length === 0 || !primaryLecture || !currentLecture) {
+    return (
+      <div className="relative min-h-screen bg-slate-950 text-white">
+        <div className="flex flex-col items-center justify-center gap-4 px-6 py-20 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/5 text-brand-primary">
+            <Icon name="alertTriangle" className="h-7 w-7" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-semibold">Course content is still loading</h1>
+            <p className="text-white/70">
+              We couldn&apos;t load the lectures for this course yet. Please refresh or visit the course overview while we
+              sync your content.
+            </p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate(0)}
+              className="rounded-full bg-brand-primary px-5 py-2 text-sm font-semibold text-slate-900 shadow-lg shadow-brand-primary/40 transition hover:-translate-y-0.5"
+            >
+              Retry loading
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate(`/courses/${course.id}`)}
+              className="rounded-full border border-white/15 bg-white/5 px-5 py-2 text-sm font-semibold text-white transition hover:border-brand-primary/40 hover:bg-brand-primary/10"
+            >
+              Go to course overview
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
