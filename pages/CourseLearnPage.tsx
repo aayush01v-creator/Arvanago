@@ -116,6 +116,8 @@ const CourseLearnPage: React.FC = () => {
   );
 
   const [currentLectureId, setCurrentLectureId] = useState<string | null>(primaryLecture?.id ?? null);
+  const [activeSection, setActiveSection] = useState<string>('Course content');
+  const mainSectionRef = useRef<HTMLDivElement | null>(null);
 
   const contentRef = useRef<HTMLElement | null>(null);
   const overviewRef = useRef<HTMLElement | null>(null);
@@ -441,22 +443,17 @@ const CourseLearnPage: React.FC = () => {
                 ref={tasksRef}
                 action={<button className="text-sm font-semibold text-brand-primary hover:underline">Add</button>}
               >
-                <p>Break down what you learned into actionable next steps.</p>
-                <div className="space-y-2 text-sm text-white/80">
-                  <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/5 px-3 py-2">
-                    <Icon name="target" className="h-4 w-4 text-brand-primary" />
-                    <span>Draft a short recap of the video.</span>
-                  </div>
-                  <div className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/5 px-3 py-2">
-                    <Icon name="activity" className="h-4 w-4 text-brand-primary" />
-                    <span>Complete the practice exercise attached to this lecture.</span>
-                  </div>
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-primary/15 text-brand-primary transition group-hover:scale-105 group-hover:bg-brand-primary/25">
+                  <Icon name={item.icon} className="h-5 w-5" />
+                </span>
+                <div className="space-y-0.5">
+                  <p className="text-sm font-semibold text-white">{item.label}</p>
+                  <p className="text-xs text-white/60">Jump to this section</p>
                 </div>
-                <button className="mt-2 w-full rounded-2xl bg-brand-primary px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg shadow-brand-primary/40 transition hover:-translate-y-0.5">
-                  Save task
-                </button>
-              </GlassCard>
-            </div>
+              </button>
+            ))}
+          </div>
+        </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <GlassCard
