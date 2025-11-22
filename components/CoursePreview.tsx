@@ -247,6 +247,7 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ course, onLoginClick, onB
     const previewPoster = course.previewImageUrl ?? course.thumbnailUrl ?? course.thumbnail;
     const price = course.isFree ? 'Free' : course.price ? `${course.currency || '$'}${course.price}` : 'Premium';
     const discount = course.originalPrice && course.price ? Math.round(100 - (course.price / course.originalPrice) * 100) : 0;
+    const isEnrolled = user?.enrolledCourses.includes(course.id) ?? false;
 
     return (
         <div className="min-h-screen font-sans text-slate-800 dark:text-slate-100 overflow-x-hidden transition-colors duration-500 bg-slate-50 dark:bg-slate-950 selection:bg-brand-primary/30">
@@ -275,9 +276,19 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ course, onLoginClick, onB
                                 <Icon name={isDarkMode ? 'sun' : 'moon'} className="w-5 h-5" />
                             </button>
                             {user ? (
-                                <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-700">
-                                    <span className="text-sm font-semibold hidden sm:block">{user.name}</span>
-                                    <img src={user.avatar} alt="Profile" className="w-9 h-9 rounded-full border-2 border-white dark:border-slate-700 shadow-sm" />
+                                <div className="flex items-center gap-3">
+                                    {!isEnrolled && (
+                                        <button
+                                            onClick={handleEnroll}
+                                            className="px-5 py-2 rounded-full bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-semibold text-sm hover:scale-105 transition-transform shadow-lg shadow-brand-primary/20"
+                                        >
+                                            Enroll Now
+                                        </button>
+                                    )}
+                                    <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-700">
+                                        <span className="text-sm font-semibold hidden sm:block">{user.name}</span>
+                                        <img src={user.avatar} alt="Profile" className="w-9 h-9 rounded-full border-2 border-white dark:border-slate-700 shadow-sm" />
+                                    </div>
                                 </div>
                             ) : (
                                 <button onClick={onLoginClick} className="px-5 py-2 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold text-sm hover:scale-105 transition-transform shadow-lg shadow-slate-900/20">
