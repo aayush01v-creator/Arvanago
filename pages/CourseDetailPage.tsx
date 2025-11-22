@@ -16,7 +16,8 @@ const CourseDetailPage: React.FC = () => {
       return;
     }
 
-    const isEnrolled = user.enrolledCourses?.includes(courseId);
+    const isEnrolled =
+      user.enrolledCourses?.includes(courseId) || user.ongoingCourses?.includes(courseId);
     if (isEnrolled) {
       navigate(`/courses/${courseId}/learn`, { replace: true });
     }
