@@ -1,6 +1,6 @@
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, Outlet, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Course, User } from './types.ts';
 import { auth } from './services/firebase.ts';
 import {
@@ -255,10 +255,6 @@ const App: React.FC = () => {
       return <SuspenseFallback />;
     }
 
-    if (user && isEnrolled) {
-      return <Navigate to={`/courses/${courseId}/learn`} replace />;
-    }
-
     if (!user || !isEnrolled) {
       return (
         <CoursePreviewPage
@@ -282,7 +278,9 @@ const App: React.FC = () => {
         coursesLoading={coursesLoading}
         coursesError={coursesError}
         onRefreshCourses={fetchCourseData}
-      />
+      >
+        <Outlet />
+      </SidebarLayout>
     );
   };
 
