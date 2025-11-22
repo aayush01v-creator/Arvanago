@@ -15,12 +15,21 @@ const ExploreCoursesPage: React.FC = () => {
   const handleCourseSelect = useCallback(
     (course: Course) => {
       if (user) {
-        const alreadyEnrolled = user.ongoingCourses.includes(course.id);
-        const updatedCourses = alreadyEnrolled ? user.ongoingCourses : [...user.ongoingCourses, course.id];
+        const alreadyEnrolled =
+          user.enrolledCourses.includes(course.id) || user.ongoingCourses.includes(course.id);
+        const updatedOngoingCourses = alreadyEnrolled ? user.ongoingCourses : [...user.ongoingCourses, course.id];
+        const updatedEnrolledCourses = alreadyEnrolled ? user.enrolledCourses : [...user.enrolledCourses, course.id];
 
         if (!alreadyEnrolled) {
-          onProfileUpdate({ ongoingCourses: updatedCourses });
-          void updateUserProfile(user.uid, { ongoingCourses: updatedCourses });
+          onProfileUpdate({
+            ongoingCourses: updatedOngoingCourses,
+            enrolledCourses: updatedEnrolledCourses,
+          });
+
+          void updateUserProfile(user.uid, {
+            ongoingCourses: updatedOngoingCourses,
+            enrolledCourses: updatedEnrolledCourses,
+          });
         }
       }
 
