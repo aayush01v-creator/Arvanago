@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Navigate, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import CourseDetail from '@/components/CourseDetail.tsx';
 import { Lecture } from '@/types';
@@ -6,10 +6,21 @@ import { SidebarLayoutContext } from '@/components/SidebarLayout.tsx';
 
 const CourseDetailPage: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
-  const { courses, coursesLoading } = useOutletContext<SidebarLayoutContext>();
+  const { courses, coursesLoading, user } = useOutletContext<SidebarLayoutContext>();
   const navigate = useNavigate();
 
   const course = useMemo(() => courses.find((c) => c.id === courseId), [courses, courseId]);
+
+  useEffect(() => {
+    if (!courseId || !user) {
+      return;
+    }
+
+    const isEnrolled = user.enrolledCourses?.includes(courseId);
+    if (isEnrolled) {
+      navigate(`/courses/${courseId}/learn`, { replace: true });
+    }
+  }, [courseId, navigate, user]);
 
   if (coursesLoading) {
     return (
