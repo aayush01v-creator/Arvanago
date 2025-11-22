@@ -24,7 +24,7 @@ const PublicExplorePage: React.FC<PublicExplorePageProps> = ({
 
   const handlePreviewCourse = useCallback(
     (course: Course) => {
-      navigate(`/courses/${course.id}/preview`);
+      navigate(`/courses/${course.id}`);
     },
     [navigate],
   );

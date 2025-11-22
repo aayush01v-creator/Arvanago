@@ -198,7 +198,7 @@ const App: React.FC = () => {
             await updateUserProfile(user.uid, { wishlist: updatedWishlist });
           }
           // Navigate with state to show toast
-          navigate(`/courses/${matchedCourse.id}/preview`, {
+          navigate(`/courses/${matchedCourse.id}`, {
             replace: true,
             state: { showWishlistToast: true },
           });
@@ -225,13 +225,7 @@ const App: React.FC = () => {
 
   const handlePublicCourseSelect = useCallback(
     (course: Course) => {
-      // Allow guests to preview courses directly from public surfaces
-      if (user) {
-        navigate(`/courses/${course.id}`);
-        return;
-      }
-
-      navigate(`/courses/${course.id}/preview`);
+      navigate(`/courses/${course.id}`);
     },
     [navigate, user],
   );
@@ -249,6 +243,38 @@ const App: React.FC = () => {
     },
     [navigate, user],
   );
+
+  const CourseRouteWrapper: React.FC = () => {
+    if (!authReady) {
+      return <SuspenseFallback />;
+    }
+
+    if (!user) {
+      return (
+        <CoursePreviewPage
+          courses={courses}
+          isDarkMode={isDarkMode}
+          onToggleTheme={handleThemeToggle}
+          user={user}
+          isLoading={coursesLoading}
+          onProfileUpdate={handleProfileUpdate}
+        />
+      );
+    }
+
+    return (
+      <SidebarLayout
+        user={user}
+        courses={courses}
+        isDarkMode={isDarkMode}
+        onThemeToggle={handleThemeToggle}
+        onProfileUpdate={handleProfileUpdate}
+        coursesLoading={coursesLoading}
+        coursesError={coursesError}
+        onRefreshCourses={fetchCourseData}
+      />
+    );
+  };
 
   console.log('APP_RENDER', {
     authReady,
@@ -294,19 +320,9 @@ const App: React.FC = () => {
 
         <Route path="/login" element={<LoginRoute user={user} />} />
 
-        <Route
-          path="/courses/:courseId/preview"
-          element={
-            <CoursePreviewPage
-              courses={courses}
-              isDarkMode={isDarkMode}
-              onToggleTheme={handleThemeToggle}
-              user={user}
-              isLoading={coursesLoading}
-              onProfileUpdate={handleProfileUpdate}
-            />
-          }
-        />
+        <Route element={<CourseRouteWrapper />}>
+          <Route path="/courses/:courseId" element={<CourseDetailPage />} />
+        </Route>
 
         {/* PRIVATE ROUTES (AUTH REQUIRED) */}
         <Route element={<ProtectedRoute user={user} authReady={authReady} />}>
@@ -329,7 +345,6 @@ const App: React.FC = () => {
             <Route path="/explore" element={<ExploreCoursesPage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/courses/:courseId" element={<CourseDetailPage />} />
             <Route path="/courses/:courseId/learn" element={<CourseLearnPage />} />
             <Route
               path="/courses/:courseId/lectures/:lectureId"
